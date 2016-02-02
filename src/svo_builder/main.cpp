@@ -21,6 +21,7 @@ string version = "1.5";
 // Program parameters
 string filename = "";
 size_t gridsize = 1024;
+//the amount of system memory in MEGABYTES we maximally want to use during the voxelization proces
 size_t voxel_memory_limit = 2048;
 float sparseness_limit = 0.10f;
 ColorType color = COLOR_FROM_MODEL;
@@ -29,7 +30,7 @@ bool generate_levels = false;
 bool verbose = false;
 
 // trip header info
-TriInfo tri_info;
+TriInfo tri_info; //struct to contain all info read from a .tri file header
 TripInfo trip_info;
 
 // buffer_size
@@ -112,7 +113,7 @@ void parseProgramParameters(int argc, char* argv[]) {
 		}
 		else if (string(argv[i]) == "-s") {
 			gridsize = atoi(argv[i + 1]);
-			if (!isPowerOf2((unsigned int) gridsize)) {
+			if (!isPowerOf2((unsigned int)gridsize)) {
 				cout << "Requested gridsize is not a power of 2" << endl;
 				printInvalid();
 				exit(0);
@@ -234,14 +235,14 @@ void printTimerInfo() {
 }
 
 // Tri header handling and error checking
-void readTriHeader(string& filename, TriInfo& tri_info){
+void readTriHeader(string& filename, TriInfo& tri_info) {
 	cout << "Parsing tri header " << filename << " ..." << endl;
 	if (parseTriHeader(filename, tri_info) != 1) {
 		exit(0); // something went wrong in parsing the header - exiting.
 	}
 	// disabled for benchmarking
 	if (!tri_info.filesExist()) {
-		cout << "Not all required .tri or .tridata files exist. Please regenerate using tri_convert." << endl; 
+		cout << "Not all required .tri or .tridata files exist. Please regenerate using tri_convert." << endl;
 		exit(0); // not all required files exist - exiting.
 	}
 	if (verbose) { tri_info.print(); }
@@ -260,12 +261,12 @@ void readTriHeader(string& filename, TriInfo& tri_info){
 }
 
 // Trip header handling and error checking
-void readTripHeader(string& filename, TripInfo& trip_info){
+void readTripHeader(string& filename, TripInfo& trip_info) {
 	if (parseTripHeader(filename, trip_info) != 1) {
 		exit(0);
 	}
 	if (!trip_info.filesExist()) {
-		cout << "Not all required .trip or .tripdata files exist. Please regenerate using svo_builder." << endl; 
+		cout << "Not all required .trip or .tripdata files exist. Please regenerate using svo_builder." << endl;
 		exit(0); // not all required files exist - exiting.
 	}
 	if (verbose) { trip_info.print(); }
@@ -284,23 +285,50 @@ int main(int argc, char *argv[]) {
 	printInfo();
 	parseProgramParameters(argc, argv);
 
+	/*===============
+	*= VOXELIZATION =
+	*================*/
+
+	/*
+	Consumes the input triangle mesh in a streaming manner.
+	Produces the intermediate high-resolution voxel grid in morton order
+
+	Consists of 2 subprocesses:
+	1: the partitioning subproces
+	2: the actual voxelization proces
+	*/
+
+
 	// PARTITIONING
-	part_total_timer.start(); part_io_in_timer.start(); // TIMING
-	readTriHeader(filename, tri_info);
-	part_io_in_timer.stop();
+	/* Partitions the triangle mesh according to subgrids in a streaming matter.
+	--> test each triangle against the bounding box of each subgrid
+	Store each triangle mesh partition temporarily on disk
+	*/
+
+	// TIMING
+	part_total_timer.start(); //times the total partitioning time
+	part_io_in_timer.start(); //times the io time during partitioning
+
+	readTriHeader(filename, tri_info); //tri info now contains the info from the tri header file
+	part_io_in_timer.stop(); //stop the partitioning io timer
+
+	//estimate the amount of triangle partitions needed for voxelization
+	//NOTE: the estimation is hardcoded for 3D trees
 	size_t n_partitions = estimate_partitions(gridsize, voxel_memory_limit);
 	cout << "Partitioning data into " << n_partitions << " partitions ... "; cout.flush();
+
+	//partition
 	TripInfo trip_info = partition(tri_info, n_partitions, gridsize);
 	cout << "done." << endl;
 	part_total_timer.stop(); // TIMING
 
 	vox_total_timer.start(); vox_io_in_timer.start(); // TIMING
-	// Parse TRIP header
+													  // Parse TRIP header
 	string tripheader = trip_info.base_filename + string(".trip");
 	readTripHeader(tripheader, trip_info);
 	vox_io_in_timer.stop(); // TIMING
 
-	// General voxelization calculations (stuff we need throughout voxelization process)
+							// General voxelization calculations (stuff we need throughout voxelization process)
 	float unitlength = (trip_info.mesh_bbox.max[0] - trip_info.mesh_bbox.min[0]) / (float)trip_info.gridsize;
 	uint64_t morton_part = (trip_info.gridsize * trip_info.gridsize * trip_info.gridsize) / trip_info.n_partitions;
 
@@ -318,11 +346,15 @@ int main(int argc, char *argv[]) {
 	OctreeBuilder builder = OctreeBuilder(trip_info.base_filename, trip_info.gridsize, generate_levels);
 	svo_total_timer.stop();
 
+	/*====================
+	*= SVO CONSTRUCTION =
+	*====================*/
+
 	// Start voxelisation and SVO building per partition
 	for (size_t i = 0; i < trip_info.n_partitions; i++) {
 		if (trip_info.part_tricounts[i] == 0) { continue; } // skip partition if it contains no triangles
 
-		// VOXELIZATION
+															// VOXELIZATION
 		vox_total_timer.start(); // TIMING
 		cout << "Voxelizing partition " << i << " ..." << endl;
 		// morton codes for this partition
@@ -334,20 +366,20 @@ int main(int argc, char *argv[]) {
 		TriReader reader = TriReader(part_data_filename, trip_info.part_tricounts[i], min(trip_info.part_tricounts[i], input_buffersize));
 		if (verbose) { cout << "  reading " << trip_info.part_tricounts[i] << " triangles from " << part_data_filename << endl; }
 		vox_io_in_timer.stop(); // TIMING
-		// voxelize partition
+								// voxelize partition
 		size_t nfilled_before = nfilled;
 		bool use_data = true;
 		voxelize_schwarz_method(reader, start, end, unitlength, voxels, data, sparseness_limit, use_data, nfilled);
 		if (verbose) { cout << "  found " << nfilled - nfilled_before << " new voxels." << endl; }
 		vox_total_timer.stop(); // TIMING
 
-		// build SVO
+								// build SVO
 		cout << "Building SVO for partition " << i << " ..." << endl;
 		svo_total_timer.start(); svo_algo_timer.start(); // TIMING
 #ifdef BINARY_VOXELIZATION
-		if (use_data){ // use array of morton codes to build the SVO
+		if (use_data) { // use array of morton codes to build the SVO
 			sort(data.begin(), data.end()); // sort morton codes
-			for (std::vector<uint64_t>::iterator it = data.begin(); it != data.end(); ++it){
+			for (std::vector<uint64_t>::iterator it = data.begin(); it != data.end(); ++it) {
 				builder.addVoxel(*it);
 			}
 		}
@@ -362,14 +394,14 @@ int main(int argc, char *argv[]) {
 		}
 #else
 		sort(data.begin(), data.end()); // sort
-		for (std::vector<VoxelData>::iterator it = data.begin(); it != data.end(); ++it){
-			if (color == COLOR_FIXED){
+		for (std::vector<VoxelData>::iterator it = data.begin(); it != data.end(); ++it) {
+			if (color == COLOR_FIXED) {
 				it->color = fixed_color;
 			}
-			else if (color == COLOR_LINEAR){ // linear color scale
+			else if (color == COLOR_LINEAR) { // linear color scale
 				it->color = mortonToRGB(it->morton, gridsize);
 			}
-			else if (color == COLOR_NORMAL){ // color models using their normals
+			else if (color == COLOR_NORMAL) { // color models using their normals
 				vec3 normal = normalize(it->normal);
 				it->color = vec3((normal[0] + 1.0f) / 2.0f, (normal[1] + 1.0f) / 2.0f, (normal[2] + 1.0f) / 2.0f);
 			}
@@ -384,7 +416,7 @@ int main(int argc, char *argv[]) {
 	cout << "Total amount of voxels: " << nfilled << endl;
 	svo_total_timer.stop(); svo_algo_timer.stop(); // TIMING
 
-	// Removing .trip files which are left by partitioner
+												   // Removing .trip files which are left by partitioner
 	removeTripFiles(trip_info);
 
 	main_timer.stop();
