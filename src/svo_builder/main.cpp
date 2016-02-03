@@ -20,6 +20,8 @@ string version = "1.5";
 
 // Program parameters
 string filename = "";
+// vozel grid size, should be a power of 2
+// amount of voxels in the grid = pow(gridsize, nbOfGridDimensions)
 size_t gridsize = 1024;
 //the amount of system memory in MEGABYTES we maximally want to use during the voxelization proces
 size_t voxel_memory_limit = 2048;
@@ -317,18 +319,18 @@ int main(int argc, char *argv[]) {
 	size_t n_partitions = estimate_partitions(gridsize, voxel_memory_limit);
 	cout << "Partitioning data into " << n_partitions << " partitions ... "; cout.flush();
 
-	//partition
+	//partition the  triangle mesh
 	TripInfo trip_info = partition(tri_info, n_partitions, gridsize);
 	cout << "done." << endl;
 	part_total_timer.stop(); // TIMING
 
 	vox_total_timer.start(); vox_io_in_timer.start(); // TIMING
-													  // Parse TRIP header
+	// Parse TRIP header
 	string tripheader = trip_info.base_filename + string(".trip");
 	readTripHeader(tripheader, trip_info);
 	vox_io_in_timer.stop(); // TIMING
 
-							// General voxelization calculations (stuff we need throughout voxelization process)
+	// General voxelization calculations (stuff we need throughout voxelization process)
 	float unitlength = (trip_info.mesh_bbox.max[0] - trip_info.mesh_bbox.min[0]) / (float)trip_info.gridsize;
 	uint64_t morton_part = (trip_info.gridsize * trip_info.gridsize * trip_info.gridsize) / trip_info.n_partitions;
 
@@ -354,7 +356,7 @@ int main(int argc, char *argv[]) {
 	for (size_t i = 0; i < trip_info.n_partitions; i++) {
 		if (trip_info.part_tricounts[i] == 0) { continue; } // skip partition if it contains no triangles
 
-															// VOXELIZATION
+		// VOXELIZATION
 		vox_total_timer.start(); // TIMING
 		cout << "Voxelizing partition " << i << " ..." << endl;
 		// morton codes for this partition

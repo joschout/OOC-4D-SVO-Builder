@@ -52,9 +52,14 @@ void removeTripFiles(const TripInfo &trip_info) {
 	}
 }
 
-// Create n Buffers for a total gridsize, store them in the given vector, use tri_info for filename information
+// Create as many Buffers as there are partitions for a total gridsize,
+// store them in the given vector,
+// use tri_info for filename information
 void createBuffers(const TriInfo& tri_info, const size_t n_partitions, const size_t gridsize, vector<Buffer*> &buffers) {
 	buffers.reserve(n_partitions);
+
+	//the unit length in the grid = the length of one side of the grid
+	// divided by the size of the grid (i.e. the number of voxels next to each other)
 	float unitlength = (tri_info.mesh_bbox.max[0] - tri_info.mesh_bbox.min[0]) / (float)gridsize;
 	uint64_t morton_part = (gridsize*gridsize*gridsize) / n_partitions;
 
@@ -110,7 +115,7 @@ TripInfo partition_one(const TriInfo& tri_info, const size_t gridsize) {
 	return trip_info;
 }
 
-// Partition the mesh referenced by tri_info into n partitions for gridsize,
+// Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
 // and store information about the partitioning in trip_info
 TripInfo partition(const TriInfo& tri_info, const size_t n_partitions, const size_t gridsize) {
 	// Special case: just one partition
@@ -120,11 +125,14 @@ TripInfo partition(const TriInfo& tri_info, const size_t n_partitions, const siz
 
 	// Open tri_data stream
 	part_io_in_timer.start(); // TIMING
+	//the reader knows how many triangles there are in the model,
+	// is given input_buffersize as buffersize
 	TriReader reader = TriReader(tri_info.base_filename + string(".tridata"), tri_info.n_triangles, input_buffersize);
 	part_io_in_timer.stop(); // TIMING
 
 	part_algo_timer.start(); // TIMING
-							 // Create Mortonbuffers
+
+	// Create Mortonbuffers: we will have one buffer per partition
 	vector<Buffer*> buffers;
 	createBuffers(tri_info, n_partitions, gridsize, buffers);
 
@@ -141,7 +149,7 @@ TripInfo partition(const TriInfo& tri_info, const size_t n_partitions, const siz
 	part_algo_timer.stop(); // TIMING
 	part_io_out_timer.start(); // TIMING
 
-							   // create TripInfo object to hold header info
+	// create TripInfo object to hold header info
 	TripInfo trip_info = TripInfo(tri_info);
 
 	// Collect ntriangles and close buffers
