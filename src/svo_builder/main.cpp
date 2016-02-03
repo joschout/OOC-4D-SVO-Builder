@@ -38,18 +38,6 @@ TripInfo trip_info;
 // buffer_size
 size_t input_buffersize = 8192;
 
-// timers
-Timer main_timer;
-Timer part_total_timer;
-Timer part_io_in_timer;
-Timer part_io_out_timer;
-Timer part_algo_timer;
-Timer vox_total_timer;
-Timer vox_io_in_timer;
-Timer vox_algo_timer;
-Timer svo_total_timer;
-Timer svo_io_out_timer;
-Timer svo_algo_timer;
 
 void printInfo() {
 	cout << "--------------------------------------------------------------------" << endl;
@@ -191,51 +179,6 @@ void parseProgramParameters(int argc, char* argv[]) {
 	}
 }
 
-// Initialize all performance timers
-void setupTimers() {
-	main_timer = Timer();
-
-	// Partitioning timers
-	part_total_timer = Timer();
-	part_io_in_timer = Timer();
-	part_io_out_timer = Timer();
-	part_algo_timer = Timer();
-
-	// Voxelization timers
-	vox_total_timer = Timer();
-	vox_io_in_timer = Timer();
-	vox_algo_timer = Timer();
-
-	svo_total_timer = Timer();
-	svo_io_out_timer = Timer();
-	svo_algo_timer = Timer();
-}
-
-// Printout total time of running Timers (for debugging purposes)
-void printTimerInfo() {
-	//double diff = main_timer.elapsed_time_milliseconds - (algo_timer.elapsed_time_milliseconds + io_timer_in.elapsed_time_milliseconds + io_timer_out.elapsed_time_milliseconds);
-	cout << "Total MAIN time      : " << main_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "PARTITIONING" << endl;
-	cout << "  Total time		: " << part_total_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  IO IN time		: " << part_io_in_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  algorithm time	: " << part_algo_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  IO OUT time		: " << part_io_out_timer.elapsed_time_milliseconds << " ms." << endl;
-	double part_diff = part_total_timer.elapsed_time_milliseconds - part_io_in_timer.elapsed_time_milliseconds - part_algo_timer.elapsed_time_milliseconds - part_io_out_timer.elapsed_time_milliseconds;
-	cout << "  misc time		: " << part_diff << " s." << endl;
-	cout << "VOXELIZING" << endl;
-	cout << "  Total time		: " << vox_total_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  IO IN time		: " << vox_io_in_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  algorithm time	: " << vox_algo_timer.elapsed_time_milliseconds << " ms." << endl;
-	double vox_diff = vox_total_timer.elapsed_time_milliseconds - vox_io_in_timer.elapsed_time_milliseconds - vox_algo_timer.elapsed_time_milliseconds;
-	cout << "  misc time		: " << vox_diff << " s." << endl;
-	cout << "SVO BUILDING" << endl;
-	cout << "  Total time		: " << svo_total_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  IO OUT time		: " << svo_io_out_timer.elapsed_time_milliseconds << " ms." << endl;
-	cout << "  algorithm time	: " << svo_algo_timer.elapsed_time_milliseconds << " ms." << endl;
-	double svo_misc = svo_total_timer.elapsed_time_milliseconds - svo_io_out_timer.elapsed_time_milliseconds - svo_algo_timer.elapsed_time_milliseconds;
-	cout << "  misc time		: " << svo_misc << " s." << endl;
-}
-
 // Tri header handling and error checking
 void readTriHeader(string& filename, TriInfo& tri_info) {
 	cout << "Parsing tri header " << filename << " ..." << endl;
@@ -274,45 +217,10 @@ void readTripHeader(string& filename, TripInfo& trip_info) {
 	if (verbose) { trip_info.print(); }
 }
 
-int main(int argc, char *argv[]) {
-	// Setup timers
-	setupTimers();
-	main_timer.start();
 
-#if defined(_WIN32) || defined(_WIN64)
-	_setmaxstdio(1024); // increase file descriptor limit in Windows
-#endif
-
-	// Parse program parameters
-	printInfo();
-	parseProgramParameters(argc, argv);
-
-	/*===============
-	*= VOXELIZATION =
-	*================*/
-
-	/*
-	Consumes the input triangle mesh in a streaming manner.
-	Produces the intermediate high-resolution voxel grid in morton order
-
-	Consists of 2 subprocesses:
-	1: the partitioning subproces
-	2: the actual voxelization proces
-	*/
-
-
-	// PARTITIONING
-	/* Partitions the triangle mesh according to subgrids in a streaming matter.
-	--> test each triangle against the bounding box of each subgrid
-	Store each triangle mesh partition temporarily on disk
-	*/
-
-	// TIMING
-	part_total_timer.start(); //times the total partitioning time
-	part_io_in_timer.start(); //times the io time during partitioning
-
-	readTriHeader(filename, tri_info); //tri info now contains the info from the tri header file
-	part_io_in_timer.stop(); //stop the partitioning io timer
+TripInfo partitionTriangleModel(){
+	readTriHeader(filename, tri_info); 
+	//tri info now contains the info from the tri header file
 
 	//estimate the amount of triangle partitions needed for voxelization
 	//NOTE: the estimation is hardcoded for 3D trees
@@ -322,13 +230,43 @@ int main(int argc, char *argv[]) {
 	//partition the  triangle mesh
 	TripInfo trip_info = partition(tri_info, n_partitions, gridsize);
 	cout << "done." << endl;
-	part_total_timer.stop(); // TIMING
 
-	vox_total_timer.start(); vox_io_in_timer.start(); // TIMING
+	return trip_info;
+}
+
+
+int main(int argc, char *argv[]) {
+
+
+#if defined(_WIN32) || defined(_WIN64)
+	_setmaxstdio(1024); // increase file descriptor limit in Windows
+#endif
+
+	// Parse program parameters
+	printInfo();
+	parseProgramParameters(argc, argv);
+
+
+	/* VOXELIZATION
+	Consumes the input triangle mesh in a streaming manner.
+	Produces the intermediate high-resolution voxel grid in morton order
+
+	Consists of 2 subprocesses:
+	1: the partitioning subproces
+	2: the actual voxelization proces
+	*/
+
+	/* Subprocess 1: PARTITIONING
+	Partitions the triangle mesh according to subgrids in a streaming matter.
+	--> test each triangle against the bounding box of each subgrid
+	Store each triangle mesh partition temporarily on disk
+	*/
+	partitionTriangleModel();
+	
 	// Parse TRIP header
 	string tripheader = trip_info.base_filename + string(".trip");
 	readTripHeader(tripheader, trip_info);
-	vox_io_in_timer.stop(); // TIMING
+	
 
 	// General voxelization calculations (stuff we need throughout voxelization process)
 	float unitlength = (trip_info.mesh_bbox.max[0] - trip_info.mesh_bbox.min[0]) / (float)trip_info.gridsize;
@@ -341,12 +279,10 @@ int main(int argc, char *argv[]) {
 	vector<VoxelData> data; // Dynamic storage for voxel data
 #endif 
 	size_t nfilled = 0;
-	vox_total_timer.stop(); // TIMING
 
-	svo_total_timer.start();
 	// create Octreebuilder which will output our SVO
 	OctreeBuilder builder = OctreeBuilder(trip_info.base_filename, trip_info.gridsize, generate_levels);
-	svo_total_timer.stop();
+	
 
 	/*====================
 	*= SVO CONSTRUCTION =
@@ -357,27 +293,26 @@ int main(int argc, char *argv[]) {
 		if (trip_info.part_tricounts[i] == 0) { continue; } // skip partition if it contains no triangles
 
 		// VOXELIZATION
-		vox_total_timer.start(); // TIMING
+		
 		cout << "Voxelizing partition " << i << " ..." << endl;
 		// morton codes for this partition
 		uint64_t start = i * morton_part;
 		uint64_t end = (i + 1) * morton_part;
 		// open file to read triangles
-		vox_io_in_timer.start(); // TIMING
+		
 		std::string part_data_filename = trip_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
 		TriReader reader = TriReader(part_data_filename, trip_info.part_tricounts[i], min(trip_info.part_tricounts[i], input_buffersize));
 		if (verbose) { cout << "  reading " << trip_info.part_tricounts[i] << " triangles from " << part_data_filename << endl; }
-		vox_io_in_timer.stop(); // TIMING
-								// voxelize partition
+		
+		// voxelize partition
 		size_t nfilled_before = nfilled;
 		bool use_data = true;
 		voxelize_schwarz_method(reader, start, end, unitlength, voxels, data, sparseness_limit, use_data, nfilled);
 		if (verbose) { cout << "  found " << nfilled - nfilled_before << " new voxels." << endl; }
-		vox_total_timer.stop(); // TIMING
 
 								// build SVO
 		cout << "Building SVO for partition " << i << " ..." << endl;
-		svo_total_timer.start(); svo_algo_timer.start(); // TIMING
+		
 #ifdef BINARY_VOXELIZATION
 		if (use_data) { // use array of morton codes to build the SVO
 			sort(data.begin(), data.end()); // sort morton codes
@@ -410,17 +345,14 @@ int main(int argc, char *argv[]) {
 			builder.addVoxel(*it);
 		}
 #endif
-		svo_algo_timer.stop(); svo_total_timer.stop();  // TIMING
+	
 	}
-	svo_total_timer.start(); svo_algo_timer.start(); // TIMING
+
 	builder.finalizeTree(); // finalize SVO so it gets written to disk
 	cout << "done" << endl;
 	cout << "Total amount of voxels: " << nfilled << endl;
-	svo_total_timer.stop(); svo_algo_timer.stop(); // TIMING
 
-												   // Removing .trip files which are left by partitioner
+	// Removing .trip files which are left by partitioner
 	removeTripFiles(trip_info);
 
-	main_timer.stop();
-	printTimerInfo();
 }
