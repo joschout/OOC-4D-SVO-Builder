@@ -10,13 +10,19 @@
 #include "voxelizer.h"
 #include "OctreeBuilder.h"
 #include "partitioner.h"
-
+#include "ExtendedTriInfo.h"
+#include "alternatePartitioner.h"
+#include "ExtendedTriPartitioningInfo.h"
+#include "PrintUtils.h"
 using namespace std;
 
 enum ColorType { COLOR_FROM_MODEL, COLOR_FIXED, COLOR_LINEAR, COLOR_NORMAL };
 
 // Program version
 string version = "1.5";
+
+// number of dimensions of the grid
+size_t nbOfDimensions = 3;
 
 // Program parameters
 string filename = "";
@@ -38,47 +44,6 @@ TripInfo trip_info;
 // buffer_size
 size_t input_buffersize = 8192;
 
-
-void printInfo() {
-	cout << "--------------------------------------------------------------------" << endl;
-#ifdef BINARY_VOXELIZATION
-	cout << "Out-Of-Core SVO Builder " << version << " - Geometry only version" << endl;
-#else
-	cout << "Out-Of-Core SVO Builder " << version << endl;
-#endif
-#if defined(_WIN32) || defined(_WIN64)
-	cout << "Windows " << endl;
-#endif
-#ifdef __linux__
-	cout << "Linux " << endl;
-#endif
-#ifdef _WIN64
-	cout << "64-bit version" << endl;
-#endif
-	cout << "Jeroen Baert - jeroen.baert@cs.kuleuven.be - www.forceflow.be" << endl;
-	cout << "--------------------------------------------------------------------" << endl << endl;
-}
-
-void printHelp() {
-	std::cout << "Example: svo_builder -f /home/jeroen/bunny.tri" << endl;
-	std::cout << "" << endl;
-	std::cout << "All available program options:" << endl;
-	std::cout << "" << endl;
-	std::cout << "-f <filename.tri>     Path to a .tri input file." << endl;
-	std::cout << "-s <gridsize>         Voxel gridsize, should be a power of 2. Default 512." << endl;
-	std::cout << "-l <memory_limit>     Memory limit for process, in Mb. Default 1024." << endl;
-	std::cout << "-levels               Generate intermediary voxel levels by averaging voxel data" << endl;
-	std::cout << "-c <option>           Coloring of voxels (Options: model (default), fixed, linear, normal)" << endl;
-	std::cout << "-d <percentage>       Percentage of memory limit to be used additionaly for sparseness optimization" << endl;
-	std::cout << "-v                    Be very verbose." << endl;
-	std::cout << "-h                    Print help and exit." << endl;
-}
-
-void printInvalid() {
-	std::cout << "Not enough or invalid arguments, please try again." << endl;
-	std::cout << "At the bare minimum, I need a path to a .TRI file" << endl << "" << endl;
-	printHelp();
-}
 
 // Parse command-line params and so some basic error checking on them
 void parseProgramParameters(int argc, char* argv[]) {
@@ -182,7 +147,7 @@ void parseProgramParameters(int argc, char* argv[]) {
 // Tri header handling and error checking
 void readTriHeader(string& filename, TriInfo& tri_info) {
 	cout << "Parsing tri header " << filename << " ..." << endl;
-	if (parseTriHeader(filename, tri_info) != 1) {
+	if (ExtendedTriInfo::parseTri3DHeader(filename, tri_info) != 1) {
 		exit(0); // something went wrong in parsing the header - exiting.
 	}
 	// disabled for benchmarking
@@ -206,8 +171,8 @@ void readTriHeader(string& filename, TriInfo& tri_info) {
 }
 
 // Trip header handling and error checking
-void readTripHeader(string& filename, TripInfo& trip_info) {
-	if (parseTripHeader(filename, trip_info) != 1) {
+void readTripHeader(string& filename, TripInfo4D& trip_info) {
+	if (TripInfo4D::parseTrip4DHeader(filename, trip_info) != 1) {
 		exit(0);
 	}
 	if (!trip_info.filesExist()) {
@@ -217,60 +182,45 @@ void readTripHeader(string& filename, TripInfo& trip_info) {
 	if (verbose) { trip_info.print(); }
 }
 
+TripInfo4D partitionTriangleModel(ExtendedTriInfo &extended_tri_info){
+	
 
-TripInfo partitionTriangleModel(){
-	readTriHeader(filename, tri_info); 
-	//tri info now contains the info from the tri header file
+/*	//estimate the amount of triangle partitions needed for voxelization
+	//NOTE: the estimation is hardcoded for 3D trees
+	size_t nbOfTrianglePartitions = estimate_partitions(gridsize, voxel_memory_limit, nbOfDimensions);
+	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
+
+	//partition the  triangle mesh
+	TripInfo trianglePartition_info = partition(tri_info, nbOfTrianglePartitions, gridsize);
+	cout << "done." << endl;
+
+	return trianglePartition_info;*/
+
+	alternatePartitioner partitioner = alternatePartitioner(gridsize, nbOfDimensions);
+	
 
 	//estimate the amount of triangle partitions needed for voxelization
 	//NOTE: the estimation is hardcoded for 3D trees
-	size_t n_partitions = estimate_partitions(gridsize, voxel_memory_limit);
-	cout << "Partitioning data into " << n_partitions << " partitions ... "; cout.flush();
+	size_t nbOfTrianglePartitions = partitioner.estimateNumberOfPartitions(voxel_memory_limit);
+	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
 
 	//partition the  triangle mesh
-	TripInfo trip_info = partition(tri_info, n_partitions, gridsize);
+	TripInfo4D trianglePartition_info = partitioner.partition(extended_tri_info);
 	cout << "done." << endl;
 
-	return trip_info;
+	return trianglePartition_info;
 }
 
-
-int main(int argc, char *argv[]) {
-
-
-#if defined(_WIN32) || defined(_WIN64)
-	_setmaxstdio(1024); // increase file descriptor limit in Windows
-#endif
-
-	// Parse program parameters
-	printInfo();
-	parseProgramParameters(argc, argv);
-
-
-	/* VOXELIZATION
-	Consumes the input triangle mesh in a streaming manner.
-	Produces the intermediate high-resolution voxel grid in morton order
-
-	Consists of 2 subprocesses:
-	1: the partitioning subproces
-	2: the actual voxelization proces
-	*/
-
-	/* Subprocess 1: PARTITIONING
-	Partitions the triangle mesh according to subgrids in a streaming matter.
-	--> test each triangle against the bounding box of each subgrid
-	Store each triangle mesh partition temporarily on disk
-	*/
-	partitionTriangleModel();
-	
-	// Parse TRIP header
-	string tripheader = trip_info.base_filename + string(".trip");
-	readTripHeader(tripheader, trip_info);
-	
-
+ void voxelizeAndBuildSVO(TripInfo& trianglePartition_info	 )
+{
 	// General voxelization calculations (stuff we need throughout voxelization process)
-	float unitlength = (trip_info.mesh_bbox.max[0] - trip_info.mesh_bbox.min[0]) / (float)trip_info.gridsize;
-	uint64_t morton_part = (trip_info.gridsize * trip_info.gridsize * trip_info.gridsize) / trip_info.n_partitions;
+	float unitlength 
+		= (trianglePartition_info.mesh_bbox.max[0] - trianglePartition_info.mesh_bbox.min[0]) / (float)trianglePartition_info.gridsize;
+
+	//morton_part = amount of voxels per partion
+	// = amount of voxels in the grid/number of partitions in the grid
+	uint64_t morton_part 
+		= pow(trianglePartition_info.gridsize, 3) / trianglePartition_info.n_partitions;
 
 	char* voxels = new char[(size_t)morton_part]; // Storage for voxel on/off
 #ifdef BINARY_VOXELIZATION
@@ -281,42 +231,42 @@ int main(int argc, char *argv[]) {
 	size_t nfilled = 0;
 
 	// create Octreebuilder which will output our SVO
-	OctreeBuilder builder = OctreeBuilder(trip_info.base_filename, trip_info.gridsize, generate_levels);
-	
+	OctreeBuilder builder = OctreeBuilder(trianglePartition_info.base_filename, trianglePartition_info.gridsize, generate_levels);
+
 
 	/*====================
 	*= SVO CONSTRUCTION =
 	*====================*/
 
 	// Start voxelisation and SVO building per partition
-	for (size_t i = 0; i < trip_info.n_partitions; i++) {
-		if (trip_info.part_tricounts[i] == 0) { continue; } // skip partition if it contains no triangles
+	for (size_t i = 0; i < trianglePartition_info.n_partitions; i++) {
+		if (trianglePartition_info.part_tricounts[i] == 0) { continue; } // skip partition if it contains no triangles
 
-		// VOXELIZATION
-		
+																		 // VOXELIZATION
+
 		cout << "Voxelizing partition " << i << " ..." << endl;
 		// morton codes for this partition
-		uint64_t start = i * morton_part;
-		uint64_t end = (i + 1) * morton_part;
+		uint64_t morton_startcode = i * morton_part;
+		uint64_t morton_endcode = (i + 1) * morton_part;
 		// open file to read triangles
-		
-		std::string part_data_filename = trip_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
-		TriReader reader = TriReader(part_data_filename, trip_info.part_tricounts[i], min(trip_info.part_tricounts[i], input_buffersize));
-		if (verbose) { cout << "  reading " << trip_info.part_tricounts[i] << " triangles from " << part_data_filename << endl; }
-		
+
+		string part_data_filename = trianglePartition_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
+		TriReader reader = TriReader(part_data_filename, trianglePartition_info.part_tricounts[i], min(trianglePartition_info.part_tricounts[i], input_buffersize));
+		if (verbose) { cout << "  reading " << trianglePartition_info.part_tricounts[i] << " triangles from " << part_data_filename << endl; }
+
 		// voxelize partition
 		size_t nfilled_before = nfilled;
 		bool use_data = true;
-		voxelize_schwarz_method(reader, start, end, unitlength, voxels, data, sparseness_limit, use_data, nfilled);
+		voxelize_schwarz_method(reader, morton_startcode, morton_endcode, unitlength, voxels, data, sparseness_limit, use_data, nfilled);
 		if (verbose) { cout << "  found " << nfilled - nfilled_before << " new voxels." << endl; }
 
-								// build SVO
+		// build SVO
 		cout << "Building SVO for partition " << i << " ..." << endl;
-		
+
 #ifdef BINARY_VOXELIZATION
 		if (use_data) { // use array of morton codes to build the SVO
 			sort(data.begin(), data.end()); // sort morton codes
-			for (std::vector<uint64_t>::iterator it = data.begin(); it != data.end(); ++it) {
+			for (vector<uint64_t>::iterator it = data.begin(); it != data.end(); ++it) {
 				builder.addVoxel(*it);
 			}
 		}
@@ -324,7 +274,7 @@ int main(int argc, char *argv[]) {
 			uint64_t morton_number;
 			for (size_t j = 0; j < morton_part; j++) {
 				if (!voxels[j] == EMPTY_VOXEL) {
-					morton_number = start + j;
+					morton_number = morton_startcode + j;
 					builder.addVoxel(morton_number);
 				}
 			}
@@ -345,7 +295,7 @@ int main(int argc, char *argv[]) {
 			builder.addVoxel(*it);
 		}
 #endif
-	
+
 	}
 
 	builder.finalizeTree(); // finalize SVO so it gets written to disk
@@ -353,6 +303,63 @@ int main(int argc, char *argv[]) {
 	cout << "Total amount of voxels: " << nfilled << endl;
 
 	// Removing .trip files which are left by partitioner
-	removeTripFiles(trip_info);
+	removeTripFiles(trianglePartition_info);
+
+}
+
+int main(int argc, char *argv[]) {
+
+
+#if defined(_WIN32) || defined(_WIN64)
+	_setmaxstdio(1024); // increase file descriptor limit in Windows
+#endif
+
+	vec3 translation_direction = vec3(1, 1, 1);
+	translation_direction = normalize(translation_direction);
+	
+	auto end_time = 10;
+
+
+	// Parse program parameters
+	printInfo(version);
+	parseProgramParameters(argc, argv);
+
+/*	FILE * pFile;
+
+	errno_t errorCode = fopen_s(&pFile, "sphere.tri", "w");
+	if (errorCode == 0)
+	{
+		std::cout << "file can be opened correctly" << std::endl;
+		fclose(pFile);
+	}
+	else {
+		std::cout << "Opening your file went wrong inside your main" << std::endl;
+	}*/
+
+
+	// Read the .tri file containing the triangle info
+	readTriHeader(filename, tri_info);
+
+	ExtendedTriInfo extended_tri_info = ExtendedTriInfo(tri_info, translation_direction, end_time);
+	//tri info now contains the info from the tri header file
+	//NOTE: THIS DOES NOT INCLUDE THE INFO OF EACH INDIVIDUAL TRIANGLE
+
+
+	/* VOXELIZATION
+	Consumes the input triangle mesh in a streaming manner.
+	Produces the intermediate high-resolution voxel grid in morton order
+	
+	Subprocess 1: PARTITIONING
+	Partitions the triangle mesh according to subgrids in a streaming matter.
+	--> test each triangle against the bounding box of each subgrid
+	Store each triangle mesh partition temporarily on disk
+	*/
+	TripInfo4D trianglePartition_info = partitionTriangleModel(extended_tri_info);
+	
+	// Parse TRIP header
+	string tripheader = trianglePartition_info.base_filename + string(".trip");
+	readTripHeader(tripheader, trianglePartition_info);
+	
+	//voxelizeAndBuildSVO(trianglePartition_info);
 
 }

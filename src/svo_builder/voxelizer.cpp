@@ -137,7 +137,7 @@ void voxelize_schwarz_method(TriReader &reader, const uint64_t morton_start, con
 #else
 void voxelize_schwarz_method(TriReader &reader, const uint64_t morton_start, const uint64_t morton_end, const float unitlength, char* voxels, vector<VoxelData> &data, float sparseness_limit, bool &use_data, size_t &nfilled) {
 #endif
-	vox_algo_timer.start();
+	//vox_algo_timer.start();
 	memset(voxels, EMPTY_VOXEL, (morton_end - morton_start)*sizeof(char));
 	data.clear();
 
@@ -166,9 +166,9 @@ void voxelize_schwarz_method(TriReader &reader, const uint64_t morton_start, con
 		// read triangle
 		Triangle t;
 
-		vox_algo_timer.stop(); vox_io_in_timer.start();
+		//vox_algo_timer.stop(); vox_io_in_timer.start();
 		reader.getTriangle(t);
-		vox_io_in_timer.stop(); vox_algo_timer.start();
+		//vox_io_in_timer.stop(); vox_algo_timer.start();
 
 #ifdef BINARY_VOXELIZATION
 		if (use_data){

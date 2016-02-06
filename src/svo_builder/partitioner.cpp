@@ -8,10 +8,9 @@ using namespace trimesh;
 #define input_buffersize 8192
 #define output_buffersize 8192
 
-#define nb_dimensions 3
 
 // Estimate the optimal amount of partitions we need, given the requested gridsize and the overall memory limit.
-size_t estimate_partitions(const size_t gridsize, const size_t memory_limit) {
+size_t estimate_partitions(const size_t gridsize, const size_t memory_limit, const size_t nb_dimensions) {
 	cout << "Estimating best partition count ..." << endl;
 
 	// calculate the amount of memory needed (in MB) to do the partitioning completely in memory
@@ -61,7 +60,7 @@ void createBuffers(const TriInfo& tri_info, const size_t n_partitions, const siz
 	//the unit length in the grid = the length of one side of the grid
 	// divided by the size of the grid (i.e. the number of voxels next to each other)
 	float unitlength = (tri_info.mesh_bbox.max[0] - tri_info.mesh_bbox.min[0]) / (float)gridsize;
-	uint64_t morton_part = (gridsize*gridsize*gridsize) / n_partitions;
+	uint64_t morton_part = pow(gridsize, 3) / n_partitions;
 
 	AABox<uivec3> bbox_grid;
 	AABox<vec3> bbox_world;
@@ -112,9 +111,9 @@ TripInfo partition_one(const TriInfo& tri_info, const size_t gridsize) {
 	std::string header = trip_info.base_filename + string(".trip");
 	trip_info.gridsize = gridsize;
 	trip_info.n_partitions = 1;
-	part_io_out_timer.start(); // TIMING
+	//part_io_out_timer.start(); // TIMING
 	writeTripHeader(header, trip_info);
-	part_io_out_timer.stop(); // TIMING
+	//part_io_out_timer.stop(); // TIMING
 	return trip_info;
 }
 
@@ -127,13 +126,13 @@ TripInfo partition(const TriInfo& tri_info, const size_t n_partitions, const siz
 	}
 
 	// Open tri_data stream
-	part_io_in_timer.start(); // TIMING
+	//part_io_in_timer.start(); // TIMING
 	//the reader knows how many triangles there are in the model,
 	// is given input_buffersize as buffersize
 	TriReader reader = TriReader(tri_info.base_filename + string(".tridata"), tri_info.n_triangles, input_buffersize);
-	part_io_in_timer.stop(); // TIMING
+	//part_io_in_timer.stop(); // TIMING
 
-	part_algo_timer.start(); // TIMING
+	//part_algo_timer.start(); // TIMING
 
 	// Create Mortonbuffers: we will have one buffer per partition
 	vector<Buffer*> buffers;
@@ -141,16 +140,16 @@ TripInfo partition(const TriInfo& tri_info, const size_t n_partitions, const siz
 
 	while (reader.hasNext()) {
 		Triangle t;
-		part_algo_timer.stop(); part_io_in_timer.start(); // TIMING
+		//part_algo_timer.stop(); part_io_in_timer.start(); // TIMING
 		reader.getTriangle(t);
-		part_io_in_timer.stop(); part_algo_timer.start(); // TIMING
+		//part_io_in_timer.stop(); part_algo_timer.start(); // TIMING
 		AABox<vec3> bbox = computeBoundingBox(t.v0, t.v1, t.v2); // compute bounding box
 		for (int j = 0; j < n_partitions; j++) { // Test against all partitions
 			buffers[j]->processTriangle(t, bbox);
 		}
 	}
-	part_algo_timer.stop(); // TIMING
-	part_io_out_timer.start(); // TIMING
+	//part_algo_timer.stop(); // TIMING
+	//part_io_out_timer.start(); // TIMING
 
 	// create TripInfo object to hold header info
 	TripInfo trip_info = TripInfo(tri_info);
@@ -169,6 +168,6 @@ TripInfo partition(const TriInfo& tri_info, const size_t n_partitions, const siz
 	trip_info.n_partitions = n_partitions;
 	writeTripHeader(header, trip_info);
 
-	part_io_out_timer.stop(); // TIMING
+	//part_io_out_timer.stop(); // TIMING
 	return trip_info;
 }

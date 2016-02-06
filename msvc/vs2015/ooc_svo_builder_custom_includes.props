@@ -2,13 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <BINARY_OUTPUT_DIR>E:\jeroenb\Binaries\</BINARY_OUTPUT_DIR>
+    <BINARY_OUTPUT_DIR>D:\KUL\KUL 2de ma CW Masterproef\JB OOC SVO aanpassing naar 4D\binaries\</BINARY_OUTPUT_DIR>
     <TRIMESH_DIR>C:\libs\trimesh2\trimesh2\</TRIMESH_DIR>
   </PropertyGroup>
   <PropertyGroup>
     <IncludePath>$(TRIMESH_DIR)\include\;$(SolutionDir)\..\..\src\libs\libtri\include\;$(IncludePath)</IncludePath>
     <_PropertySheetDisplayName>ooc_svo_builder_custom_includes</_PropertySheetDisplayName>
-    <LibraryPath>$(TRIMESH_DIR)\lib.Win$(PlatformArchitecture).vs$(PlatformToolsetVersion);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(TRIMESH_DIR)\lib.Win$(PlatformArchitecture);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>

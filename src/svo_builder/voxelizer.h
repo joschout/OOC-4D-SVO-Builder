@@ -10,6 +10,7 @@
 
 // Voxelization-related stuff
 typedef Vec<3, unsigned int> uivec3;
+typedef Vec<4, unsigned int> uivec4;
 using namespace std;
 
 #define EMPTY_VOXEL 0

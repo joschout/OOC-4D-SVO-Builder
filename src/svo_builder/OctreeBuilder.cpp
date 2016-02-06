@@ -3,7 +3,7 @@
 // OctreeBuilder constructor: this initializes the builder and sets up the output files, ready to go
 OctreeBuilder::OctreeBuilder(std::string base_filename, size_t gridlength, bool generate_levels) :
 gridlength(gridlength), b_node_pos(0), b_data_pos(0), b_current_morton(0), generate_levels(generate_levels), base_filename(base_filename) {
-	svo_algo_timer.start();
+	//svo_algo_timer.start();
 
 	// Open output files
 	string nodes_name = base_filename + string(".octreenodes");
@@ -20,13 +20,13 @@ gridlength(gridlength), b_node_pos(0), b_data_pos(0), b_current_morton(0), gener
 
 	// Fill data arrays
 	b_max_morton = morton3D_64_encode((uint_fast32_t)gridlength - 1, (uint_fast32_t)gridlength - 1, (uint_fast32_t)gridlength - 1);
-	svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 	writeVoxelData(data_out, VoxelData(), b_data_pos); // first data point is NULL
 #ifdef BINARY_VOXELIZATION
 	VoxelData v = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
 	writeVoxelData(data_out, v, b_data_pos); // all leafs will refer to this
 #endif
-	svo_io_out_timer.stop(); svo_algo_timer.stop();
+	//svo_io_out_timer.stop(); svo_algo_timer.stop();
 }
 
 // Finalize the tree: add rest of empty nodes, make sure root node is on top
@@ -37,16 +37,16 @@ void OctreeBuilder::finalizeTree(){
 	}
 
 	// write root node
-	svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 	writeNode(node_out, b_buffers[0][0], b_node_pos);
-	svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 
 	// write header
 	OctreeInfo octree_info(1, base_filename, gridlength, b_node_pos, b_data_pos);
 
-	svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 	writeOctreeHeader(base_filename + string(".octree"), octree_info);
-	svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 
 	// close files
 	fclose(data_out);
@@ -60,16 +60,16 @@ Node OctreeBuilder::groupNodes(const vector<Node> &buffer){
 	for (int k = 0; k < 8; k++){
 		if (!buffer[k].isNull()){
 			if (first_stored_child){
-				svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+				//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 				parent.children_base = writeNode(node_out, buffer[k], b_node_pos);
-				svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+				//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 				parent.children_offset[k] = 0;
 				first_stored_child = false;
 			}
 			else {
-				svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+				//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 				parent.children_offset[k] = (char)(writeNode(node_out, buffer[k], b_node_pos) - parent.children_base);
-				svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+				//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 			}
 		}
 		else {
@@ -91,9 +91,9 @@ Node OctreeBuilder::groupNodes(const vector<Node> &buffer){
 		vec3 tonormalize = (vec3)(d.normal / notnull);
 		d.normal = normalize(tonormalize);
 		// set it in the parent node
-		svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+		//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 		parent.data = writeVoxelData(data_out, d, b_data_pos);
-		svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+		//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 		parent.data_cache = d;
 	}
 
@@ -154,9 +154,9 @@ void OctreeBuilder::addVoxel(const VoxelData& data){
 	// Create node
 	Node node = Node(); // create empty node
 	// Write data point
-	svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 	node.data = writeVoxelData(data_out, data, b_data_pos); // store data
-	svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 	node.data_cache = data; // store data as cache
 	// Add to buffers
 	b_buffers.at(b_maxdepth).push_back(node);

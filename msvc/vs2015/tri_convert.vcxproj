@@ -75,16 +75,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>$(ProjectName)</TargetName>
     <OutDir>$(BINARY_OUTPUT_DIR)</OutDir>
+    <LibraryPath>$(TRIMESH_DIR)\lib.Win$(PlatformArchitecture);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Binary|x64'">
     <TargetName>$(ProjectName)_binary</TargetName>
     <OutDir>$(BINARY_OUTPUT_DIR)</OutDir>
+    <LibraryPath>$(TRIMESH_DIR)\lib.Win$(PlatformArchitecture);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Binary|x64'">
     <OutDir>$(BINARY_OUTPUT_DIR)</OutDir>
+    <LibraryPath>$(TRIMESH_DIR)\lib.Win$(PlatformArchitecture);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(BINARY_OUTPUT_DIR)</OutDir>
+    <LibraryPath>$(TRIMESH_DIR)\lib.Win$(PlatformArchitecture);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
