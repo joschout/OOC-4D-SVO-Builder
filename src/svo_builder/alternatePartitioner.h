@@ -20,6 +20,8 @@ public:
 	TripInfo4D partition(const ExtendedTriInfo& tri_info);
 	void createBuffers(const ExtendedTriInfo& tri_info, vector<Buffer4D*> &buffers) const;
 
+	static void removeTripFiles(const TripInfo4D &trip_info);
+	
 private:
 	int input_buffersize = 8192;
 	int output_buffersize = 8192;

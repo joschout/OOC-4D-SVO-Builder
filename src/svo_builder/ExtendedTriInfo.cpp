@@ -41,8 +41,7 @@ ExtendedTriInfo::~ExtendedTriInfo()
 int ExtendedTriInfo::parseTri3DHeader(std::string filename, TriInfo& t)
 {
 	ifstream file;
-	//file.open(filename.c_str(), ios::in);
-	file.open("sphere.tri", ios::in);
+	file.open(filename.c_str(), ios::in);
 
 	if (file.is_open()) {
 		cout << filename + " should be correctly opened" << std::endl;

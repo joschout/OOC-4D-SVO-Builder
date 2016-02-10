@@ -10,12 +10,12 @@
 #include "ExtendedTriPartitioningInfo.h"
 
 alternatePartitioner::alternatePartitioner():
-	gridsize(0), nbOfDimensions(0), nbOfPartitions(0)
+	gridsize(1), nbOfDimensions(4), nbOfPartitions(1)
 {
 }
 
 alternatePartitioner::alternatePartitioner(size_t gridsize, size_t nbOfDimensions):
-	gridsize(gridsize), nbOfDimensions(nbOfDimensions), nbOfPartitions(0)
+	gridsize(gridsize), nbOfDimensions(nbOfDimensions), nbOfPartitions(1)
 {
 }
 
@@ -96,7 +96,7 @@ TripInfo4D alternatePartitioner::partition(const ExtendedTriInfo& tri_info) {
 			tv1_transl = translate(tv1_transl, tri_info.translation_direction, unitlength_time);
 			tv2_transl = translate(tv2_transl, tri_info.translation_direction, unitlength_time);
 			AABox<vec4> bbox4D = computeBoundingBoxOneTimePoint(tv0_transl, tv1_transl, tv2_transl, time);
-			for (int j = 0; j < nbOfPartitions; j++) { // Test against all partitions
+			for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
 				buffers[j]->processTriangle(t, bbox4D);
 			}
 
@@ -151,7 +151,7 @@ void alternatePartitioner::createBuffers(const ExtendedTriInfo& tri_info, vector
 	for (size_t i = 0; i < nbOfPartitions; i++) {
 		// compute world bounding box
 		morton4D_Decode_for(morton_part*i, bbox_grid.min[3], bbox_grid.min[2], bbox_grid.min[1], bbox_grid.min[0]);
-		morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_grid.min[3],  bbox_grid.max[2], bbox_grid.max[1], bbox_grid.max[0]);
+		morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_grid.max[3],  bbox_grid.max[2], bbox_grid.max[1], bbox_grid.max[0]);
 		// -1, because z-curve skips to first block of next partition
 		
 		bbox_world.min[0] = bbox_grid.min[0] * unitlength;
@@ -177,7 +177,21 @@ void alternatePartitioner::createBuffers(const ExtendedTriInfo& tri_info, vector
 
 		// create buffer for partition
 		filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize) + string("_") + val_to_string(nbOfPartitions) + string("_") + val_to_string(i) + string(".tripdata");
-		buffers[i] = new Buffer4D(filename, bbox_world, output_buffersize);
+		buffers.push_back(new Buffer4D(filename, bbox_world, output_buffersize));
+		//buffers[i] = new Buffer4D(filename, bbox_world, output_buffersize);
+	}
+}
+
+// Remove the temporary .trip files we made
+void alternatePartitioner::removeTripFiles(const TripInfo4D& trip_info)
+{
+	// remove header file
+	string filename = trip_info.base_filename + string(".trip");
+	remove(filename.c_str());
+	// remove tripdata files
+	for (size_t i = 0; i < trip_info.n_partitions; i++) {
+		filename = trip_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
+		remove(filename.c_str());
 	}
 }
 
