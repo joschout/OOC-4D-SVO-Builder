@@ -145,7 +145,7 @@
     <ClInclude Include="..\..\src\svo_builder\alternatePartitioner.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer4D.h" />
-    <ClInclude Include="..\..\src\svo_builder\ExtendedTriInfo.h" />
+    <ClInclude Include="..\..\src\svo_builder\TriInfo4D.h" />
     <ClInclude Include="..\..\src\svo_builder\ExtendedTriPartitioningInfo.h" />
     <ClInclude Include="..\..\src\svo_builder\geometry_primitives.h" />
     <ClInclude Include="..\..\src\svo_builder\globals.h" />
@@ -160,16 +160,24 @@
     <ClInclude Include="..\..\src\svo_builder\VoxelData.h" />
     <ClInclude Include="..\..\src\svo_builder\voxelizer.h" />
     <ClInclude Include="..\..\src\svo_builder\svo_builder_util.h" />
+    <ClInclude Include="InputParameterParser.h" />
+    <ClInclude Include="TriFileReader.h" />
+    <ClInclude Include="TripFileHandler.h" />
+    <ClInclude Include="VoxelizationHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\svo_builder\alternatePartitioner.cpp" />
-    <ClCompile Include="..\..\src\svo_builder\ExtendedTriInfo.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TriInfo4D.cpp" />
     <ClCompile Include="..\..\src\svo_builder\ExtendedTriPartitioningInfo.cpp" />
     <ClCompile Include="..\..\src\svo_builder\OctreeBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\partitioner.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PrintUtils.cpp" />
     <ClCompile Include="..\..\src\svo_builder\voxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\main.cpp" />
+    <ClCompile Include="InputParameterParser.cpp" />
+    <ClCompile Include="TriFileReader.cpp" />
+    <ClCompile Include="TripFileHandler.cpp" />
+    <ClCompile Include="VoxelizationHandler.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

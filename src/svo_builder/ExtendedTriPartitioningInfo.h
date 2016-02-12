@@ -3,7 +3,7 @@
 
 #include <trip_tools.h>
 
-class ExtendedTriInfo;
+class TriInfo4D;
 
 class TripInfo4D
 {
@@ -24,7 +24,7 @@ public:
 
 
 	TripInfo4D();
-	TripInfo4D(const ExtendedTriInfo &t);
+	TripInfo4D(const TriInfo4D &t);
 	~TripInfo4D();
 
 	void print() const;

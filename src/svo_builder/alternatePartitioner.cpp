@@ -1,7 +1,7 @@
 #include "alternatePartitioner.h"
 #include <iostream>
 #include <TriReader.h>
-#include "ExtendedTriInfo.h"
+#include "TriInfo4D.h"
 #include "Buffer4D.h"
 #include "voxelizer.h"
 #include "morton4D.h"
@@ -23,16 +23,42 @@ alternatePartitioner::~alternatePartitioner()
 {
 }
 
+TripInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_info, size_t voxel_memory_limit)
+{
+	/*	//estimate the amount of triangle partitions needed for voxelization
+	//NOTE: the estimation is hardcoded for 3D trees
+	size_t nbOfTrianglePartitions = estimate_partitions(gridsize, voxel_memory_limit, nbOfDimensions);
+	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
+
+	//partition the  triangle mesh
+	TripInfo trianglePartition_info = partition(tri_info, nbOfTrianglePartitions, gridsize);
+	cout << "done." << endl;
+
+	return trianglePartition_info;*/
+
+
+	//estimate the amount of triangle partitions needed for voxelization
+	//NOTE: the estimation is hardcoded for 3D trees
+	size_t nbOfTrianglePartitions = estimateNumberOfPartitions(voxel_memory_limit);
+	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
+
+	//partition the  triangle mesh
+	TripInfo4D trianglePartition_info = partition(extended_tri_info);
+	cout << "done." << endl;
+
+	return trianglePartition_info;
+}
+
 /*
 */
 size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limit) 
 {
 	std::cout << "Estimating best partition count ..." << std::endl;
 
-	// calculate the amount of memory needed (in MB) to do the partitioning completely in memory
+	// calculate the amount of memory needed (in MB) to do the voxelization completely in memory
 	/* amount of memory needed
 	= amount of voxels in the high-resolution 3D grid
-	* the size of a character
+	* the size of a character (smallest unit we can use, used to tick of a voxel in the table)
 	* 1/1024 (1kB/1024bytes)
 	* 1/1024 (1MB/kB)
 	*/
@@ -60,7 +86,7 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 
 // Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
 // and store information about the partitioning in trip_info
-TripInfo4D alternatePartitioner::partition(const ExtendedTriInfo& tri_info) {
+TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info) {
 	// Special case: just one partition
 	//if (nbOfPartitions == 1) {
 	//	return partition_one(tri_info, gridsize);
@@ -71,7 +97,7 @@ TripInfo4D alternatePartitioner::partition(const ExtendedTriInfo& tri_info) {
 	//the reader knows how many triangles there are in the model,
 	// is given input_buffersize as buffersize
 	const std::string tridata_filename = tri_info.triInfo3D.base_filename + string(".tridata");
-	TriReader reader = TriReader(tridata_filename, tri_info.triInfo3D.n_triangles, input_buffersize);
+	TriReader tridataReader = TriReader(tridata_filename, tri_info.triInfo3D.n_triangles, input_buffersize);
 	
 
 	// Create Mortonbuffers: we will have one buffer per partition
@@ -81,10 +107,10 @@ TripInfo4D alternatePartitioner::partition(const ExtendedTriInfo& tri_info) {
 	float unitlength_time = (tri_info.mesh_bbox_transl.max[3] - tri_info.mesh_bbox_transl.min[3]) / (float)gridsize;
 
 
-	while (reader.hasNext()) {
+	while (tridataReader.hasNext()) {
 		Triangle t;
 		
-		reader.getTriangle(t);
+		tridataReader.getTriangle(t);
 		
 		vec3 tv0_transl = t.v0;
 		vec3 tv1_transl = t.v1;
@@ -132,7 +158,7 @@ TripInfo4D alternatePartitioner::partition(const ExtendedTriInfo& tri_info) {
 // Create as many Buffers as there are partitions for a total gridsize,
 // store them in the given vector,
 // use tri_info for filename information
-void alternatePartitioner::createBuffers(const ExtendedTriInfo& tri_info, vector<Buffer4D*> &buffers) const
+void alternatePartitioner::createBuffers(const TriInfo4D& tri_info, vector<Buffer4D*> &buffers) const
 {
 	buffers.reserve(nbOfPartitions);
 
@@ -196,7 +222,7 @@ void alternatePartitioner::removeTripFiles(const TripInfo4D& trip_info)
 }
 
 // Handle the special case of just needing one partition
-TripInfo4D alternatePartitioner::partition_one(const ExtendedTriInfo& tri_info)
+TripInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
 {
 	// Just copy files
 	string src = tri_info.triInfo3D.base_filename + string(".tridata");
