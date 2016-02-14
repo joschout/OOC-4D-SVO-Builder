@@ -5,6 +5,7 @@
 #include <cassert>
 #include "../libs/libtri/include/tri_util.h"
 #include "geometry_primitives.h"
+#include "../../msvc/vs2015/Triangle4D.h"
 
 // Intersection methods
 inline AABox<vec3> computeBoundingBox(const vec3 &v0, const vec3 &v1, const vec3 &v2){
@@ -31,7 +32,15 @@ inline AABox<vec4> computeBoundingBoxOneTimePoint(const vec3 &v0, const vec3 &v1
 	return answer;
 }
 
+inline AABox<vec4> computeBoundingBoxAtTimePoint(const Triangle &triangle, const float timepoint)
+{
+	return computeBoundingBoxOneTimePoint(triangle.v0, triangle.v1, triangle.v2, timepoint);
+}
 
+inline AABox<vec4> computeBoundingBox(const Triangle4D &triangle)
+{
+	return computeBoundingBoxOneTimePoint(triangle.tri.v0, triangle.tri.v1, triangle.tri.v2, triangle.time);
+}
 
 inline bool isPointBetweenParallelPlanes(const vec3 &point, const Plane &a, const Plane &b){
 	// test if planes are parallel

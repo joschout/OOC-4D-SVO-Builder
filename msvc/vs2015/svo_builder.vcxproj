@@ -161,7 +161,10 @@
     <ClInclude Include="..\..\src\svo_builder\voxelizer.h" />
     <ClInclude Include="..\..\src\svo_builder\svo_builder_util.h" />
     <ClInclude Include="InputParameterParser.h" />
-    <ClInclude Include="TriFileReader.h" />
+    <ClInclude Include="Tri4DReader.h" />
+    <ClInclude Include="tri4D_tools.h" />
+    <ClInclude Include="Triangle4D.h" />
+    <ClInclude Include="TriHeaderFileReader.h" />
     <ClInclude Include="TripFileHandler.h" />
     <ClInclude Include="VoxelizationHandler.h" />
   </ItemGroup>
@@ -175,7 +178,7 @@
     <ClCompile Include="..\..\src\svo_builder\voxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\main.cpp" />
     <ClCompile Include="InputParameterParser.cpp" />
-    <ClCompile Include="TriFileReader.cpp" />
+    <ClCompile Include="TriHeaderFileReader.cpp" />
     <ClCompile Include="TripFileHandler.cpp" />
     <ClCompile Include="VoxelizationHandler.cpp" />
   </ItemGroup>

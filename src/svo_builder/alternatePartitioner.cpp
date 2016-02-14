@@ -8,6 +8,7 @@
 #include "TranslationHandler.h"
 #include <trip_tools.h>
 #include "ExtendedTriPartitioningInfo.h"
+#include "../../msvc/vs2015/Triangle4D.h"
 
 alternatePartitioner::alternatePartitioner():
 	gridsize(1), nbOfDimensions(4), nbOfPartitions(1)
@@ -51,7 +52,7 @@ TripInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_
 
 /*
 */
-size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limit) 
+size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limit_in_MB) 
 {
 	std::cout << "Estimating best partition count ..." << std::endl;
 
@@ -64,20 +65,21 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 	*/
 
 	size_t nbOfVoxelsInGrid = pow(gridsize, nbOfDimensions);
-	uint64_t requiredMemory = (nbOfVoxelsInGrid*sizeof(char)) / 1024 / 1024;
-	std::cout << "  to do this in-core I would need " << requiredMemory << " Mb of system memory" << std::endl;
-	if (requiredMemory <= memory_limit) {
-		std::cout << "  memory limit of " << memory_limit << " Mb allows that" << std::endl;
+	uint64_t requiredMemoryInMB = (nbOfVoxelsInGrid*sizeof(char)) / 1024 / 1024;
+	std::cout << "  to do this in-core I would need " << requiredMemoryInMB << " Mb of system memory" << std::endl;
+	if (requiredMemoryInMB <= memory_limit_in_MB) {
+		std::cout << "  memory limit of " << memory_limit_in_MB << " Mb allows that" << std::endl;
 		return 1;
 	}
+
 	size_t estimatedNbOfPartitions = 1;
-	size_t partition_size = requiredMemory;
+	size_t sizeOfPartitionInMB = requiredMemoryInMB;
 	auto partitioning_amount = pow(2, nbOfDimensions);
-	while (partition_size > memory_limit) {
-		partition_size = partition_size / partitioning_amount;
+	while (sizeOfPartitionInMB > memory_limit_in_MB) {
+		sizeOfPartitionInMB = sizeOfPartitionInMB / partitioning_amount;
 		estimatedNbOfPartitions = estimatedNbOfPartitions * partitioning_amount;
 	}
-	std::cout << "  going to do it in " << estimatedNbOfPartitions << " partitions of " << partition_size << " Mb each." << std::endl;
+	std::cout << "  going to do it in " << estimatedNbOfPartitions << " partitions of " << sizeOfPartitionInMB << " Mb each." << std::endl;
 	
 	nbOfPartitions = estimatedNbOfPartitions;
 	return estimatedNbOfPartitions;
@@ -95,7 +97,7 @@ TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info) {
 	// Open tri_data stream
 	
 	//the reader knows how many triangles there are in the model,
-	// is given input_buffersize as buffersize
+	// is given input_buffersize as buffersize for buffering read triangles
 	const std::string tridata_filename = tri_info.triInfo3D.base_filename + string(".tridata");
 	TriReader tridataReader = TriReader(tridata_filename, tri_info.triInfo3D.n_triangles, input_buffersize);
 	
@@ -104,28 +106,28 @@ TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info) {
 	vector<Buffer4D*> buffers;
 	createBuffers(tri_info, buffers);
 
-	float unitlength_time = (tri_info.mesh_bbox_transl.max[3] - tri_info.mesh_bbox_transl.min[3]) / (float)gridsize;
+	float unitlength_time = (tri_info.mesh_bbox_transl.max[3] - tri_info.mesh_bbox_transl.min[3] ) / (float)(gridsize -1);
 
 
 	while (tridataReader.hasNext()) {
 		Triangle t;
-		
 		tridataReader.getTriangle(t);
-		
-		vec3 tv0_transl = t.v0;
-		vec3 tv1_transl = t.v1;
-		vec3 tv2_transl = t.v2;
-		
+
 		for (float time = 0; time <= tri_info.end_time; time = time + unitlength_time)
 		{
-			tv0_transl = translate(tv0_transl, tri_info.translation_direction, unitlength_time);
-			tv1_transl = translate(tv1_transl, tri_info.translation_direction, unitlength_time);
-			tv2_transl = translate(tv2_transl, tri_info.translation_direction, unitlength_time);
-			AABox<vec4> bbox4D = computeBoundingBoxOneTimePoint(tv0_transl, tv1_transl, tv2_transl, time);
+			cout << endl << "time point:" << time << endl;
+			Triangle translated_t = translate(t, tri_info.translation_direction, time);
+			Triangle4D translated_t_time = Triangle4D(translated_t, time);
+			AABox<vec4> bbox4D = computeBoundingBox(translated_t_time);
 			for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
-				buffers[j]->processTriangle(t, bbox4D);
+				bool isInPartition = buffers[j]->processTriangle(translated_t_time, bbox4D);
+				
+				cout << "triangle: "
+					<< "v0: "<< translated_t_time.tri.v0
+					<< " v1: " << translated_t_time.tri.v1
+					<< " v2: " << translated_t_time.tri.v2
+					<< " is in partition (1/0): " << isInPartition << endl;
 			}
-
 		}
 	}
 

@@ -5,7 +5,7 @@
 #include "alternatePartitioner.h"
 #include "ExtendedTriPartitioningInfo.h"
 #include "PrintUtils.h"
-#include "../../msvc/vs2015/TriFileReader.h"
+#include "../../msvc/vs2015/TriHeaderFileReader.h"
 #include "../../msvc/vs2015/TripFileHandler.h"
 #include "../../msvc/vs2015/InputParameterParser.h"
 #include "../../msvc/vs2015/VoxelizationHandler.h"
@@ -18,12 +18,13 @@ string version = "1.5";
 
 // number of dimensions of the grid
 size_t nbOfDimensions = 4;
+auto end_time = 1;
 
 // Program parameters
 string filename = "";
 // vozel grid size, should be a power of 2
 // amount of voxels in the grid = pow(gridsize, nbOfGridDimensions)
-size_t gridsize = 64;
+size_t gridsize = 2;
 //the amount of system memory in MEGABYTES we maximally want to use during the voxelization proces
 size_t voxel_memory_limit = 2048;
 float sparseness_limit = 0.10f;
@@ -33,7 +34,7 @@ bool generate_levels = false;
 bool verbose = false;
 
 // trip header info
-TripInfo trip_info;
+//TripInfo trip_info;
 
 // buffer_size
 size_t input_buffersize = 8192;
@@ -56,8 +57,9 @@ int main(int argc, char *argv[]) {
 
 	vec3 translation_direction = vec3(1, 1, 1);
 	translation_direction = normalize(translation_direction);
-	auto end_time = 2;
-	TriInfo4D triangleInfo4D = TriInfo4D(triangleInfo3D, translation_direction, end_time);
+	
+	TriInfo4D triangleInfo4D = TriInfo4D();
+	triangleInfo4D = TriInfo4D(triangleInfo3D, translation_direction, end_time);
 	//tri info now contains the info from the tri header file
 	//NOTE: THIS DOES NOT INCLUDE THE INFO OF EACH INDIVIDUAL TRIANGLE
 

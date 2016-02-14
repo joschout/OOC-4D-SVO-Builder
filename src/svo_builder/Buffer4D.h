@@ -4,9 +4,8 @@
 #include <stdio.h>
 #include <vector>
 #include "../libs/libtri/include/tri_util.h"
-#include "../libs/libtri/include/tri_tools.h"
-#include "globals.h"
 #include "intersection.h"
+#include "../../msvc/vs2015/tri4D_tools.h"
 
 using namespace std;
 using namespace trimesh;
@@ -20,28 +19,28 @@ public:
 	size_t n_triangles; // number of triangles already in
 
 						// Buffered
-	vector<Triangle> triangle_buffer; // triangle buffer
+	vector<Triangle4D> triangle_buffer; // triangle buffer
 	size_t buffer_max; // maximum of tris we buffer before writing to disk
 
 	Buffer4D();
 	Buffer4D(const std::string &filename, AABox<vec4> bbox_world, size_t buffer_max);
 	~Buffer4D();
 
-	void processTriangle(Triangle &t, const AABox<vec4> &bbox);
+	bool processTriangle(Triangle4D &t, const AABox<vec4> &bbox);
 
 private:
 	void flush();
 };
 
 // default constructor
-inline Buffer4D::Buffer4D() : file(NULL), filename(""), bbox_world(), n_triangles(0), buffer_max(1024) {
+inline Buffer4D::Buffer4D() : file(nullptr), filename(""), bbox_world(), n_triangles(0), buffer_max(1024) {
 
 }
 
 // full constructor
 inline Buffer4D::Buffer4D(const std::string &filename, AABox<vec4> bbox_world, size_t buffer_max) : bbox_world(bbox_world), n_triangles(0), buffer_max(buffer_max), file(NULL), filename(filename) {
 	triangle_buffer.reserve(buffer_max); // prepare buffer
-	file = NULL;
+	file = nullptr;
 }
 
 //destructor
@@ -49,7 +48,7 @@ inline Buffer4D::~Buffer4D() {
 	if (buffer_max != 0) {
 		flush();
 	}
-	if (file != NULL) { // only close the file if we opened it.
+	if (file != nullptr) { // only close the file if we opened it.
 		fclose(file);
 	}
 }
@@ -63,17 +62,18 @@ inline void Buffer4D::flush() {
 		file = fopen(filename.c_str(), "wb");
 	}
 	//part_algo_timer.stop(); part_io_out_timer.start(); // TIMING
-	writeTriangles(file, triangle_buffer[0], triangle_buffer.size());
+	writeTriangles4D(file, triangle_buffer[0], triangle_buffer.size());
 	//part_io_out_timer.stop(); part_algo_timer.start();  // TIMING
 	triangle_buffer.clear();
 }
 
 // Check triangle against buffer bounding box and add it to buffer if it is in it.
-inline void Buffer4D::processTriangle(Triangle &t, const AABox<vec4> &bbox) {
+// returns true if triangle is in the partition
+inline bool Buffer4D::processTriangle(Triangle4D &t, const AABox<vec4> &bbox) {
 	if (intersect_4DBoxTriangle_4DBoxWorld(bbox, bbox_world)) { // triangle in this partition
 		if (buffer_max == 0) { // no buffering, just write triangle
 			
-			writeTriangle(file, t);
+			writeTriangle4D(file, t);
 			
 		}
 		else { // add to buffer
@@ -83,7 +83,9 @@ inline void Buffer4D::processTriangle(Triangle &t, const AABox<vec4> &bbox) {
 			}
 		}
 		n_triangles++;
+		return true;
 	}
+	return false;
 }
 
 #endif // BUFFER_H_

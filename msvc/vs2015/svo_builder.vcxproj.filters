@@ -39,9 +39,6 @@
     <ClCompile Include="..\..\src\svo_builder\PrintUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TriFileReader.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="TripFileHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VoxelizationHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TriHeaderFileReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -107,9 +107,6 @@
     <ClInclude Include="..\..\src\svo_builder\PrintUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TriFileReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TripFileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -120,6 +117,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VoxelizationHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle4D.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="tri4D_tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TriHeaderFileReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tri4DReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

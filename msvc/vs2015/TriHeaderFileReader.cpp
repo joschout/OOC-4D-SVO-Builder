@@ -1,4 +1,4 @@
-#include "TriFileReader.h"
+#include "TriHeaderFileReader.h"
 #include <string>
 
 // Tri header handling and error checking
@@ -27,6 +27,7 @@ TriInfo readTriHeader(std::string& filename, bool verbose) {
 		exit(0);
 	}
 #endif
+	return tri_info;
 }
 
 int parseTri3DHeader(std::string filename, TriInfo& t)

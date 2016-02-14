@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "../../src/svo_builder/alternatePartitioner.h"
 
-void voxelizeAndBuildSVO(
+/*void voxelizeAndBuildSVO(
 	TripInfo& trianglePartition_info, float sparseness_limit,
 	bool generate_levels, size_t input_buffersize)
 {
@@ -31,7 +31,7 @@ void voxelizeAndBuildSVO(
 
 	/*====================
 	*= SVO CONSTRUCTION =
-	*====================*/
+	*====================#1#
 
 	// Start voxelisation and SVO building per partition
 	for (size_t i = 0; i < trianglePartition_info.n_partitions; i++) {
@@ -100,7 +100,7 @@ void voxelizeAndBuildSVO(
 	// Removing .trip files which are left by partitioner
 	removeTripFiles(trianglePartition_info);
 
-}
+}*/
 
 void voxelizeAndBuildSVO4D(
 	TripInfo4D& trianglePartition_info, size_t nbOfDimensions,
@@ -110,6 +110,9 @@ void voxelizeAndBuildSVO4D(
 	// General voxelization calculations (stuff we need throughout voxelization process)
 	float unitlength
 		= (trianglePartition_info.mesh_bbox_transl.max[0] - trianglePartition_info.mesh_bbox_transl.min[0]) / (float)trianglePartition_info.gridsize;
+
+	float unitlength_time 
+		= (trianglePartition_info.mesh_bbox_transl.max[3] - trianglePartition_info.mesh_bbox_transl.min[3]) / (float)(trianglePartition_info.gridsize - 1);
 
 	//morton_part = amount of voxels per partion
 	// = amount of voxels in the grid/number of partitions in the grid
@@ -145,13 +148,13 @@ void voxelizeAndBuildSVO4D(
 		// open file to read triangles
 
 		string part_data_filename = trianglePartition_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
-		TriReader reader = TriReader(part_data_filename, trianglePartition_info.nbOfTrianglesPerPartition[i], min(trianglePartition_info.nbOfTrianglesPerPartition[i], input_buffersize));
+		Tri4DReader reader = Tri4DReader(part_data_filename, trianglePartition_info.nbOfTrianglesPerPartition[i], min(trianglePartition_info.nbOfTrianglesPerPartition[i], input_buffersize));
 		if (verbose) { cout << "  reading " << trianglePartition_info.nbOfTrianglesPerPartition[i] << " triangles from " << part_data_filename << endl; }
 
 		// voxelize partition
 		size_t nfilled_before = nfilled;
 		bool use_data = true;
-		voxelize_schwarz_method(reader, morton_startcode, morton_endcode, unitlength, voxels, data, sparseness_limit, use_data, nfilled);
+		voxelize_schwarz_method4D(reader, morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, data, sparseness_limit, use_data, nfilled);
 		if (verbose) { cout << "  found " << nfilled - nfilled_before << " new voxels." << endl; }
 
 		// build SVO
