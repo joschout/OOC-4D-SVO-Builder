@@ -38,6 +38,17 @@ inline unsigned int findPowerOf8(size_t n){
 	return (highest_index/3);
 }
 
+inline unsigned int findPowerOf16(size_t n) {
+	if (n == 0) { return 0; }
+	unsigned int highest_index = 0;
+	while (n >>= 1) {
+		highest_index++;
+	}
+	return (highest_index / 4);
+}
+
+
+
 inline unsigned int log2(unsigned int val) {
 	unsigned int ret = -1;
 	while (val != 0) {

@@ -3,6 +3,7 @@
 #include "../../src/svo_builder/OctreeBuilder.h"
 #include <algorithm>
 #include "../../src/svo_builder/alternatePartitioner.h"
+#include "../../src/svo_builder/Tree4DBuilder.h"
 
 /*void voxelizeAndBuildSVO(
 	TripInfo& trianglePartition_info, float sparseness_limit,
@@ -128,7 +129,11 @@ void voxelizeAndBuildSVO4D(
 	size_t nfilled = 0;
 
 	// create Octreebuilder which will output our SVO
-	OctreeBuilder builder = OctreeBuilder(trianglePartition_info.base_filename, trianglePartition_info.gridsize, generate_levels);
+	Tree4DBuilder builder 
+		= Tree4DBuilder(
+			trianglePartition_info.base_filename,
+			trianglePartition_info.gridsize,
+			generate_levels);
 
 
 	/*====================
@@ -137,9 +142,9 @@ void voxelizeAndBuildSVO4D(
 
 	// Start voxelisation and SVO building per partition
 	for (size_t i = 0; i < trianglePartition_info.n_partitions; i++) {
-		if (trianglePartition_info.nbOfTrianglesPerPartition[i] == 0) { continue; } // skip partition if it contains no triangles
+		if (trianglePartition_info.nbOfTrianglesPerPartition[i] == 0){continue;} // skip partition if it contains no triangles
 
-																					// VOXELIZATION
+		// VOXELIZATION
 
 		cout << "Voxelizing partition " << i << " ..." << endl;
 		// morton codes for this partition
@@ -147,7 +152,8 @@ void voxelizeAndBuildSVO4D(
 		uint64_t morton_endcode = (i + 1) * morton_part;
 		// open file to read triangles
 
-		string part_data_filename = trianglePartition_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
+		string part_data_filename 
+			= trianglePartition_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
 		Tri4DReader reader = Tri4DReader(part_data_filename, trianglePartition_info.nbOfTrianglesPerPartition[i], min(trianglePartition_info.nbOfTrianglesPerPartition[i], input_buffersize));
 		if (verbose) { cout << "  reading " << trianglePartition_info.nbOfTrianglesPerPartition[i] << " triangles from " << part_data_filename << endl; }
 

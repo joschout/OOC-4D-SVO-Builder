@@ -5,6 +5,7 @@
 #include <fstream>
 #include "../libs/libtri/include/file_tools.h"
 #include "Node.h"
+#include "Node4D.h"
 
 using namespace std;
 
@@ -15,8 +16,12 @@ struct OctreeInfo {
 	int version;
 	string base_filename;
 	size_t gridlength;
-	size_t n_nodes;
-	size_t n_data;
+	size_t n_nodes; // the total amount of SVO Nodes
+	size_t n_data; // the total amount of data payloads.
+	// This is not automatically the same as n_nodes,
+	// as you can have several nodes point to the same data.
+	// In the case of a geometry-only SVO,
+	// all nodes refer to the same voxel payload, at position 1.
 
 	OctreeInfo() : version(1), base_filename(string("")), gridlength(1024), n_nodes(0), n_data(0) {}
 	OctreeInfo(int version, string base_filename, size_t gridlength, size_t n_nodes, size_t n_data) : version(version), base_filename(base_filename), gridlength(gridlength), n_nodes(n_nodes), n_data(n_data) {} 
@@ -61,9 +66,48 @@ inline void readDataPoint(FILE* f, VoxelData &v){
 
 // Write an octree node to file
 inline size_t writeNode(FILE* node_out, const Node &n, size_t &b_node_pos){
+	/* https://github.com/Forceflow/ooc_svo_builder
+	An .octreenodes file is a binary file
+		which describes the big flat array of octree nodes.
+	In the nodes, there are only child pointers,
+		which are constructed from a 64-bit base address
+		combined with a child offset,
+		since all nonempty children of a certain node are guaranteed by the algorithm
+		to be stored next to eachother. 
+	The .octreenodes file contains an amount of n_nodes nodes.
+
+	SO: for each node,
+	write 3 elements to the file 
+	 1) the base address of the children of this node
+			=> size_t, 64 bits
+	 2) the child ofsets for each of the 8 children.
+			=> 8 children * 8 bits offset = 64 bits
+	 3) the data address = Index of data payload in data array described in the .octreedata file (see further)
+			=> size_t, 64 bits
+	==> 3 * 64 bits
+	
+	*/
 	fwrite(& n.data, sizeof(size_t), 3, node_out);
 	b_node_pos++;
 	return b_node_pos-1;
+}
+
+// Write a tree4D node to file
+inline size_t writeNode4D(FILE* node_out, const Node4D &n, size_t &b_node_pos) {
+	/*
+	For each node,
+	write 3 elements to the file
+	 1) the base address of the children of this node
+			=> size_t, 64 bits
+	 2) the child ofsets for each of the 8 children.
+			=> 16 children * 8 bits offset = 128 bits
+	 3) the data address = Index of data payload in data array described in the .octreedata file (see further)
+			=> size_t, 64 bits
+	==> 4 * 64 bits
+	*/
+	fwrite(&n.data, sizeof(size_t), 4, node_out);
+	b_node_pos++;
+	return b_node_pos - 1;
 }
 
 // Read a Node from a file

@@ -40,7 +40,7 @@ inline Tri4DReader::Tri4DReader(const Tri4DReader&) {
 	// TODO
 }
 
-inline Tri4DReader::Tri4DReader(const std::string &filename, size_t n_triangles, size_t buffersize) : n_triangles(n_triangles), buffersize(buffersize), n_read(0), current_tri(0), n_served(0) {
+inline Tri4DReader::Tri4DReader(const std::string &filename, size_t n_triangles, size_t buffersize) : n_triangles(n_triangles), n_read(0), n_served(0), current_tri(0), buffersize(buffersize) {
 	// prepare buffer
 	buffer = new Triangle4D[buffersize];
 	// prepare file

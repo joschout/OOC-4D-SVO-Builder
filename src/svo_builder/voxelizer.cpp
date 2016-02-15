@@ -321,9 +321,9 @@ void voxelize_schwarz_method4D(
 	data.clear();
 
 	// compute partition min and max in grid coords
-	AABox<uivec4> p_bbox_grid;
-	morton4D_Decode_for(morton_start, p_bbox_grid.min[0], p_bbox_grid.min[1], p_bbox_grid.min[2], p_bbox_grid.min[3]); // note: flipped inputs here 0, 1, 2, 3 vs 3, 2, 1, 0
-	morton4D_Decode_for(morton_end - 1, p_bbox_grid.max[0], p_bbox_grid.max[1], p_bbox_grid.max[2], p_bbox_grid.max[3]); // note: flipped inputs here 0, 1, 2, 3 vs 3, 2, 1, 0
+	AABox<uivec4> partition_bbox_gridCoords;
+	morton4D_Decode_for(morton_start, partition_bbox_gridCoords.min[0], partition_bbox_gridCoords.min[1], partition_bbox_gridCoords.min[2], partition_bbox_gridCoords.min[3]); // note: flipped inputs here 0, 1, 2, 3 vs 3, 2, 1, 0
+	morton4D_Decode_for(morton_end - 1, partition_bbox_gridCoords.max[0], partition_bbox_gridCoords.max[1], partition_bbox_gridCoords.max[2], partition_bbox_gridCoords.max[3]); // note: flipped inputs here 0, 1, 2, 3 vs 3, 2, 1, 0
 
 	// compute maximum grow size for data array
 #ifdef BINARY_VOXELIZATION
@@ -338,13 +338,15 @@ void voxelize_schwarz_method4D(
 
 	// COMMON PROPERTIES FOR ALL TRIANGLES
 	float unit_div = 1.0f / unitlength;
+	float unit_time_div = 1.0f / unitlength_time;
+	//vec4 delta_p = vec4(unitlength, unitlength, unitlength, unitlength_time);
 	vec3 delta_p = vec3(unitlength, unitlength, unitlength);
 
 	// voxelize every triangle
 	while (reader.hasNext()) {
 		// read triangle
-		Triangle4D t;
-		reader.getTriangle(t);
+		Triangle4D tri;
+		reader.getTriangle(tri);
 
 #ifdef BINARY_VOXELIZATION
 		if (use_data) {
@@ -359,36 +361,43 @@ void voxelize_schwarz_method4D(
 #endif
 
 		// compute triangle bbox in world and grid
-		AABox<vec3> t_bbox_world = computeBoundingBox(t.v0, t.v1, t.v2);
-		AABox<ivec3> t_bbox_grid;
-		t_bbox_grid.min[0] = (int)(t_bbox_world.min[0] * unit_div);
-		t_bbox_grid.min[1] = (int)(t_bbox_world.min[1] * unit_div);
-		t_bbox_grid.min[2] = (int)(t_bbox_world.min[2] * unit_div);
-		t_bbox_grid.max[0] = (int)(t_bbox_world.max[0] * unit_div);
-		t_bbox_grid.max[1] = (int)(t_bbox_world.max[1] * unit_div);
-		t_bbox_grid.max[2] = (int)(t_bbox_world.max[2] * unit_div);
+		//AABox<vec3> t_bbox_world = computeBoundingBox(t.v0, t.v1, t.v2);
+		AABox<vec4> triangle_bbox_worldCoord = computeBoundingBox(tri);
+		AABox<ivec4> triangle_bbox_gridCoord;
+		triangle_bbox_gridCoord.min[0] = (int)(triangle_bbox_worldCoord.min[0] * unit_div);
+		triangle_bbox_gridCoord.min[1] = (int)(triangle_bbox_worldCoord.min[1] * unit_div);
+		triangle_bbox_gridCoord.min[2] = (int)(triangle_bbox_worldCoord.min[2] * unit_div);
+		triangle_bbox_gridCoord.min[3] = (int)(triangle_bbox_worldCoord.min[3] * unit_time_div);
+		triangle_bbox_gridCoord.max[0] = (int)(triangle_bbox_worldCoord.max[0] * unit_div);
+		triangle_bbox_gridCoord.max[1] = (int)(triangle_bbox_worldCoord.max[1] * unit_div);
+		triangle_bbox_gridCoord.max[2] = (int)(triangle_bbox_worldCoord.max[2] * unit_div);
+		triangle_bbox_gridCoord.max[3] = (int)(triangle_bbox_worldCoord.max[3] * unit_time_div);
 
 		// clamp
-		t_bbox_grid.min[0] = clampval<int>(t_bbox_grid.min[0], p_bbox_grid.min[0], p_bbox_grid.max[0]);
-		t_bbox_grid.min[1] = clampval<int>(t_bbox_grid.min[1], p_bbox_grid.min[1], p_bbox_grid.max[1]);
-		t_bbox_grid.min[2] = clampval<int>(t_bbox_grid.min[2], p_bbox_grid.min[2], p_bbox_grid.max[2]);
-		t_bbox_grid.max[0] = clampval<int>(t_bbox_grid.max[0], p_bbox_grid.min[0], p_bbox_grid.max[0]);
-		t_bbox_grid.max[1] = clampval<int>(t_bbox_grid.max[1], p_bbox_grid.min[1], p_bbox_grid.max[1]);
-		t_bbox_grid.max[2] = clampval<int>(t_bbox_grid.max[2], p_bbox_grid.min[2], p_bbox_grid.max[2]);
+		triangle_bbox_gridCoord.min[0] = clampval<int>(triangle_bbox_gridCoord.min[0], partition_bbox_gridCoords.min[0], partition_bbox_gridCoords.max[0]);
+		triangle_bbox_gridCoord.min[1] = clampval<int>(triangle_bbox_gridCoord.min[1], partition_bbox_gridCoords.min[1], partition_bbox_gridCoords.max[1]);
+		triangle_bbox_gridCoord.min[2] = clampval<int>(triangle_bbox_gridCoord.min[2], partition_bbox_gridCoords.min[2], partition_bbox_gridCoords.max[2]);
+		triangle_bbox_gridCoord.min[3] = clampval<int>(triangle_bbox_gridCoord.min[3], partition_bbox_gridCoords.min[3], partition_bbox_gridCoords.max[3]);
+		triangle_bbox_gridCoord.max[0] = clampval<int>(triangle_bbox_gridCoord.max[0], partition_bbox_gridCoords.min[0], partition_bbox_gridCoords.max[0]);
+		triangle_bbox_gridCoord.max[1] = clampval<int>(triangle_bbox_gridCoord.max[1], partition_bbox_gridCoords.min[1], partition_bbox_gridCoords.max[1]);
+		triangle_bbox_gridCoord.max[2] = clampval<int>(triangle_bbox_gridCoord.max[2], partition_bbox_gridCoords.min[2], partition_bbox_gridCoords.max[2]);
+		triangle_bbox_gridCoord.max[3] = clampval<int>(triangle_bbox_gridCoord.max[3], partition_bbox_gridCoords.min[3], partition_bbox_gridCoords.max[3]);
 
 		// COMMON PROPERTIES FOR THE TRIANGLE
-		vec3 e0 = t.v1 - t.v0;
-		vec3 e1 = t.v2 - t.v1;
-		vec3 e2 = t.v0 - t.v2;
+		vec3 e0 = tri.tri.v1 - tri.tri.v0;
+		vec3 e1 = tri.tri.v2 - tri.tri.v1;
+		vec3 e2 = tri.tri.v0 - tri.tri.v2;
 		vec3 to_normalize = (e0)CROSS(e1);
 		vec3 n = normalize(to_normalize); // triangle normal
-										  // PLANE TEST PROPERTIES
+
+		// PLANE TEST PROPERTIES
 		vec3 c = vec3(0.0f, 0.0f, 0.0f); // critical point
 		if (n[X] > 0) { c[X] = unitlength; }
 		if (n[Y] > 0) { c[Y] = unitlength; }
 		if (n[Z] > 0) { c[Z] = unitlength; }
-		float d1 = n DOT(c - t.v0);
-		float d2 = n DOT((delta_p - c) - t.v0);
+		float d1 = n DOT(c - tri.tri.v0);
+		float d2 = n DOT((delta_p - c) - tri.tri.v0);
+
 		// PROJECTION TEST PROPERTIES
 		// XY plane
 		vec2 n_xy_e0 = vec2(-1.0f*e0[Y], e0[X]);
@@ -399,9 +408,9 @@ void voxelize_schwarz_method4D(
 			n_xy_e1 = -1.0f * n_xy_e1;
 			n_xy_e2 = -1.0f * n_xy_e2;
 		}
-		float d_xy_e0 = (-1.0f * (n_xy_e0 DOT vec2(t.v0[X], t.v0[Y]))) + max(0.0f, unitlength*n_xy_e0[0]) + max(0.0f, unitlength*n_xy_e0[1]);
-		float d_xy_e1 = (-1.0f * (n_xy_e1 DOT vec2(t.v1[X], t.v1[Y]))) + max(0.0f, unitlength*n_xy_e1[0]) + max(0.0f, unitlength*n_xy_e1[1]);
-		float d_xy_e2 = (-1.0f * (n_xy_e2 DOT vec2(t.v2[X], t.v2[Y]))) + max(0.0f, unitlength*n_xy_e2[0]) + max(0.0f, unitlength*n_xy_e2[1]);
+		float d_xy_e0 = (-1.0f * (n_xy_e0 DOT vec2(tri.tri.v0[X], tri.tri.v0[Y]))) + max(0.0f, unitlength*n_xy_e0[0]) + max(0.0f, unitlength*n_xy_e0[1]);
+		float d_xy_e1 = (-1.0f * (n_xy_e1 DOT vec2(tri.tri.v1[X], tri.tri.v1[Y]))) + max(0.0f, unitlength*n_xy_e1[0]) + max(0.0f, unitlength*n_xy_e1[1]);
+		float d_xy_e2 = (-1.0f * (n_xy_e2 DOT vec2(tri.tri.v2[X], tri.tri.v2[Y]))) + max(0.0f, unitlength*n_xy_e2[0]) + max(0.0f, unitlength*n_xy_e2[1]);
 		// YZ plane
 		vec2 n_yz_e0 = vec2(-1.0f*e0[Z], e0[Y]);
 		vec2 n_yz_e1 = vec2(-1.0f*e1[Z], e1[Y]);
@@ -411,9 +420,9 @@ void voxelize_schwarz_method4D(
 			n_yz_e1 = -1.0f * n_yz_e1;
 			n_yz_e2 = -1.0f * n_yz_e2;
 		}
-		float d_yz_e0 = (-1.0f * (n_yz_e0 DOT vec2(t.v0[Y], t.v0[Z]))) + max(0.0f, unitlength*n_yz_e0[0]) + max(0.0f, unitlength*n_yz_e0[1]);
-		float d_yz_e1 = (-1.0f * (n_yz_e1 DOT vec2(t.v1[Y], t.v1[Z]))) + max(0.0f, unitlength*n_yz_e1[0]) + max(0.0f, unitlength*n_yz_e1[1]);
-		float d_yz_e2 = (-1.0f * (n_yz_e2 DOT vec2(t.v2[Y], t.v2[Z]))) + max(0.0f, unitlength*n_yz_e2[0]) + max(0.0f, unitlength*n_yz_e2[1]);
+		float d_yz_e0 = (-1.0f * (n_yz_e0 DOT vec2(tri.tri.v0[Y], tri.tri.v0[Z]))) + max(0.0f, unitlength*n_yz_e0[0]) + max(0.0f, unitlength*n_yz_e0[1]);
+		float d_yz_e1 = (-1.0f * (n_yz_e1 DOT vec2(tri.tri.v1[Y], tri.tri.v1[Z]))) + max(0.0f, unitlength*n_yz_e1[0]) + max(0.0f, unitlength*n_yz_e1[1]);
+		float d_yz_e2 = (-1.0f * (n_yz_e2 DOT vec2(tri.tri.v2[Y], tri.tri.v2[Z]))) + max(0.0f, unitlength*n_yz_e2[0]) + max(0.0f, unitlength*n_yz_e2[1]);
 		// ZX plane
 		vec2 n_zx_e0 = vec2(-1.0f*e0[X], e0[Z]);
 		vec2 n_zx_e1 = vec2(-1.0f*e1[X], e1[Z]);
@@ -423,52 +432,55 @@ void voxelize_schwarz_method4D(
 			n_zx_e1 = -1.0f * n_zx_e1;
 			n_zx_e2 = -1.0f * n_zx_e2;
 		}
-		float d_xz_e0 = (-1.0f * (n_zx_e0 DOT vec2(t.v0[Z], t.v0[X]))) + max(0.0f, unitlength*n_zx_e0[0]) + max(0.0f, unitlength*n_zx_e0[1]);
-		float d_xz_e1 = (-1.0f * (n_zx_e1 DOT vec2(t.v1[Z], t.v1[X]))) + max(0.0f, unitlength*n_zx_e1[0]) + max(0.0f, unitlength*n_zx_e1[1]);
-		float d_xz_e2 = (-1.0f * (n_zx_e2 DOT vec2(t.v2[Z], t.v2[X]))) + max(0.0f, unitlength*n_zx_e2[0]) + max(0.0f, unitlength*n_zx_e2[1]);
+		float d_xz_e0 = (-1.0f * (n_zx_e0 DOT vec2(tri.tri.v0[Z], tri.tri.v0[X]))) + max(0.0f, unitlength*n_zx_e0[0]) + max(0.0f, unitlength*n_zx_e0[1]);
+		float d_xz_e1 = (-1.0f * (n_zx_e1 DOT vec2(tri.tri.v1[Z], tri.tri.v1[X]))) + max(0.0f, unitlength*n_zx_e1[0]) + max(0.0f, unitlength*n_zx_e1[1]);
+		float d_xz_e2 = (-1.0f * (n_zx_e2 DOT vec2(tri.tri.v2[Z], tri.tri.v2[X]))) + max(0.0f, unitlength*n_zx_e2[0]) + max(0.0f, unitlength*n_zx_e2[1]);
 
 		// test possible grid boxes for overlap
-		for (int x = t_bbox_grid.min[0]; x <= t_bbox_grid.max[0]; x++) {
-			for (int y = t_bbox_grid.min[1]; y <= t_bbox_grid.max[1]; y++) {
-				for (int z = t_bbox_grid.min[2]; z <= t_bbox_grid.max[2]; z++) {
+		for (int x = triangle_bbox_gridCoord.min[0]; x <= triangle_bbox_gridCoord.max[0]; x++) {
+			for (int y = triangle_bbox_gridCoord.min[1]; y <= triangle_bbox_gridCoord.max[1]; y++) {
+				for (int z = triangle_bbox_gridCoord.min[2]; z <= triangle_bbox_gridCoord.max[2]; z++) {
+					for (int t = triangle_bbox_gridCoord.min[3]; t <= triangle_bbox_gridCoord.max[3]; t++) {
 
-					uint64_t index = morton3D_64_encode(z, y, x);
+						uint64_t index = morton4D_Encode_for<uint64_t>(t, z, y, x);
+						//uint64_t index = morton3D_64_encode(z, y, x);
 
-					if (voxels[index - morton_start] == FULL_VOXEL) { continue; } // already marked, continue
+						if (voxels[index - morton_start] == FULL_VOXEL) { continue; } // already marked, continue
 
-																				  // TRIANGLE PLANE THROUGH BOX TEST
-					vec3 p = vec3(x*unitlength, y*unitlength, z*unitlength);
-					float nDOTp = n DOT p;
-					if ((nDOTp + d1) * (nDOTp + d2) > 0.0f) { continue; }
+						// TRIANGLE PLANE THROUGH BOX TEST
+						vec3 p = vec3(x*unitlength, y*unitlength, z*unitlength);
+						float nDOTp = n DOT p;
+						if ((nDOTp + d1) * (nDOTp + d2) > 0.0f) { continue; }
 
-					// PROJECTION TESTS
-					// XY
-					vec2 p_xy = vec2(p[X], p[Y]);
-					if (((n_xy_e0 DOT p_xy) + d_xy_e0) < 0.0f) { continue; }
-					if (((n_xy_e1 DOT p_xy) + d_xy_e1) < 0.0f) { continue; }
-					if (((n_xy_e2 DOT p_xy) + d_xy_e2) < 0.0f) { continue; }
+						// PROJECTION TESTS
+						// XY
+						vec2 p_xy = vec2(p[X], p[Y]);
+						if (((n_xy_e0 DOT p_xy) + d_xy_e0) < 0.0f) { continue; }
+						if (((n_xy_e1 DOT p_xy) + d_xy_e1) < 0.0f) { continue; }
+						if (((n_xy_e2 DOT p_xy) + d_xy_e2) < 0.0f) { continue; }
 
-					// YZ
-					vec2 p_yz = vec2(p[Y], p[Z]);
-					if (((n_yz_e0 DOT p_yz) + d_yz_e0) < 0.0f) { continue; }
-					if (((n_yz_e1 DOT p_yz) + d_yz_e1) < 0.0f) { continue; }
-					if (((n_yz_e2 DOT p_yz) + d_yz_e2) < 0.0f) { continue; }
+						// YZ
+						vec2 p_yz = vec2(p[Y], p[Z]);
+						if (((n_yz_e0 DOT p_yz) + d_yz_e0) < 0.0f) { continue; }
+						if (((n_yz_e1 DOT p_yz) + d_yz_e1) < 0.0f) { continue; }
+						if (((n_yz_e2 DOT p_yz) + d_yz_e2) < 0.0f) { continue; }
 
-					// XZ	
-					vec2 p_zx = vec2(p[Z], p[X]);
-					if (((n_zx_e0 DOT p_zx) + d_xz_e0) < 0.0f) { continue; }
-					if (((n_zx_e1 DOT p_zx) + d_xz_e1) < 0.0f) { continue; }
-					if (((n_zx_e2 DOT p_zx) + d_xz_e2) < 0.0f) { continue; }
+						// XZ	
+						vec2 p_zx = vec2(p[Z], p[X]);
+						if (((n_zx_e0 DOT p_zx) + d_xz_e0) < 0.0f) { continue; }
+						if (((n_zx_e1 DOT p_zx) + d_xz_e1) < 0.0f) { continue; }
+						if (((n_zx_e2 DOT p_zx) + d_xz_e2) < 0.0f) { continue; }
 
 #ifdef BINARY_VOXELIZATION
-					voxels[index - morton_start] = FULL_VOXEL;
-					if (use_data) { data.push_back(index); }
+						voxels[index - morton_start] = FULL_VOXEL;
+						if (use_data) { data.push_back(index); }
 #else
-					voxels[index - morton_start] = FULL_VOXEL;
-					data.push_back(VoxelData(index, t.normal, average3Vec(t.v0_color, t.v1_color, t.v2_color))); // we ignore data limits for colored voxelization
+						voxels[index - morton_start] = FULL_VOXEL;
+						data.push_back(VoxelData(index, t.normal, average3Vec(t.v0_color, t.v1_color, t.v2_color))); // we ignore data limits for colored voxelization
 #endif
-					nfilled++;
-					continue;
+						nfilled++;
+						continue;
+					}
 				}
 			}
 		}
