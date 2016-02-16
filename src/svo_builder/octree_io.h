@@ -45,6 +45,7 @@ struct OctreeInfo {
 
 size_t writeVoxelData(FILE* f, const VoxelData &v, size_t &b_data_pos);
 void readVoxelData(FILE* f, VoxelData &v);
+
 size_t writeNode(FILE* node_out, const Node &n, size_t &b_node_pos);
 inline void readNode(FILE* f, Node &n);
 
@@ -60,6 +61,12 @@ inline size_t writeVoxelData(FILE* f, const VoxelData &v, size_t &b_data_pos){
 
 // Read a data point from a file
 inline void readDataPoint(FILE* f, VoxelData &v){
+	v.morton = 0;
+	fread(&v.morton, VOXELDATA_SIZE, 1, f);
+}
+
+// Read a data point from a file
+inline void readVoxelData(FILE* f, VoxelData &v) {
 	v.morton = 0;
 	fread(&v.morton, VOXELDATA_SIZE, 1, f);
 }
@@ -90,24 +97,6 @@ inline size_t writeNode(FILE* node_out, const Node &n, size_t &b_node_pos){
 	fwrite(& n.data, sizeof(size_t), 3, node_out);
 	b_node_pos++;
 	return b_node_pos-1;
-}
-
-// Write a tree4D node to file
-inline size_t writeNode4D(FILE* node_out, const Node4D &n, size_t &b_node_pos) {
-	/*
-	For each node,
-	write 3 elements to the file
-	 1) the base address of the children of this node
-			=> size_t, 64 bits
-	 2) the child ofsets for each of the 8 children.
-			=> 16 children * 8 bits offset = 128 bits
-	 3) the data address = Index of data payload in data array described in the .octreedata file (see further)
-			=> size_t, 64 bits
-	==> 4 * 64 bits
-	*/
-	fwrite(&n.data, sizeof(size_t), 4, node_out);
-	b_node_pos++;
-	return b_node_pos - 1;
 }
 
 // Read a Node from a file

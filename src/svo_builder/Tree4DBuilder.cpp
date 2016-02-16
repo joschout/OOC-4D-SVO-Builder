@@ -1,6 +1,7 @@
 #include "Tree4DBuilder.h"
 #include "morton4D.h"
 #include <assert.h>
+#include "octree_io.h"
 
 // OctreeBuilder constructor: this initializes the builder and sets up the output files, ready to go
 Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridlength, bool generate_levels) :
@@ -9,8 +10,8 @@ Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridlength, bool 
 	generate_levels(generate_levels), base_filename(base_filename) {
 
 	// Open output files
-	string nodes_name = base_filename + string(".octreenodes");
-	string data_name = base_filename + string(".octreedata");
+	string nodes_name = base_filename + string(".tree4dnodes");
+	string data_name = base_filename + string(".tree4ddata");
 	node_out = fopen(nodes_name.c_str(), "wb");
 	data_out = fopen(data_name.c_str(), "wb");
 
@@ -44,10 +45,10 @@ void Tree4DBuilder::finalizeTree() {
 	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 
 	// write header
-	OctreeInfo octree_info(1, base_filename, gridlength, b_node_pos, b_data_pos);
+	Tree4DInfo tree4D_info(1, base_filename, gridlength, b_node_pos, b_data_pos);
 
 	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
-	writeOctreeHeader(base_filename + string(".octree"), octree_info);
+	writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);
 	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 
 	// close files

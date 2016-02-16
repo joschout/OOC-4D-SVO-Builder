@@ -140,5 +140,8 @@
     <ClInclude Include="..\..\src\svo_builder\Node4D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\tree4d_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

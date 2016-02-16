@@ -147,6 +147,7 @@
     <ClInclude Include="..\..\src\svo_builder\alternatePartitioner.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer4D.h" />
+    <ClInclude Include="..\..\src\svo_builder\tree4d_io.h" />
     <ClInclude Include="..\..\src\svo_builder\TriInfo4D.h" />
     <ClInclude Include="..\..\src\svo_builder\ExtendedTriPartitioningInfo.h" />
     <ClInclude Include="..\..\src\svo_builder\geometry_primitives.h" />
