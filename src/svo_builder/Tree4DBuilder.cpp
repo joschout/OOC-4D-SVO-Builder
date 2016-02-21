@@ -40,9 +40,7 @@ void Tree4DBuilder::finalizeTree() {
 	}
 
 	// write root node
-	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 	writeNode4D(node_out, b_buffers[0][0], b_node_pos);
-	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 
 	// write header
 	Tree4DInfo tree4D_info(1, base_filename, gridlength, b_node_pos, b_data_pos);
@@ -56,7 +54,7 @@ void Tree4DBuilder::finalizeTree() {
 	fclose(node_out);
 }
 
-// Group 8 nodes, write non-empty nodes to disk and create parent node
+// Group 16 nodes, write non-empty nodes to disk and create parent node
 Node4D Tree4DBuilder::groupNodes(const vector<Node4D> &buffer) {
 	Node4D parent = Node4D();
 	bool first_stored_child = true;
@@ -121,7 +119,7 @@ void Tree4DBuilder::refineBuffers(const int start_depth) {
 			else {
 				b_buffers[d - 1].push_back(groupNodes(b_buffers[d])); // push back parent node
 			}
-			b_buffers.at(d).clear(); // clear the 816 nodes on this level
+			b_buffers.at(d).clear(); // clear the 16 nodes on this level
 		}
 		else {
 			break; // break the for loop: no upper levels will need changing

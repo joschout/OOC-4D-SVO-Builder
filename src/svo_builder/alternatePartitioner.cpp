@@ -115,18 +115,18 @@ TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info) {
 
 		for (float time = 0; time <= tri_info.end_time; time = time + unitlength_time)
 		{
-			cout << endl << "time point:" << time << endl;
+		//	cout << endl << "time point:" << time << endl;
 			Triangle translated_t = translate(t, tri_info.translation_direction, time);
 			Triangle4D translated_t_time = Triangle4D(translated_t, time);
 			AABox<vec4> bbox4D = computeBoundingBox(translated_t_time);
 			for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
 				bool isInPartition = buffers[j]->processTriangle(translated_t_time, bbox4D);
 				
-				cout << "triangle: "
+/*				cout << "triangle: "
 					<< "v0: "<< translated_t_time.tri.v0
 					<< " v1: " << translated_t_time.tri.v1
 					<< " v2: " << translated_t_time.tri.v2
-					<< " is in partition (1/0): " << isInPartition << endl;
+					<< " is in partition (1/0): " << isInPartition << endl;*/
 			}
 		}
 	}

@@ -24,6 +24,8 @@ TripInfo4D::~TripInfo4D()
 
 void TripInfo4D::print() const
 {
+	
+	
 	cout << "  base_filename: " << base_filename << endl;
 	cout << "  trip version: " << version << endl;
 	cout << "  geometry only: " << geometry_only << endl;

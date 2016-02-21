@@ -24,7 +24,7 @@ auto end_time = 1;
 string filename = "";
 // vozel grid size, should be a power of 2
 // amount of voxels in the grid = pow(gridsize, nbOfGridDimensions)
-size_t gridsize = 2;
+size_t gridsize = 128;
 //the amount of system memory in MEGABYTES we maximally want to use during the voxelization proces
 size_t voxel_memory_limit = 2048;
 float sparseness_limit = 0.10f;

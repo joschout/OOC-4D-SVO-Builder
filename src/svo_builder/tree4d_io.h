@@ -94,7 +94,7 @@ inline void writeOctreeHeader(const std::string &filename, const Tree4DInfo &i) 
 }
 
 // Parse a given octree header, store info in OctreeInfo struct
-inline int parseOctreeHeader(const std::string &filename, Tree4DInfo &i) {
+inline int parseTree4DHeader(const std::string &filename, Tree4DInfo &i) {
 	cout << "  reading tree4D header from " << filename << " ... " << endl;
 	ifstream headerfile;
 	headerfile.open(filename.c_str(), ios::in);

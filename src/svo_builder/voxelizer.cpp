@@ -442,7 +442,7 @@ void voxelize_schwarz_method4D(
 				for (int z = triangle_bbox_gridCoord.min[2]; z <= triangle_bbox_gridCoord.max[2]; z++) {
 					for (int t = triangle_bbox_gridCoord.min[3]; t <= triangle_bbox_gridCoord.max[3]; t++) {
 
-						uint64_t index = morton4D_Encode_for<uint64_t>(t, z, y, x);
+						uint64_t index = morton4D_Encode_for<uint64_t>(x, y, z, t);
 						//uint64_t index = morton3D_64_encode(z, y, x);
 
 						if (voxels[index - morton_start] == FULL_VOXEL) { continue; } // already marked, continue

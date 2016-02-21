@@ -16,7 +16,9 @@ bool recompute_normals = false;
 vec3 fixed_color = vec3(1.0f, 1.0f, 1.0f);
 
 void printInfo(){
-	cout << "-------------------------------------------------------------" << endl;
+	
+	
+	<< "-------------------------------------------------------------" << endl;
 #ifdef BINARY_VOXELIZATION
 	cout << "Tri Converter " << version << " - BINARY VOXELIZATION"<< endl;
 #else
