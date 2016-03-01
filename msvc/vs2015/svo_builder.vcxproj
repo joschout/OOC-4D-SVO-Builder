@@ -143,6 +143,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\Node4D.h" />
+    <ClInclude Include="..\..\src\svo_builder\RotationHandler.h" />
+    <ClInclude Include="..\..\src\svo_builder\TransformationHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\Tree4DBuilder.h" />
     <ClInclude Include="..\..\src\svo_builder\alternatePartitioner.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer.h" />
@@ -172,6 +174,9 @@
     <ClInclude Include="VoxelizationHandler.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\svo_builder\RotationHandler.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TransformationHandler.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TranslationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\alternatePartitioner.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriInfo4D.cpp" />

@@ -3,6 +3,10 @@
 #include <assert.h>
 #include "octree_io.h"
 
+Tree4DBuilder::Tree4DBuilder(): gridlength(1), b_maxdepth(0), b_current_morton(0), b_max_morton(0), b_data_pos(0), b_node_pos(0), generate_levels(false), node_out(nullptr), data_out(nullptr)
+{
+}
+
 // OctreeBuilder constructor: this initializes the builder and sets up the output files, ready to go
 Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridlength, bool generate_levels) :
 	gridlength(gridlength), b_node_pos(0),

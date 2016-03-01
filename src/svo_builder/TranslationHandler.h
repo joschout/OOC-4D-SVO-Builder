@@ -1,23 +1,29 @@
 #ifndef TRANSLATIONHANDLER_H
 #define TRANSLATIONHANDLER_H
-
 #include <Vec.h>
+#include "TransformationHandler.h"
 
-inline trimesh::vec3 translate(const trimesh::vec3 &point, const trimesh::vec3 &direction, const float amount)
-{
-	trimesh::vec3 scaled_direction = amount * direction;
-	trimesh::vec3 translated_point = point + scaled_direction;
-	return translated_point;
-}
 
-inline Triangle translate(const Triangle &triangle, const trimesh::vec3 &direction, const float amount)
+
+class TranslationHandler : public TransformationHandler
 {
-	Triangle temp;
-	temp.v0 = translate(triangle.v0, direction, amount);
-	temp.v1 = translate(triangle.v1, direction, amount);
-	temp.v2 = translate(triangle.v2, direction, amount);
-	return temp;
-}
+
+private:
+	vec3 translation_direction;
+	float speed_factor = 1.0f;
+
+public:
+	TranslationHandler();
+	TranslationHandler(const size_t gridsize, vec3 translation_direction);
+	~TranslationHandler() override;
+	void calculateTransformedBoundingBox(const TriInfo& triInfo, AABox<vec4>& mesh_bbox_transformed, float end_time) const;
+	void transformAndStore(const TriInfo4D& tri_info, const Triangle& tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const override;
+	static trimesh::vec3 translate(const trimesh::vec3 & point, const trimesh::vec3 & direction, const float amount);
+	Triangle translate(const Triangle & triangle, const trimesh::vec3 & direction, const float amount) const;
+};
+
+
+
 
 #endif
 

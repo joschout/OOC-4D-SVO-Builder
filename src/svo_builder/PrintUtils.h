@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef PRINTUTILS_H
+#define PRINTUTILS_H
 #include <string>
 
 int printCurrentDirectory();

@@ -1,5 +1,5 @@
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef SVO_BUILDER_UTIL_H_
+#define SVO_BUILDER_UTIL_H_
 
 #include <time.h>
 #include <vector>

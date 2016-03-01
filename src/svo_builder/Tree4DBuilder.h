@@ -29,6 +29,7 @@ public:
 	FILE* data_out; // pointer to the payload data file
 	string base_filename;
 
+	Tree4DBuilder();
 	Tree4DBuilder(std::string base_filename, size_t gridlength, bool generate_levels);
 	void finalizeTree();
 	void addVoxel(const uint64_t morton_number);

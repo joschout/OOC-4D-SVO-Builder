@@ -5,10 +5,8 @@
 #include "Buffer4D.h"
 #include "voxelizer.h"
 #include "morton4D.h"
-#include "TranslationHandler.h"
-#include <trip_tools.h>
 #include "ExtendedTriPartitioningInfo.h"
-#include "../../msvc/vs2015/Triangle4D.h"
+
 
 alternatePartitioner::alternatePartitioner():
 	gridsize(1), nbOfDimensions(4), nbOfPartitions(1)
@@ -24,27 +22,15 @@ alternatePartitioner::~alternatePartitioner()
 {
 }
 
-TripInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_info, size_t voxel_memory_limit)
+TripInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_info, size_t voxel_memory_limit, TransformationHandler *transformation_handler)
 {
-	/*	//estimate the amount of triangle partitions needed for voxelization
-	//NOTE: the estimation is hardcoded for 3D trees
-	size_t nbOfTrianglePartitions = estimate_partitions(gridsize, voxel_memory_limit, nbOfDimensions);
-	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
-
-	//partition the  triangle mesh
-	TripInfo trianglePartition_info = partition(tri_info, nbOfTrianglePartitions, gridsize);
-	cout << "done." << endl;
-
-	return trianglePartition_info;*/
-
-
 	//estimate the amount of triangle partitions needed for voxelization
 	//NOTE: the estimation is hardcoded for 3D trees
 	size_t nbOfTrianglePartitions = estimateNumberOfPartitions(voxel_memory_limit);
 	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
 
 	//partition the  triangle mesh
-	TripInfo4D trianglePartition_info = partition(extended_tri_info);
+	TripInfo4D trianglePartition_info = partition(extended_tri_info, transformation_handler);
 	cout << "done." << endl;
 
 	return trianglePartition_info;
@@ -58,7 +44,7 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 
 	// calculate the amount of memory needed (in MB) to do the voxelization completely in memory
 	/* amount of memory needed
-	= amount of voxels in the high-resolution 3D grid
+	= amount of voxels in the high-resolution 4D grid
 	* the size of a character (smallest unit we can use, used to tick of a voxel in the table)
 	* 1/1024 (1kB/1024bytes)
 	* 1/1024 (1MB/kB)
@@ -74,7 +60,7 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 
 	size_t estimatedNbOfPartitions = 1;
 	size_t sizeOfPartitionInMB = requiredMemoryInMB;
-	auto partitioning_amount = pow(2, nbOfDimensions);
+	auto partitioning_amount = pow(2, nbOfDimensions); // 8
 	while (sizeOfPartitionInMB > memory_limit_in_MB) {
 		sizeOfPartitionInMB = sizeOfPartitionInMB / partitioning_amount;
 		estimatedNbOfPartitions = estimatedNbOfPartitions * partitioning_amount;
@@ -85,73 +71,64 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 	return estimatedNbOfPartitions;
 }
 
-
-// Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
-// and store information about the partitioning in trip_info
-TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info) {
-	// Special case: just one partition
-	//if (nbOfPartitions == 1) {
-	//	return partition_one(tri_info, gridsize);
-	//}
-
-	// Open tri_data stream
-	
-	//the reader knows how many triangles there are in the model,
-	// is given input_buffersize as buffersize for buffering read triangles
-	const std::string tridata_filename = tri_info.triInfo3D.base_filename + string(".tridata");
-	TriReader tridataReader = TriReader(tridata_filename, tri_info.triInfo3D.n_triangles, input_buffersize);
-	
-
-	// Create Mortonbuffers: we will have one buffer per partition
-	vector<Buffer4D*> buffers;
-	createBuffers(tri_info, buffers);
-
-	float unitlength_time = (tri_info.mesh_bbox_transl.max[3] - tri_info.mesh_bbox_transl.min[3] ) / (float)(gridsize -1);
-
-
-	while (tridataReader.hasNext()) {
-		Triangle t;
-		tridataReader.getTriangle(t);
-
-		for (float time = 0; time <= tri_info.end_time; time = time + unitlength_time)
-		{
-		//	cout << endl << "time point:" << time << endl;
-			Triangle translated_t = translate(t, tri_info.translation_direction, time);
-			Triangle4D translated_t_time = Triangle4D(translated_t, time);
-			AABox<vec4> bbox4D = computeBoundingBox(translated_t_time);
-			for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
-				bool isInPartition = buffers[j]->processTriangle(translated_t_time, bbox4D);
-				
-/*				cout << "triangle: "
-					<< "v0: "<< translated_t_time.tri.v0
-					<< " v1: " << translated_t_time.tri.v1
-					<< " v2: " << translated_t_time.tri.v2
-					<< " is in partition (1/0): " << isInPartition << endl;*/
-			}
-		}
-	}
-
-
-	 // create TripInfo object to hold header info
+TripInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const
+{
 	TripInfo4D trip_info = TripInfo4D(tri_info);
 
-	auto nbOfTriangles_inlc_transl = gridsize * tri_info.triInfo3D.n_triangles;
-	trip_info.n_triangles = nbOfTriangles_inlc_transl;
+	auto nbOfTriangles_incl_transf = gridsize * tri_info.triInfo3D.n_triangles;
+	trip_info.n_triangles = nbOfTriangles_incl_transf;
 
-	// Collect ntriangles and close buffers
+	// Collect nbOfTriangles of each partition
 	trip_info.nbOfTrianglesPerPartition.resize(nbOfPartitions);
 	for (size_t j = 0; j < nbOfPartitions; j++) {
 		trip_info.nbOfTrianglesPerPartition[j] = buffers[j]->n_triangles;
-		delete buffers[j];
 	}
 
-	
 	// Write trip header
 	trip_info.base_filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize) + string("_") + val_to_string(nbOfPartitions);
 	std::string header = trip_info.base_filename + string(".trip");
 	trip_info.gridsize = gridsize;
 	trip_info.n_partitions = nbOfPartitions;
 	TripInfo4D::writeTrip4DHeader(header, trip_info);
+
+	return trip_info;
+}
+
+void alternatePartitioner::deleteBuffers(vector<Buffer4D*> buffers) const
+{
+	for (size_t j = 0; j < nbOfPartitions; j++) {
+		delete buffers[j];
+	}
+}
+
+// Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
+// and store information about the partitioning in trip_info
+TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info, TransformationHandler *transformation_handler) {
+	// Special case: just one partition
+	//if (nbOfPartitions == 1) {
+	//	return partition_one(tri_info, gridsize);
+	//}
+
+	// Open tri_data stream
+	// the reader knows how many triangles there are in the model,
+	// the reader is given input_buffersize as buffersize for buffering read triangles
+	const std::string tridata_filename = tri_info.triInfo3D.base_filename + string(".tridata");
+	TriReader tridataReader = TriReader(tridata_filename, tri_info.triInfo3D.n_triangles, input_buffersize);
+	
+	// Create Mortonbuffers: we will have one buffer per partition
+	vector<Buffer4D*> buffers;
+	createBuffers(tri_info, buffers);
+
+	//for each triangle
+	while (tridataReader.hasNext()) {
+		Triangle tri;
+		tridataReader.getTriangle(tri);
+		//transform the triangle to the different points in time and store those triangles in the buffers
+		transformation_handler->transformAndStore(tri_info, tri, buffers, nbOfPartitions);
+	}
+
+	TripInfo4D trip_info = createTripInfoHeader(tri_info, buffers);
+	deleteBuffers(buffers);
 
 	return trip_info;
 }
@@ -164,49 +141,25 @@ void alternatePartitioner::createBuffers(const TriInfo4D& tri_info, vector<Buffe
 {
 	buffers.reserve(nbOfPartitions);
 
-	//the unit length in the grid = the length of one side of the grid
+	// the unit length in the grid = the length of one side of the grid
 	// divided by the size of the grid (i.e. the number of voxels next to each other)
-	//NOTE: the bounding box in a .tri file is cubical
-	float unitlength = (tri_info.mesh_bbox_transl.max[0] - tri_info.mesh_bbox_transl.min[0]) / (float)gridsize;
-	float unitlength_time = (tri_info.mesh_bbox_transl.max[3] - tri_info.mesh_bbox_transl.min[3]) / (float)gridsize;
+	// NOTE: the bounding box in a .tri file is cubical
+	float unitlength = (tri_info.mesh_bbox_transformed.max[0] - tri_info.mesh_bbox_transformed.min[0]) / (float)(gridsize );
+	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)(gridsize);
 
-	uint64_t morton_part = pow(gridsize, nbOfDimensions) / nbOfPartitions;
+	float nbOfVoxelsInGrid = pow(gridsize, nbOfDimensions);
+	uint64_t morton_part = nbOfVoxelsInGrid / nbOfPartitions; //amount of voxels per partition
 
-	AABox<uivec4> bbox_grid;
-	AABox<vec4> bbox_world;
-	std::string filename;
-
+	cout << endl << "creating buffers" << endl;
+	// for each partition
 	for (size_t i = 0; i < nbOfPartitions; i++) {
-		// compute world bounding box
-		morton4D_Decode_for(morton_part*i, bbox_grid.min[3], bbox_grid.min[2], bbox_grid.min[1], bbox_grid.min[0]);
-		morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_grid.max[3],  bbox_grid.max[2], bbox_grid.max[1], bbox_grid.max[0]);
-		// -1, because z-curve skips to first block of next partition
+
+		//calculate the bounding box of the partition in world coordinates
+		AABox<vec4> bbox_partition_i_worldCoords = calculateBBoxInWorldCoordsForPartition(i, morton_part, unitlength, unitlength_time, verbose);
 		
-		bbox_world.min[0] = bbox_grid.min[0] * unitlength;
-		bbox_world.min[1] = bbox_grid.min[1] * unitlength;
-		bbox_world.min[2] = bbox_grid.min[2] * unitlength;
-		bbox_world.min[3] = bbox_grid.min[3] * unitlength_time;
-
-		bbox_world.max[0] = (bbox_grid.max[0] + 1)*unitlength; // + 1, to include full last block
-		bbox_world.max[1] = (bbox_grid.max[1] + 1)*unitlength;
-		bbox_world.max[2] = (bbox_grid.max[2] + 1)*unitlength;
-		bbox_world.max[3] = (bbox_grid.max[2] + 1)*unitlength_time;
-
-
-		// output partition info
-		if (verbose) {
-			cout << "Partitioning partition #" << i + 1 << " / " << nbOfPartitions << " id: " << i << " ..." << endl;
-			cout << "  morton from " << morton_part*i << " to " << morton_part*(i + 1) << endl;
-			cout << "  grid coordinates from (" << bbox_grid.min[0] << "," << bbox_grid.min[1] << "," << bbox_grid.min[2] << ") to ("
-				<< bbox_grid.max[0] << "," << bbox_grid.max[1] << "," << bbox_grid.max[2] << ")" << endl;
-			cout << "  worldspace coordinates from (" << bbox_world.min[0] << "," << bbox_world.min[1] << "," << bbox_world.min[2] << ") to ("
-				<< bbox_world.max[0] << "," << bbox_world.max[1] << "," << bbox_world.max[2] << ")" << endl;
-		}
-
 		// create buffer for partition
-		filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize) + string("_") + val_to_string(nbOfPartitions) + string("_") + val_to_string(i) + string(".tripdata");
-		buffers.push_back(new Buffer4D(filename, bbox_world, output_buffersize));
-		//buffers[i] = new Buffer4D(filename, bbox_world, output_buffersize);
+		Buffer4D* buffer_partition_i = createBufferForPartition(i, bbox_partition_i_worldCoords, tri_info.triInfo3D.base_filename);
+		buffers.push_back(buffer_partition_i);
 	}
 }
 
@@ -221,6 +174,61 @@ void alternatePartitioner::removeTripFiles(const TripInfo4D& trip_info)
 		filename = trip_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
 		remove(filename.c_str());
 	}
+}
+
+AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, uint64_t morton_part, float unitlength, float unitlength_time, bool verbose) const
+{
+	AABox<uivec4> bbox_partition_i_gridCoords;
+	AABox<vec4> bbox_partition_i_worldCoords;
+	//Each partition contains morton_part voxels
+	// ==> partition i contains the voxels with as morton numbers
+	//			[morton_part*i, morton_part*(i+1) -1]
+
+	// compute world bounding box
+	/*		morton4D_Decode_for(morton_part*i, bbox_grid.min[3], bbox_grid.min[2], bbox_grid.min[1], bbox_grid.min[0]);
+	morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_grid.max[3],  bbox_grid.max[2], bbox_grid.max[1], bbox_grid.max[0]);*/
+	morton4D_Decode_for(morton_part*i, bbox_partition_i_gridCoords.min[0], bbox_partition_i_gridCoords.min[1], bbox_partition_i_gridCoords.min[2], bbox_partition_i_gridCoords.min[3]);
+	morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_partition_i_gridCoords.max[0], bbox_partition_i_gridCoords.max[1], bbox_partition_i_gridCoords.max[2], bbox_partition_i_gridCoords.max[3]);
+
+	// -1, because z-curve skips to first block of next partition
+
+	bbox_partition_i_worldCoords.min[0] = bbox_partition_i_gridCoords.min[0] * unitlength;
+	bbox_partition_i_worldCoords.min[1] = bbox_partition_i_gridCoords.min[1] * unitlength;
+	bbox_partition_i_worldCoords.min[2] = bbox_partition_i_gridCoords.min[2] * unitlength;
+	bbox_partition_i_worldCoords.min[3] = bbox_partition_i_gridCoords.min[3] * unitlength_time;
+
+	bbox_partition_i_worldCoords.max[0] = (bbox_partition_i_gridCoords.max[0] + 1)*unitlength; // + 1, to include full last block
+	bbox_partition_i_worldCoords.max[1] = (bbox_partition_i_gridCoords.max[1] + 1)*unitlength;
+	bbox_partition_i_worldCoords.max[2] = (bbox_partition_i_gridCoords.max[2] + 1)*unitlength;
+	bbox_partition_i_worldCoords.max[3] = (bbox_partition_i_gridCoords.max[2] + 1)*unitlength_time;
+
+
+	// output partition info
+	if (verbose) {
+		cout << "Partitioning partition #" << i + 1 << " / " << nbOfPartitions << " id: " << i << " ..." << endl;
+		cout << "  morton from " << morton_part*i << " to " << morton_part*(i + 1) << endl;
+		cout << "  grid coordinates from ("
+			<< bbox_partition_i_gridCoords.min[0] << "," << bbox_partition_i_gridCoords.min[1] << "," << bbox_partition_i_gridCoords.min[2] << "," << bbox_partition_i_gridCoords.min[3]
+			<< ") to ("
+			<< bbox_partition_i_gridCoords.max[0] << "," << bbox_partition_i_gridCoords.max[1] << "," << bbox_partition_i_gridCoords.max[2] << "," << bbox_partition_i_gridCoords.max[3] << ")" << endl;
+		cout << "  worldspace coordinates from ("
+			<< bbox_partition_i_worldCoords.min[0] << "," << bbox_partition_i_worldCoords.min[1] << "," << bbox_partition_i_worldCoords.min[2] << "," << bbox_partition_i_worldCoords.min[3]
+			<< ") to ("
+			<< bbox_partition_i_worldCoords.max[0] << "," << bbox_partition_i_worldCoords.max[1] << "," << bbox_partition_i_worldCoords.max[2] << "," << bbox_partition_i_worldCoords.max[3] << ")" << endl << endl;
+	}
+
+	return bbox_partition_i_worldCoords;
+
+}
+
+Buffer4D* alternatePartitioner::createBufferForPartition(int i, AABox<vec4> &bbox_partition_i_worldCoords, const string base_filename) const
+{
+	std::string filename 
+		= base_filename + val_to_string(gridsize) 
+		+ string("_") + val_to_string(nbOfPartitions)
+		+ string("_") + val_to_string(i) + string(".tripdata");
+	return new Buffer4D(filename, bbox_partition_i_worldCoords, output_buffersize);
+
 }
 
 // Handle the special case of just needing one partition

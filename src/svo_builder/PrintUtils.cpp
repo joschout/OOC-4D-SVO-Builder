@@ -24,7 +24,7 @@ int printCurrentDirectory()
 	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
 
 	std::cout << "The current working directory is:" << std::endl << cCurrentPath << std::endl;
-	std::cout << "(You should put your octree files here)" << std::endl;
+	std::cout << "(You should put your .tri files here)" << std::endl;
 	std::cout << "" << std::endl;
 	return 0;
 }
@@ -32,9 +32,9 @@ int printCurrentDirectory()
 void printInfo(std::string &version) {
 	std::cout << "--------------------------------------------------------------------" << std::endl;
 #ifdef BINARY_VOXELIZATION
-	std::cout << "Out-Of-Core SVO Builder " << version << " - Geometry only version" << std::endl;
+	std::cout << "Out-Of-Core Tree4D Builder " << version << " - Geometry only version" << std::endl;
 #else
-	std::cout << "Out-Of-Core SVO Builder " << version << std::endl;
+	std::cout << "Out-Of-Core Tree4D Builder " << version << std::endl;
 #endif
 #if defined(_WIN32) || defined(_WIN64)
 	std::cout << "Windows " << std::endl;
@@ -45,8 +45,11 @@ void printInfo(std::string &version) {
 #ifdef _WIN64
 	std::cout << "64-bit version" << std::endl;
 #endif
+	std::cout << "Based on \'Out-of-Core Octree Builder\', by Jeroen Baert" << std::endl;
 	std::cout << "Jeroen Baert - jeroen.baert@cs.kuleuven.be - www.forceflow.be" << std::endl;
+	std::cout << "Adapted for his master thesis by Jonas Schouterden" << std::endl;
 	std::cout << "--------------------------------------------------------------------" << std::endl << std::endl;
+	printCurrentDirectory();
 }
 
 void printHelp() {

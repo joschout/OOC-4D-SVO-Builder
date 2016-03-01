@@ -10,7 +10,7 @@ TripInfo4D::TripInfo4D():
 }
 
 TripInfo4D::TripInfo4D(const TriInfo4D  &t):
-	mesh_bbox_transl(t.mesh_bbox_transl),
+	mesh_bbox_transl(t.mesh_bbox_transformed),
 	end_time(t.end_time), base_filename(t.triInfo3D.base_filename),
 	version(t.triInfo3D.version),
 	geometry_only(t.triInfo3D.geometry_only), gridsize(0), n_triangles(0),
