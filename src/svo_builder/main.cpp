@@ -1,4 +1,5 @@
 #include <TriMesh.h>
+#include <cstdio>
 #include "globals.h"
 #include "../libs/libtri/include/trip_tools.h"
 #include "TriInfo4D.h"
@@ -11,6 +12,9 @@
 #include "../../msvc/vs2015/VoxelizationHandler.h"
 #include "TranslationHandler.h"
 #include "RotationHandler.h"
+
+//#define logVerboseToFile
+
 using namespace std;
 
 enum ColorType { COLOR_FROM_MODEL, COLOR_FIXED, COLOR_LINEAR, COLOR_NORMAL };
@@ -48,6 +52,20 @@ int main(int argc, char *argv[]) {
 #if defined(_WIN32) || defined(_WIN64)
 	_setmaxstdio(1024); // increase file descriptor limit in Windows
 #endif
+
+
+#ifdef logVerboseToFile
+	std::printf("stdout is printed to console\n");
+	if (std::freopen("log_ooc_svo_builder.txt", "w", stdout)) {
+		std::printf("stdout is redirected to a file: log_ooc_svo_builder.txt\n"); // this is written to redir.txt
+		//std::fclose(stdout);
+	}
+
+#endif
+
+
+
+
 
 	// Parse program parameters
 	printInfo(version);
@@ -90,4 +108,7 @@ int main(int argc, char *argv[]) {
 		= VoxelizationHandler(trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize);
 	voxelization_handler.voxelizeAndBuildSVO4D();
 
+#ifdef logVerboseToFile
+		std::fclose(stdout);
+#endif
 }

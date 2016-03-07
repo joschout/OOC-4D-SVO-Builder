@@ -65,7 +65,8 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 		sizeOfPartitionInMB = sizeOfPartitionInMB / partitioning_amount;
 		estimatedNbOfPartitions = estimatedNbOfPartitions * partitioning_amount;
 	}
-	std::cout << "  going to do it in " << estimatedNbOfPartitions << " partitions of " << sizeOfPartitionInMB << " Mb each." << std::endl;
+	std::cout << "  I am going to do it in " << estimatedNbOfPartitions << " partitions of " << sizeOfPartitionInMB << " Mb each." << std::endl;
+	std::cout << "  This will take up " << estimatedNbOfPartitions *sizeOfPartitionInMB << " Mb in total on your disk." << std::endl;
 	
 	nbOfPartitions = estimatedNbOfPartitions;
 	return estimatedNbOfPartitions;
@@ -150,16 +151,31 @@ void alternatePartitioner::createBuffers(const TriInfo4D& tri_info, vector<Buffe
 	float nbOfVoxelsInGrid = pow(gridsize, nbOfDimensions);
 	uint64_t morton_part = nbOfVoxelsInGrid / nbOfPartitions; //amount of voxels per partition
 
-	cout << endl << "creating buffers" << endl;
+
+	if(verbose)
+	{
+		cout << endl << "Creating " << nbOfPartitions << " buffers, one for each partition"<< endl;
+		cout << "-----------------------------" << endl;
+	}
+
+
 	// for each partition
 	for (size_t i = 0; i < nbOfPartitions; i++) {
-
+	
 		//calculate the bounding box of the partition in world coordinates
 		AABox<vec4> bbox_partition_i_worldCoords = calculateBBoxInWorldCoordsForPartition(i, morton_part, unitlength, unitlength_time, verbose);
 		
 		// create buffer for partition
 		Buffer4D* buffer_partition_i = createBufferForPartition(i, bbox_partition_i_worldCoords, tri_info.triInfo3D.base_filename);
 		buffers.push_back(buffer_partition_i);
+
+		if (verbose)
+		{
+			cout << endl << "Creating buffer " << i+1 << "/" << nbOfPartitions << endl;
+			cout << buffer_partition_i->toString() << endl;
+			cout << "-----------------------------" << endl;
+		}
+
 	}
 }
 
@@ -208,13 +224,13 @@ AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, 
 		cout << "Partitioning partition #" << i + 1 << " / " << nbOfPartitions << " id: " << i << " ..." << endl;
 		cout << "  morton from " << morton_part*i << " to " << morton_part*(i + 1) << endl;
 		cout << "  grid coordinates from ("
-			<< bbox_partition_i_gridCoords.min[0] << "," << bbox_partition_i_gridCoords.min[1] << "," << bbox_partition_i_gridCoords.min[2] << "," << bbox_partition_i_gridCoords.min[3]
+			<< bbox_partition_i_gridCoords.min[0] << ", " << bbox_partition_i_gridCoords.min[1] << ", " << bbox_partition_i_gridCoords.min[2] << ", " << bbox_partition_i_gridCoords.min[3]
 			<< ") to ("
-			<< bbox_partition_i_gridCoords.max[0] << "," << bbox_partition_i_gridCoords.max[1] << "," << bbox_partition_i_gridCoords.max[2] << "," << bbox_partition_i_gridCoords.max[3] << ")" << endl;
+			<< bbox_partition_i_gridCoords.max[0] << ", " << bbox_partition_i_gridCoords.max[1] << ", " << bbox_partition_i_gridCoords.max[2] << ", " << bbox_partition_i_gridCoords.max[3] << ")" << endl;
 		cout << "  worldspace coordinates from ("
-			<< bbox_partition_i_worldCoords.min[0] << "," << bbox_partition_i_worldCoords.min[1] << "," << bbox_partition_i_worldCoords.min[2] << "," << bbox_partition_i_worldCoords.min[3]
+			<< bbox_partition_i_worldCoords.min[0] << ", " << bbox_partition_i_worldCoords.min[1] << ", " << bbox_partition_i_worldCoords.min[2] << ", " << bbox_partition_i_worldCoords.min[3]
 			<< ") to ("
-			<< bbox_partition_i_worldCoords.max[0] << "," << bbox_partition_i_worldCoords.max[1] << "," << bbox_partition_i_worldCoords.max[2] << "," << bbox_partition_i_worldCoords.max[3] << ")" << endl << endl;
+			<< bbox_partition_i_worldCoords.max[0] << ", " << bbox_partition_i_worldCoords.max[1] << ", " << bbox_partition_i_worldCoords.max[2] << ", " << bbox_partition_i_worldCoords.max[3] << ")" << endl << endl;
 	}
 
 	return bbox_partition_i_worldCoords;

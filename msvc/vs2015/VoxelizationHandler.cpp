@@ -1,9 +1,10 @@
 #include "VoxelizationHandler.h"
-#include "../../src/svo_builder/partitioner.h"
-#include "../../src/svo_builder/OctreeBuilder.h"
 #include <algorithm>
 #include "../../src/svo_builder/alternatePartitioner.h"
-
+#include "../../src/svo_builder/globals.h"
+#include "Tri4DReader.h"
+#include "../../src/svo_builder/voxelizer.h"
+#include "../../src/svo_builder/PartitionVoxelizer.h"
 
 /*void voxelizeAndBuildSVO(
 	TripInfo& trianglePartition_info, float sparseness_limit,
@@ -107,17 +108,29 @@ void VoxelizationHandler::voxelizePartition(
 	int i, uint64_t morton_startcode, uint64_t morton_endcode)
 {
 	cout << "Voxelizing partition " << i << " ..." << endl;
-	// open file to read triangles
 
+	// open file to read triangles
 	string part_data_filename
-		= trianglePartition_info.base_filename + string("_") + val_to_string(i) + string(".tripdata");
+		= trianglePartition_info.base_filename + string("_")
+		+ val_to_string(i) + string(".tripdata");
 	Tri4DReader reader = Tri4DReader(part_data_filename, trianglePartition_info.nbOfTrianglesPerPartition[i], min(trianglePartition_info.nbOfTrianglesPerPartition[i], input_buffersize));
-	if (verbose) { cout << "  reading " << trianglePartition_info.nbOfTrianglesPerPartition[i] << " triangles from " << part_data_filename << endl; }
+	if (verbose)
+	{
+		cout << "  morton start_code: " << morton_startcode << endl;
+		cout << "  morton end_code: " << morton_endcode << endl;
+		cout << "  reading " << trianglePartition_info.nbOfTrianglesPerPartition[i] << " triangles from " << part_data_filename << endl;
+	}
 
 	// voxelize partition
 	size_t nfilled_before = nfilled;
-	voxelize_schwarz_method4D(reader, morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, data, sparseness_limit, use_data, nfilled);
-	if (verbose) { cout << "  found " << nfilled - nfilled_before << " new voxels." << endl; }
+
+	PartitionVoxelizer partition_voxelizer = PartitionVoxelizer(morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, &data, sparseness_limit, &use_data, &nfilled);
+	partition_voxelizer.voxelize_schwarz_method4D(reader);
+	//voxelize_schwarz_method4D(reader, morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, data, sparseness_limit, use_data, nfilled);
+	if (verbose)
+	{
+		cout << "  found " << nfilled - nfilled_before << " new voxels." << endl;
+	}
 
 }
 
@@ -162,22 +175,32 @@ void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64
 
 void VoxelizationHandler::voxelizeAndBuildSVO4D()
 {
+	if (verbose) {
+		cout << "=====================" << endl;
+	}
 	// For each partition: Voxelize and build SVO
 	for (size_t i = 0; i < trianglePartition_info.n_partitions; i++) {
+
+		//IF the partition contains no triangles THEN skip it
 		if (trianglePartition_info.nbOfTrianglesPerPartition[i] == 0)
 		{
-			// skip partition if it contains no triangles
 			continue;
 		} 
 
 		// VOXELIZATION
 		// morton codes for this partition
-		uint64_t morton_startcode = i * morton_part;
+		uint64_t morton_startcode = i * morton_part; //reminder: morton_part = #voxels/partition
 		uint64_t morton_endcode = (i + 1) * morton_part;
 		voxelizePartition(i, morton_startcode, morton_endcode);
-
+		
+		if(verbose){
+			cout << "---------------------" << endl;
+		}
 		// build SVO
 		buildSVO_partition(i, morton_part, morton_startcode);
+		if (verbose){
+			cout << "=====================" << endl;
+		}
 	}
 
 	builder.finalizeTree(); // finalize SVO so it gets written to disk

@@ -27,7 +27,7 @@ public:
 	~Buffer4D();
 
 	bool processTriangle(Triangle4D &t, const AABox<vec4> &bbox);
-
+	string toString();
 private:
 	void flush();
 };
@@ -88,4 +88,31 @@ inline bool Buffer4D::processTriangle(Triangle4D &t, const AABox<vec4> &bbox) {
 	return false;
 }
 
+inline string Buffer4D::toString()
+{
+	/*
+	
+		FILE* file; // the file we'll write our triangles to
+	string filename; // filename of the file we're writing to
+	AABox<vec4> bbox_world; // bounding box of the morton grid this buffer represents, in world coords
+	size_t n_triangles; // number of triangles already in
+
+						// Buffered
+	vector<Triangle4D> triangle_buffer; // triangle buffer
+	size_t buffer_max; // maximum of tris we buffer before writing to disk
+	*/
+
+	ostringstream temp;
+	temp 
+		<< "Buffer4D: " << endl
+		<< "  filename: " << filename << endl
+		<< "  bounding box of the represented morton grid in world coordinates:" << endl
+		<< "      from (" << bbox_world.min[0] << ", " << bbox_world.min[1] << ", " << bbox_world.min[2] << ", " << bbox_world.min[3]<< ")" << endl
+		<< "      to   (" << bbox_world.max[0] << ", " << bbox_world.max[1] << ", " << bbox_world.max[2] << ", " << bbox_world.max[3] << ")" << endl
+		<< "  number of triangles already in: " << n_triangles << endl
+		<< "  max number of triangles before writing to disk: " <<  buffer_max << endl;
+
+	return temp.str();
+
+}
 #endif // BUFFER_H_

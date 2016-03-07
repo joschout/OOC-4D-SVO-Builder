@@ -5,7 +5,6 @@
 #include <fstream>
 #include "../libs/libtri/include/tri_util.h"
 #include "svo_builder_util.h"
-#include "tree4d_io.h"
 #include "Node4D.h"
 
 using namespace std;
