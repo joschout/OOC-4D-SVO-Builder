@@ -13,57 +13,30 @@ using namespace trimesh;
 /*
 Voxelize 1 partition using the Schwarz method.
 */
-#ifdef BINARY_VOXELIZATION
-void PartitionVoxelizer::voxelize_schwarz_method4D(
-	Tri4DReader &reader) {
-#else
-void PartitionVoxelizer::voxelize_schwarz_method4D(
-	TriReader &reader,
-	const uint64_t morton_start, const uint64_t morton_end,
-	const float unitlength, const float unitlength_time,
-	char* voxels, vector<VoxelData> &data, float sparseness_limit,
- size_t &nfilled) {
-#endif
+
+void PartitionVoxelizer::voxelize_schwarz_method4D(Tri4DReader &reader) {
 	// voxelize every triangle
 	while (reader.hasNext()) {
 		// read triangle
 		Triangle4D tri;
 		reader.getTriangle(tri);
-
 		voxelizeOneTriangle(tri);
-
-
 	}
 }
 
-void PartitionVoxelizer::voxelizeOneTriangle(
-	const Triangle4D &tri
-	)
+AABox<ivec4> PartitionVoxelizer::compute_Triangle_BoundingBox_gridCoord(const Triangle4D& tri)
 {
-#ifdef BINARY_VOXELIZATION
-	if (*use_data) {
-		if (data->size() > data_max_items) {
-			if (verbose) {
-				cout << "Sparseness optimization side-array overflowed, reverting to slower voxelization." << endl;
-				cout << data->size() << " > " << data_max_items << endl;
-			}
-			*use_data = false;
-		}
-	}
-#endif
-
-	// compute triangle bbox in world and grid
-	// AABox<vec3> t_bbox_world = computeBoundingBox(t.v0, t.v1, t.v2);
 	AABox<vec4> triangle_bbox_worldCoord = computeBoundingBox(tri);
 	AABox<ivec4> triangle_bbox_gridCoord;
-	triangle_bbox_gridCoord.min[0] = (int)(triangle_bbox_worldCoord.min[0] * unit_div);
-	triangle_bbox_gridCoord.min[1] = (int)(triangle_bbox_worldCoord.min[1] * unit_div);
-	triangle_bbox_gridCoord.min[2] = (int)(triangle_bbox_worldCoord.min[2] * unit_div);
-	triangle_bbox_gridCoord.min[3] = (int)(triangle_bbox_worldCoord.min[3] * unit_time_div);
-	triangle_bbox_gridCoord.max[0] = (int)(triangle_bbox_worldCoord.max[0] * unit_div);
-	triangle_bbox_gridCoord.max[1] = (int)(triangle_bbox_worldCoord.max[1] * unit_div);
-	triangle_bbox_gridCoord.max[2] = (int)(triangle_bbox_worldCoord.max[2] * unit_div);
-	triangle_bbox_gridCoord.max[3] = (int)(triangle_bbox_worldCoord.max[3] * unit_time_div);
+
+	triangle_bbox_gridCoord.min[0] = static_cast<int>(triangle_bbox_worldCoord.min[0] * unit_div);
+	triangle_bbox_gridCoord.min[1] = static_cast<int>(triangle_bbox_worldCoord.min[1] * unit_div);
+	triangle_bbox_gridCoord.min[2] = static_cast<int>(triangle_bbox_worldCoord.min[2] * unit_div);
+	triangle_bbox_gridCoord.min[3] = static_cast<int>(triangle_bbox_worldCoord.min[3] * unit_time_div);
+	triangle_bbox_gridCoord.max[0] = static_cast<int>(triangle_bbox_worldCoord.max[0] * unit_div);
+	triangle_bbox_gridCoord.max[1] = static_cast<int>(triangle_bbox_worldCoord.max[1] * unit_div);
+	triangle_bbox_gridCoord.max[2] = static_cast<int>(triangle_bbox_worldCoord.max[2] * unit_div);
+	triangle_bbox_gridCoord.max[3] = static_cast<int>(triangle_bbox_worldCoord.max[3] * unit_time_div);
 
 	// clamp
 	triangle_bbox_gridCoord.min[0] = clampval<int>(triangle_bbox_gridCoord.min[0], partition_bbox_gridCoords.min[0], partition_bbox_gridCoords.max[0]);
@@ -75,14 +48,47 @@ void PartitionVoxelizer::voxelizeOneTriangle(
 	triangle_bbox_gridCoord.max[2] = clampval<int>(triangle_bbox_gridCoord.max[2], partition_bbox_gridCoords.min[2], partition_bbox_gridCoords.max[2]);
 	triangle_bbox_gridCoord.max[3] = clampval<int>(triangle_bbox_gridCoord.max[3], partition_bbox_gridCoords.min[3], partition_bbox_gridCoords.max[3]);
 
-	// COMMON PROPERTIES FOR THE TRIANGLE
-	vec3 e0 = tri.tri.v1 - tri.tri.v0;
-	vec3 e1 = tri.tri.v2 - tri.tri.v1;
-	vec3 e2 = tri.tri.v0 - tri.tri.v2;
-	vec3 to_normalize = (e0)CROSS(e1);
-	vec3 n = normalize(to_normalize); // triangle normal
+	return triangle_bbox_gridCoord;
+}
 
-									  // PLANE TEST PROPERTIES
+void PartitionVoxelizer::doSlowVoxelizationIfDataArrayHasOverflowed() const
+{
+	if (*use_data) {
+		if (data->size() > data_max_items) {
+			if (verbose) {
+				cout << "Sparseness optimization side-array overflowed, reverting to slower voxelization." << endl;
+				cout << data->size() << " > " << data_max_items << endl;
+			}
+			*use_data = false;
+		}
+	}
+}
+
+void PartitionVoxelizer::calculateTriangleProperties(const Triangle4D &tri, vec3 &e0, vec3 &e1, vec3 &e2, vec3 &n)
+{
+	e0 = tri.tri.v1 - tri.tri.v0;
+	e1 = tri.tri.v2 - tri.tri.v1;
+	e2 = tri.tri.v0 - tri.tri.v2;
+	vec3 to_normalize = (e0)CROSS(e1);
+	n = normalize(to_normalize); // triangle normal
+
+}
+
+void PartitionVoxelizer::voxelizeOneTriangle(const Triangle4D &tri)
+{
+#ifdef BINARY_VOXELIZATION
+	doSlowVoxelizationIfDataArrayHasOverflowed();
+#endif
+
+	// compute triangle bbox in grid coordinates
+	AABox<ivec4> triangle_bbox_gridCoord = compute_Triangle_BoundingBox_gridCoord(tri);
+
+	// COMMON PROPERTIES FOR THE TRIANGLE
+	vec3 e0, e1, e2, n; //edges and normal of triangle
+	calculateTriangleProperties(tri, e0, e1, e2, n);
+
+
+	// PLANE TEST PROPERTIES
 	vec3 c = vec3(0.0f, 0.0f, 0.0f); // critical point
 	if (n[X] > 0) { c[X] = unitlength; }
 	if (n[Y] > 0) { c[Y] = unitlength; }
@@ -128,20 +134,31 @@ void PartitionVoxelizer::voxelizeOneTriangle(
 	float d_xz_e1 = (-1.0f * (n_zx_e1 DOT vec2(tri.tri.v1[Z], tri.tri.v1[X]))) + max(0.0f, unitlength*n_zx_e1[0]) + max(0.0f, unitlength*n_zx_e1[1]);
 	float d_xz_e2 = (-1.0f * (n_zx_e2 DOT vec2(tri.tri.v2[Z], tri.tri.v2[X]))) + max(0.0f, unitlength*n_zx_e2[0]) + max(0.0f, unitlength*n_zx_e2[1]);
 
-	// test possible grid boxes for overlap
+	/*
+	test possible grid boxes for overlap
+	Check the voxels in for each interval
+	X: [ triangle_bbox_gridCoord.min[0], triangle_bbox_gridCoord.max[0] ]
+	Y: [ triangle_bbox_gridCoord.min[1], triangle_bbox_gridCoord.max[1] ]
+	Z: [ triangle_bbox_gridCoord.min[2], triangle_bbox_gridCoord.max[2] ]
+	T: [ triangle_bbox_gridCoord.min[3], triangle_bbox_gridCoord.max[3] ] -> normally only one value
+	*/
 	for (int x = triangle_bbox_gridCoord.min[0]; x <= triangle_bbox_gridCoord.max[0]; x++) {
 		for (int y = triangle_bbox_gridCoord.min[1]; y <= triangle_bbox_gridCoord.max[1]; y++) {
 			for (int z = triangle_bbox_gridCoord.min[2]; z <= triangle_bbox_gridCoord.max[2]; z++) {
 				for (int t = triangle_bbox_gridCoord.min[3]; t <= triangle_bbox_gridCoord.max[3]; t++) {
 
-					uint64_t index = morton4D_Encode_for<uint64_t>(x, y, z, t);
-					//uint64_t index = morton3D_64_encode(z, y, x);
 
+/*					if(verbose)
+					{
+						cout << "x: " << x << ", y:" << y << ", z:" << z << ", t:" << t << endl;
+					}*/
+					
+
+
+					uint64_t index = morton4D_Encode_for<uint64_t>(x, y, z, t);
 					if (voxels[index - morton_start] == FULL_VOXEL) { continue; } // already marked, continue
 
-																				  // TRIANGLE PLANE THROUGH BOX TEST
-
-
+					 // TRIANGLE PLANE THROUGH BOX TEST
 					vec3 p = vec3(x*unitlength, y*unitlength, z*unitlength);
 					float nDOTp = n DOT p;
 					if ((nDOTp + d1) * (nDOTp + d2) > 0.0f) { continue; }
@@ -161,16 +178,22 @@ void PartitionVoxelizer::voxelizeOneTriangle(
 
 					// XZ	
 					vec2 p_zx = vec2(p[Z], p[X]);
-					if (((n_zx_e0 DOT p_zx) + d_xz_e0) < 0.0f) { continue; }
+					if  (((n_zx_e0 DOT p_zx) + d_xz_e0) < 0.0f) { continue; }
 					if (((n_zx_e1 DOT p_zx) + d_xz_e1) < 0.0f) { continue; }
 					if (((n_zx_e2 DOT p_zx) + d_xz_e2) < 0.0f) { continue; }
 
 #ifdef BINARY_VOXELIZATION
 					voxels[index - morton_start] = FULL_VOXEL;
 					if (*use_data) { data->push_back(index); }
+
+					if(binvox)
+					{
+						binvox_handler->writeVoxel(t, x, y, z);
+					}
+
 #else
 					voxels[index - morton_start] = FULL_VOXEL;
-					data.push_back(VoxelData(index, t.normal, average3Vec(t.v0_color, t.v1_color, t.v2_color))); // we ignore data limits for colored voxelization
+					data->push_back(VoxelData(index, t.normal, average3Vec(t.v0_color, t.v1_color, t.v2_color))); // we ignore data limits for colored voxelization
 #endif
 					(*nfilled)++;
 					continue;

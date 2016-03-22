@@ -24,5 +24,7 @@ public:
 		const TriInfo4D& tri_info,
 		const Triangle& tri, vector<Buffer4D*> &buffers,
 		const size_t nbOfPartitions) const = 0;
+
+	void storeTriangleInPartitionBuffers(Triangle4D transformed_tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const;
 };
 #endif

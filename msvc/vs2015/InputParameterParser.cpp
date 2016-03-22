@@ -11,7 +11,7 @@ using std::endl;
 void parseProgramParameters(int argc, char* argv[], std::string &filename,
 	size_t &gridsize, size_t &voxel_memory_limit,
 	float &sparseness_limit, bool &verbose,
-	bool &generate_levels) {
+	bool &generate_levels, bool &binvox) {
 	std::string color_s = "Color from model (fallback to fixed color if model has no color)";
 	std::cout << "Reading program parameters ..." << std::endl;
 	// Input argument validation
@@ -93,6 +93,9 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 		}
 		else if (string(argv[i]) == "-h") {
 			printHelp(); exit(0);
+		}
+		else if (string(argv[i]) == "-binvox") {
+			binvox = true;
 		}
 		else {
 			printInvalid(); exit(0);

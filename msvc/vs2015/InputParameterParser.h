@@ -6,6 +6,6 @@
 void parseProgramParameters(int argc, char* argv[], std::string &filename,
 	size_t &gridsize, size_t &voxel_memory_limit,
 	float &sparseness_limit, bool &verbose,
-	bool &generate_levels);
+	bool &generate_levels, bool &binvox);
 #endif
 

@@ -8,6 +8,8 @@ using namespace std;
 // global flag: be verbose about what we do?
 extern bool verbose;
 
+//global flag: should we create separate binvox files for each timepoint?
+extern bool binvox;
 // Timers (for debugging purposes)
 // (This is a bit ugly, but it's a quick and surefire way to measure performance)
 

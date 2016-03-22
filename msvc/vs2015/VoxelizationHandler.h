@@ -3,6 +3,7 @@
 #include <trip_tools.h>
 #include "../../src/svo_builder/ExtendedTriPartitioningInfo.h"
 #include "../../src/svo_builder/Tree4DBuilder.h"
+#include "../../src/svo_builder/BinvoxHandler.h"
 
 class VoxelizationHandler
 {
@@ -36,6 +37,8 @@ public:
 
 	// create Octreebuilder which will output our SVO
 	Tree4DBuilder builder;
+
+	BinvoxHandler binvox_handler;
 
 	VoxelizationHandler();
 	VoxelizationHandler(

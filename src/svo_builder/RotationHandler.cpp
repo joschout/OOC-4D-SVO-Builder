@@ -125,17 +125,8 @@ void RotationHandler::transformAndStore(const TriInfo4D& tri_info, const Triangl
 		//Triangle rotated_tri = rotateX(tri, unit_angle_degrees);
 		float time = i * unitlength_time;
 		Triangle4D rotated_tri_time = Triangle4D(rotated_tri, time);
-		AABox<vec4> bbox4D = computeBoundingBox(rotated_tri_time);
-		for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
-			bool isInPartition = buffers[j]->processTriangle(rotated_tri_time, bbox4D);
 
-/*			cout << "triangle: "
-			<< "v0: "<< rotated_tri_time.tri.v0
-			<< " v1: " << rotated_tri_time.tri.v1
-			<< " v2: " << rotated_tri_time.tri.v2
-			<< " is in partition (1/0): " << isInPartition << endl;*/
-		}
-
+		storeTriangleInPartitionBuffers(rotated_tri_time, buffers, nbOfPartitions);
 	}
 }
 

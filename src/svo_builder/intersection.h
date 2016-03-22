@@ -79,6 +79,7 @@ inline bool intersectBoxBox(const AABox<T> &a, const AABox<T> &b){
 
 template <typename T>
 inline bool intersect_4DBoxTriangle_4DBoxWorld(const AABox<T> &a, const AABox<T> &b) {
+	//when does it NOT intersect
 	if (a.max[3] < b.min[3]
 		|| a.min[3] > b.max[3]
 		|| a.max[0] < b.min[0] 
@@ -91,7 +92,8 @@ inline bool intersect_4DBoxTriangle_4DBoxWorld(const AABox<T> &a, const AABox<T>
 	{
 		return false;
 	}
-	return true; // intersection or inside
+	// intersection or inside
+	return true; 
 }
 
 

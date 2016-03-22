@@ -37,19 +37,10 @@ void TranslationHandler::transformAndStore(const TriInfo4D& tri_info, const Tria
 	for (float time = 0; time < tri_info.end_time; time = time + unitlength_time)
 	{
 		//cout << endl << "time point:" << time << endl;
-
 		Triangle translated_tri = translate(tri, translation_direction, speed_factor * time);
 		Triangle4D translated_tri_time = Triangle4D(translated_tri, time);
-		AABox<vec4> bbox4D = computeBoundingBox(translated_tri_time);
-		for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
-			bool isInPartition = buffers[j]->processTriangle(translated_tri_time, bbox4D);
-
-			/*				cout << "triangle: "
-			<< "v0: "<< translated_t_time.tri.v0
-			<< " v1: " << translated_t_time.tri.v1
-			<< " v2: " << translated_t_time.tri.v2
-			<< " is in partition (1/0): " << isInPartition << endl;*/
-		}
+		
+		storeTriangleInPartitionBuffers(translated_tri_time, buffers, nbOfPartitions);
 	}
 }
 

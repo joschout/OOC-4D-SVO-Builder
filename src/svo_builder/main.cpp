@@ -38,6 +38,7 @@ ColorType color = COLOR_FROM_MODEL;
 vec3 fixed_color = vec3(1.0f, 1.0f, 1.0f); // fixed color is white
 bool generate_levels = false;
 bool verbose = false;
+bool binvox = false;
 
 // trip header info
 //TripInfo trip_info;
@@ -53,7 +54,6 @@ int main(int argc, char *argv[]) {
 	_setmaxstdio(1024); // increase file descriptor limit in Windows
 #endif
 
-
 #ifdef logVerboseToFile
 	std::printf("stdout is printed to console\n");
 	if (std::freopen("log_ooc_svo_builder.txt", "w", stdout)) {
@@ -63,13 +63,9 @@ int main(int argc, char *argv[]) {
 
 #endif
 
-
-
-
-
 	// Parse program parameters
 	printInfo(version);
-	parseProgramParameters(argc, argv, filename, gridsize, voxel_memory_limit, sparseness_limit, verbose, generate_levels );
+	parseProgramParameters(argc, argv, filename, gridsize, voxel_memory_limit, sparseness_limit, verbose, generate_levels, binvox);
 
 	// Read the .tri file containing the triangle info
 	// struct to contain all info read from a .tri file header

@@ -1,6 +1,12 @@
 #Linux build files
 *.o
 
+*.tree4d
+*.tree4ddata
+*.tree4dnodes
+
+*.binvox
+
 *.trip
 *.tri 
 *.tridata

@@ -142,8 +142,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\svo_builder\BinvoxHandler.h" />
+    <ClInclude Include="..\..\src\svo_builder\BinvoxWriter.h" />
     <ClInclude Include="..\..\src\svo_builder\Node4D.h" />
     <ClInclude Include="..\..\src\svo_builder\PartitionVoxelizer.h" />
+    <ClInclude Include="..\..\src\svo_builder\ReadBinvox.h" />
     <ClInclude Include="..\..\src\svo_builder\RotationHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\TransformationHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\Tree4DBuilder.h" />
@@ -175,6 +178,8 @@
     <ClInclude Include="VoxelizationHandler.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\svo_builder\BinvoxHandler.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\BinvoxWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PartitionVoxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\RotationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TransformationHandler.cpp" />

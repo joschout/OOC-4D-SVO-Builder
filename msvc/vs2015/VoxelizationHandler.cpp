@@ -6,6 +6,8 @@
 #include "../../src/svo_builder/voxelizer.h"
 #include "../../src/svo_builder/PartitionVoxelizer.h"
 
+using std::cout;
+
 /*void voxelizeAndBuildSVO(
 	TripInfo& trianglePartition_info, float sparseness_limit,
 	bool generate_levels, size_t input_buffersize)
@@ -125,6 +127,11 @@ void VoxelizationHandler::voxelizePartition(
 	size_t nfilled_before = nfilled;
 
 	PartitionVoxelizer partition_voxelizer = PartitionVoxelizer(morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, &data, sparseness_limit, &use_data, &nfilled);
+	if(binvox)
+	{
+		partition_voxelizer.binvox_handler = &binvox_handler;
+	}
+	
 	partition_voxelizer.voxelize_schwarz_method4D(reader);
 	//voxelize_schwarz_method4D(reader, morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, data, sparseness_limit, use_data, nfilled);
 	if (verbose)
@@ -151,6 +158,12 @@ void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64
 			if (!voxels[j] == EMPTY_VOXEL) {
 				morton_number = morton_startcode + j;
 				builder.addVoxel(morton_number);
+			/*	if (binvox)
+				{
+					int x, y, z, t;
+					morton4D_Decode_for(morton_number, x, y, z, t);
+					binvox_handler.writeVoxel(t, x, y, z);
+				}*/
 			}
 		}
 	}
@@ -179,6 +192,14 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 		cout << "=====================" << endl;
 	}
 	// For each partition: Voxelize and build SVO
+
+	if(binvox)
+	{
+		binvox_handler = BinvoxHandler(trianglePartition_info.base_filename, trianglePartition_info.gridsize);
+		binvox_handler.initialize(vec3(0.0f, 0.0f, 0.0f), 1.0);
+		binvox_handler.createInitialBinvoxFiles();	
+	}
+	
 	for (size_t i = 0; i < trianglePartition_info.n_partitions; i++) {
 
 		//IF the partition contains no triangles THEN skip it
@@ -201,6 +222,12 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 		if (verbose){
 			cout << "=====================" << endl;
 		}
+	}
+
+	if(binvox)
+	{
+		binvox_handler.sparsifyFiles();
+		binvox_handler.closeWriters();
 	}
 
 	builder.finalizeTree(); // finalize SVO so it gets written to disk
