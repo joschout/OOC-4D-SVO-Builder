@@ -9,12 +9,12 @@
 
 
 alternatePartitioner::alternatePartitioner():
-	gridsize(1), nbOfDimensions(4), nbOfPartitions(1)
+	gridsize_S(1), gridsize_T(1), nbOfDimensions(4), nbOfPartitions(1)
 {
 }
 
-alternatePartitioner::alternatePartitioner(size_t gridsize, size_t nbOfDimensions):
-	gridsize(gridsize), nbOfDimensions(nbOfDimensions), nbOfPartitions(1)
+alternatePartitioner::alternatePartitioner(size_t gridsize_S, size_t gridsize_T, size_t nbOfDimensions):
+	gridsize_S(gridsize_S), gridsize_T(gridsize_T), nbOfDimensions(nbOfDimensions), nbOfPartitions(1)
 {
 }
 
@@ -50,7 +50,7 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 	* 1/1024 (1MB/kB)
 	*/
 
-	size_t nbOfVoxelsInGrid = pow(gridsize, nbOfDimensions);
+	size_t nbOfVoxelsInGrid = pow(gridsize_S, 3) * gridsize_T;
 	uint64_t requiredMemoryInMB = (nbOfVoxelsInGrid*sizeof(char)) / 1024 / 1024;
 	std::cout << "  to do this in-core I would need " << requiredMemoryInMB << " Mb of system memory" << std::endl;
 	if (requiredMemoryInMB <= memory_limit_in_MB) {
@@ -60,6 +60,8 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 
 	size_t estimatedNbOfPartitions = 1;
 	size_t sizeOfPartitionInMB = requiredMemoryInMB;
+	
+	// TODO this might not be correct when we have different grid sizes for space and time
 	auto partitioning_amount = pow(2, nbOfDimensions); // 8
 	while (sizeOfPartitionInMB > memory_limit_in_MB) {
 		sizeOfPartitionInMB = sizeOfPartitionInMB / partitioning_amount;
@@ -76,7 +78,7 @@ TripInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, 
 {
 	TripInfo4D trip_info = TripInfo4D(tri_info);
 
-	auto nbOfTriangles_incl_transf = gridsize * tri_info.triInfo3D.n_triangles;
+	auto nbOfTriangles_incl_transf = gridsize_T * tri_info.triInfo3D.n_triangles;
 	trip_info.n_triangles = nbOfTriangles_incl_transf;
 
 	// Collect nbOfTriangles of each partition
@@ -86,9 +88,14 @@ TripInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, 
 	}
 
 	// Write trip header
-	trip_info.base_filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize) + string("_") + val_to_string(nbOfPartitions);
+	trip_info.base_filename 
+		= tri_info.triInfo3D.base_filename 
+		+ string("_S") + val_to_string(gridsize_S)
+		+ string("_T") + val_to_string(gridsize_T)
+		+ string("_P") + val_to_string(nbOfPartitions);
 	std::string header = trip_info.base_filename + string(".trip");
-	trip_info.gridsize = gridsize;
+	trip_info.gridsize_S = gridsize_S;
+	trip_info.gridsize_T = gridsize_T;
 	trip_info.n_partitions = nbOfPartitions;
 	TripInfo4D::writeTrip4DHeader(header, trip_info);
 
@@ -145,10 +152,10 @@ void alternatePartitioner::createBuffers(const TriInfo4D& tri_info, vector<Buffe
 	// the unit length in the grid = the length of one side of the grid
 	// divided by the size of the grid (i.e. the number of voxels next to each other)
 	// NOTE: the bounding box in a .tri file is cubical
-	float unitlength = (tri_info.mesh_bbox_transformed.max[0] - tri_info.mesh_bbox_transformed.min[0]) / (float)(gridsize );
-	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)(gridsize);
+	float unitlength = (tri_info.mesh_bbox_transformed.max[0] - tri_info.mesh_bbox_transformed.min[0]) / (float)(gridsize_S );
+	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)(gridsize_T);
 
-	float nbOfVoxelsInGrid = pow(gridsize, nbOfDimensions);
+	float nbOfVoxelsInGrid = pow(gridsize_S, 3) * gridsize_T;
 	uint64_t morton_part = nbOfVoxelsInGrid / nbOfPartitions; //amount of voxels per partition
 
 
@@ -240,8 +247,10 @@ AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, 
 Buffer4D* alternatePartitioner::createBufferForPartition(int i, AABox<vec4> &bbox_partition_i_worldCoords, const string base_filename) const
 {
 	std::string filename 
-		= base_filename + val_to_string(gridsize) 
-		+ string("_") + val_to_string(nbOfPartitions)
+		= base_filename 
+		+ string("_S") + val_to_string(gridsize_S) 
+		+ string("_T") + val_to_string(gridsize_T)
+		+ string("_P") + val_to_string(nbOfPartitions)
 		+ string("_") + val_to_string(i) + string(".tripdata");
 	return new Buffer4D(filename, bbox_partition_i_worldCoords, output_buffersize);
 
@@ -253,7 +262,7 @@ TripInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
 	// Just copy files
 	string src = tri_info.triInfo3D.base_filename + string(".tridata");
 	string dst
-		= tri_info.triInfo3D.base_filename + val_to_string(gridsize)
+		= tri_info.triInfo3D.base_filename + val_to_string(gridsize_S)
 		+ string("_") + val_to_string(1)
 		+ string("_") + val_to_string(0) + string(".tripdata");
 	copy_file(src, dst);
@@ -262,9 +271,10 @@ TripInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
 	TripInfo4D trip_info = TripInfo4D(tri_info);
 	trip_info.nbOfTrianglesPerPartition.resize(1);
 	trip_info.nbOfTrianglesPerPartition[0] = tri_info.triInfo3D.n_triangles;
-	trip_info.base_filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize) + string("_") + val_to_string(1);
+	trip_info.base_filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize_S) + string("_") + val_to_string(1);
 	std::string header = trip_info.base_filename + string(".trip");
-	trip_info.gridsize = gridsize;
+	trip_info.gridsize_S = gridsize_S;
+	trip_info.gridsize_T = gridsize_T;
 	trip_info.n_partitions = 1;
 	
 	TripInfo4D::writeTrip4DHeader(header, trip_info);

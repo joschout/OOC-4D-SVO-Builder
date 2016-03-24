@@ -18,7 +18,7 @@ vec3 fixed_color = vec3(1.0f, 1.0f, 1.0f);
 void printInfo(){
 	
 	
-	<< "-------------------------------------------------------------" << endl;
+	cout << "-------------------------------------------------------------" << endl;
 #ifdef BINARY_VOXELIZATION
 	cout << "Tri Converter " << version << " - BINARY VOXELIZATION"<< endl;
 #else

@@ -11,8 +11,8 @@ class TransformationHandler
 
 public:
 
-	explicit TransformationHandler(size_t gridsize);
-	const size_t gridsize;
+	explicit TransformationHandler(size_t gridsize_T);
+	const size_t gridsize_T;
 
 	virtual ~TransformationHandler()
 	{

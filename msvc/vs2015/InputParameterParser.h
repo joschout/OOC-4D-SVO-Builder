@@ -4,7 +4,7 @@
 
 // Parse command-line params and so some basic error checking on them
 void parseProgramParameters(int argc, char* argv[], std::string &filename,
-	size_t &gridsize, size_t &voxel_memory_limit,
+	size_t &gridsize_S, size_t &gridsize_T, size_t &voxel_memory_limit,
 	float &sparseness_limit, bool &verbose,
 	bool &generate_levels, bool &binvox);
 #endif

@@ -1,7 +1,7 @@
 #include "TransformationHandler.h"
 
 
-TransformationHandler::TransformationHandler(size_t gridsize): gridsize(gridsize)
+TransformationHandler::TransformationHandler(size_t gridsize_T): gridsize_T(gridsize_T)
 {
 }
 

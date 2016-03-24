@@ -4,7 +4,7 @@ TranslationHandler::TranslationHandler(): TransformationHandler(1)
 {
 }
 
-TranslationHandler::TranslationHandler(const size_t gridsize, vec3 translation_direction): TransformationHandler(gridsize), translation_direction(translation_direction)
+TranslationHandler::TranslationHandler(const size_t gridsize_T, vec3 translation_direction): TransformationHandler(gridsize_T), translation_direction(translation_direction)
 {
 }
 
@@ -33,7 +33,7 @@ void TranslationHandler::calculateTransformedBoundingBox(const TriInfo& triInfo,
 
 void TranslationHandler::transformAndStore(const TriInfo4D& tri_info, const Triangle& tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const
 {
-	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)gridsize;
+	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)gridsize_T;
 	for (float time = 0; time < tri_info.end_time; time = time + unitlength_time)
 	{
 		//cout << endl << "time point:" << time << endl;

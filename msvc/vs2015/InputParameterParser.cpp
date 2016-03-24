@@ -9,7 +9,7 @@ using std::endl;
 
 // Parse command-line params and so some basic error checking on them
 void parseProgramParameters(int argc, char* argv[], std::string &filename,
-	size_t &gridsize, size_t &voxel_memory_limit,
+	size_t &gridsize_S, size_t &gridsize_T, size_t &voxel_memory_limit,
 	float &sparseness_limit, bool &verbose,
 	bool &generate_levels, bool &binvox) {
 	std::string color_s = "Color from model (fallback to fixed color if model has no color)";
@@ -31,9 +31,18 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			}
 			i++;
 		}
-		else if (string(argv[i]) == "-s") {
-			gridsize = atoi(argv[i + 1]);
-			if (!isPowerOf2((unsigned int)gridsize)) {
+		else if (string(argv[i]) == "-ss") {
+			gridsize_S = atoi(argv[i + 1]);
+			if (!isPowerOf2((unsigned int)gridsize_S)) {
+				cout << "Requested gridsize is not a power of 2" << endl;
+				printInvalid();
+				exit(0);
+			}
+			i++;
+		}
+		else if (string(argv[i]) == "-st") {
+			gridsize_T = atoi(argv[i + 1]);
+			if (!isPowerOf2((unsigned int)gridsize_T)) {
 				cout << "Requested gridsize is not a power of 2" << endl;
 				printInvalid();
 				exit(0);
@@ -103,7 +112,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 	}
 	if (verbose) {
 		cout << "  filename: " << filename << endl;
-		cout << "  gridsize: " << gridsize << endl;
+		cout << "  gridsize space: " << gridsize_S << endl;
+		cout << "  gridsize time: " << gridsize_T << endl;
 		cout << "  memory limit: " << voxel_memory_limit << endl;
 		cout << "  sparseness optimization limit: " << sparseness_limit << " resulting in " << (sparseness_limit*voxel_memory_limit) << " memory limit." << endl;
 		cout << "  color type: " << color_s << endl;

@@ -5,7 +5,7 @@ RotationHandler::RotationHandler(): TransformationHandler(1)
 	rotation_axis = X_AXIS;
 }
 
-RotationHandler::RotationHandler(const size_t gridsize, RotationAxis rotation_axis): TransformationHandler(gridsize), rotation_axis(rotation_axis)
+RotationHandler::RotationHandler(const size_t gridsize_T, RotationAxis rotation_axis): TransformationHandler(gridsize_T), rotation_axis(rotation_axis)
 {
 }
 
@@ -39,11 +39,11 @@ void RotationHandler::calculateTransformedBoundingBox(const TriInfo& triInfo, AA
 	vec3 pf = vec3(p_max[0], p_max[1], p_min[2]);
 
 
-	float unit_angle_degrees = 360 / (float)(gridsize - 1);
+	float unit_angle_degrees = 360 / (float)(gridsize_T - 1);
 
 	RotationHandler::fptr_pointRotation rotationFunction = getPointRotationFunction();
 
-	for (int i = 0; i <= gridsize; i = i + 1)
+	for (int i = 0; i <= gridsize_T; i = i + 1)
 	{
 		
 		vec3 rotated_min = (this->*rotationFunction)(p_min, i * unit_angle_degrees);
@@ -110,14 +110,14 @@ RotationHandler::fptr_pointRotation RotationHandler::getPointRotationFunction() 
 void RotationHandler::transformAndStore(const TriInfo4D& tri_info, const Triangle& tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const
 {
 
-	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)gridsize;
-	float unit_angle_degrees = 360 / (float)(gridsize - 1);
+	float unitlength_time = (tri_info.mesh_bbox_transformed.max[3] - tri_info.mesh_bbox_transformed.min[3]) / (float)gridsize_T;
+	float unit_angle_degrees = 360 / (float)(gridsize_T - 1);
 
 	 RotationHandler::fptr_triangleRotation rotationFunction = getTriangleRotationFunction();
 
 	 cout << endl;
 
-	for (int i = 0; i < gridsize; i = i + 1)
+	for (int i = 0; i < gridsize_T; i = i + 1)
 	{
 		//	cout << endl << "time point:" << time << endl;
 		Triangle rotated_tri = (this->*rotationFunction)(tri, i *unit_angle_degrees);

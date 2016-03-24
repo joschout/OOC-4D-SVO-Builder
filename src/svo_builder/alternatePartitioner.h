@@ -10,12 +10,13 @@ class alternatePartitioner
 {
 public:
 
-	const size_t gridsize;
+	const size_t gridsize_S;
+	const size_t gridsize_T;
 	const size_t nbOfDimensions;
 	size_t nbOfPartitions;
 
 	alternatePartitioner();
-	alternatePartitioner(size_t gridsize, size_t nbOfDimensions);
+	alternatePartitioner(size_t gridsize_S, size_t gridsize_T, size_t nbOfDimensions);
 	~alternatePartitioner();
 
 	TripInfo4D partitionTriangleModel(TriInfo4D &extended_tri_info, size_t voxel_memory_limit, TransformationHandler *transformation_handler);

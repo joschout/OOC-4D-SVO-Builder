@@ -1,21 +1,21 @@
 #include "BinvoxHandler.h"
 #include "globals.h"
 
-BinvoxHandler::BinvoxHandler(std::string base_filename, size_t gridsize):
-	base_filename(base_filename), gridsize(gridsize)
+BinvoxHandler::BinvoxHandler(std::string base_filename, size_t gridsize_T):
+	base_filename(base_filename), gridsize_T(gridsize_T)
 {
 }
 
 void BinvoxHandler::initialize(vec3 translation_vec, float scale)
 {
-	binvox_writers.reserve(gridsize);
-	for (auto i = 0; i < gridsize; i++)
+	binvox_writers.reserve(gridsize_T);
+	for (auto i = 0; i < gridsize_T; i++)
 	{
-		binvox_writers.push_back(BinvoxWriter(base_filename, translation_vec, scale, gridsize, i ));
+		binvox_writers.push_back(BinvoxWriter(base_filename, translation_vec, scale, gridsize_T, i ));
 	}
 }
 
-BinvoxHandler::BinvoxHandler(): gridsize(0)
+BinvoxHandler::BinvoxHandler(): gridsize_T(0)
 {
 }
 

@@ -16,7 +16,8 @@ public:
 	string base_filename;
 	int version;
 	int geometry_only;
-	size_t gridsize;
+	size_t gridsize_S;
+	size_t gridsize_T;
 	//AABox<vec3> mesh_bbox;
 	size_t n_triangles;
 	size_t n_partitions;

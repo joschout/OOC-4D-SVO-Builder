@@ -14,7 +14,8 @@ using namespace trimesh;
 class Tree4DBuilder {
 public:
 	vector< vector< Node4D > > b_buffers;
-	size_t gridlength;
+	size_t gridsize_S;
+	size_t gridsize_T;
 	int b_maxdepth; // maximum octree depth
 	uint64_t b_current_morton; // current morton position
 	uint64_t b_max_morton; // maximum morton position
@@ -29,7 +30,7 @@ public:
 	string base_filename;
 
 	Tree4DBuilder();
-	Tree4DBuilder(std::string base_filename, size_t gridlength, bool generate_levels);
+	Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels);
 	void finalizeTree();
 	void addVoxel(const uint64_t morton_number);
 	void addVoxel(const VoxelData& point);

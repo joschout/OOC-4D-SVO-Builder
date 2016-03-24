@@ -195,7 +195,7 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 
 	if(binvox)
 	{
-		binvox_handler = BinvoxHandler(trianglePartition_info.base_filename, trianglePartition_info.gridsize);
+		binvox_handler = BinvoxHandler(trianglePartition_info.base_filename, trianglePartition_info.gridsize_T);
 		binvox_handler.initialize(vec3(0.0f, 0.0f, 0.0f), 1.0);
 		binvox_handler.createInitialBinvoxFiles();	
 	}
@@ -250,15 +250,15 @@ VoxelizationHandler::VoxelizationHandler(TripInfo4D& trianglePartition_info, siz
     input_buffersize(input_buffersize), trianglePartition_info(trianglePartition_info)
 {
 	unitlength
-		= (trianglePartition_info.mesh_bbox_transl.max[0] - trianglePartition_info.mesh_bbox_transl.min[0]) / (float)trianglePartition_info.gridsize;
+		= (trianglePartition_info.mesh_bbox_transl.max[0] - trianglePartition_info.mesh_bbox_transl.min[0]) / (float)trianglePartition_info.gridsize_S;
 
 	unitlength_time
-		= (trianglePartition_info.mesh_bbox_transl.max[3] - trianglePartition_info.mesh_bbox_transl.min[3]) / (float)trianglePartition_info.gridsize;
+		= (trianglePartition_info.mesh_bbox_transl.max[3] - trianglePartition_info.mesh_bbox_transl.min[3]) / (float)trianglePartition_info.gridsize_T;
 
 	//morton_part = number of voxels per partition
 	// = (amount of voxels in the grid) / (number of partitions in the grid)
 	morton_part
-		= pow(trianglePartition_info.gridsize, nbOfDimensions) / trianglePartition_info.n_partitions;
+		= (pow(trianglePartition_info.gridsize_S, 3) * trianglePartition_info.gridsize_T) / trianglePartition_info.n_partitions;
 
 	voxels = new char[static_cast<size_t>(morton_part)];
 
@@ -268,7 +268,8 @@ VoxelizationHandler::VoxelizationHandler(TripInfo4D& trianglePartition_info, siz
 	builder
 		= Tree4DBuilder(
 			trianglePartition_info.base_filename,
-			trianglePartition_info.gridsize,
+			trianglePartition_info.gridsize_S,
+			trianglePartition_info.gridsize_T,
 			generate_levels);
 
 	use_data = true;

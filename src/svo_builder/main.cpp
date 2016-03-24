@@ -30,7 +30,8 @@ auto end_time = 1;
 string filename = "";
 // vozel grid size, should be a power of 2
 // amount of voxels in the grid = pow(gridsize, nbOfGridDimensions)
-size_t gridsize = 16;
+size_t gridsize_S = 16;
+size_t gridsize_T = 16;
 //the amount of system memory in MEGABYTES we maximally want to use during the voxelization proces
 size_t voxel_memory_limit = 2048;
 float sparseness_limit = 0.10f;
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
 
 	// Parse program parameters
 	printInfo(version);
-	parseProgramParameters(argc, argv, filename, gridsize, voxel_memory_limit, sparseness_limit, verbose, generate_levels, binvox);
+	parseProgramParameters(argc, argv, filename, gridsize_S, gridsize_T, voxel_memory_limit, sparseness_limit, verbose, generate_levels, binvox);
 
 	// Read the .tri file containing the triangle info
 	// struct to contain all info read from a .tri file header
@@ -76,7 +77,7 @@ int main(int argc, char *argv[]) {
 	TriInfo4D triangleInfo4D = TriInfo4D(triangleInfo3D, end_time);
 
 //	RotationHandler transformation_handler = RotationHandler(gridsize, X_AXIS);
-	TranslationHandler transformation_handler = TranslationHandler(gridsize, translation_direction);
+	TranslationHandler transformation_handler = TranslationHandler(gridsize_T, translation_direction);
 	transformation_handler.calculateTransformedBoundingBox(triangleInfo3D, triangleInfo4D.mesh_bbox_transformed, end_time);
 	//tri info now contains the info from the tri header file
 	//NOTE: THIS DOES NOT INCLUDE THE INFO OF EACH INDIVIDUAL TRIANGLE
@@ -91,7 +92,7 @@ int main(int argc, char *argv[]) {
 	--> test each triangle against the bounding box of each subgrid
 	Store each triangle mesh partition temporarily on disk
 	*/
-	alternatePartitioner partitioner = alternatePartitioner(gridsize, nbOfDimensions);
+	alternatePartitioner partitioner = alternatePartitioner(gridsize_S, gridsize_T, nbOfDimensions);
 	TripInfo4D trianglePartition_info = partitioner.partitionTriangleModel(triangleInfo4D, voxel_memory_limit, &transformation_handler);
 	
 

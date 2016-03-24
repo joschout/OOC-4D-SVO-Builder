@@ -14,7 +14,7 @@ private:
 
 public:
 	TranslationHandler();
-	TranslationHandler(const size_t gridsize, vec3 translation_direction);
+	TranslationHandler(const size_t gridsize_T, vec3 translation_direction);
 	~TranslationHandler() override;
 	void calculateTransformedBoundingBox(const TriInfo& triInfo, AABox<vec4>& mesh_bbox_transformed, float end_time) const;
 	void transformAndStore(const TriInfo4D& tri_info, const Triangle& tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const override;

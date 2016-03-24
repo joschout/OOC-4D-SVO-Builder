@@ -4,13 +4,13 @@
 #include "octree_io.h"
 #include "tree4d_io.h"
 
-Tree4DBuilder::Tree4DBuilder(): gridlength(1), b_maxdepth(0), b_current_morton(0), b_max_morton(0), b_data_pos(0), b_node_pos(0), generate_levels(false), node_out(nullptr), data_out(nullptr)
+Tree4DBuilder::Tree4DBuilder(): gridsize_S(1), gridsize_T(1), b_maxdepth(0), b_current_morton(0), b_max_morton(0), b_data_pos(0), b_node_pos(0), generate_levels(false), node_out(nullptr), data_out(nullptr)
 {
 }
 
 // OctreeBuilder constructor: this initializes the builder and sets up the output files, ready to go
-Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridlength, bool generate_levels) :
-	gridlength(gridlength), b_node_pos(0),
+Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels) :
+	gridsize_S(gridsize_S), gridsize_T(gridsize_T), b_node_pos(0),
 	b_data_pos(0), b_current_morton(0),
 	generate_levels(generate_levels), base_filename(base_filename) {
 
@@ -21,14 +21,14 @@ Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridlength, bool 
 	data_out = fopen(data_name.c_str(), "wb");
 
 	// Setup building variables
-	b_maxdepth = log2((unsigned int)gridlength);
+	b_maxdepth = log2((unsigned int)max(gridsize_S, gridsize_T));
 	b_buffers.resize(b_maxdepth + 1);
 	for (int i = 0; i < b_maxdepth + 1; i++) {
 		b_buffers[i].reserve(16);
 	}
 
 	// Fill data arrays
-	b_max_morton = morton4D_Encode_for<uint64_t, uint_fast32_t>((uint_fast32_t)gridlength - 1, (uint_fast32_t)gridlength - 1, (uint_fast32_t)gridlength - 1, (uint_fast32_t)gridlength - 1);
+	b_max_morton = morton4D_Encode_for<uint64_t, uint_fast32_t>((uint_fast32_t)gridsize_S - 1, (uint_fast32_t)gridsize_S - 1, (uint_fast32_t)gridsize_S - 1, (uint_fast32_t)gridsize_T - 1);
 	writeVoxelData(data_out, VoxelData(), b_data_pos); // first data point is NULL
 #ifdef BINARY_VOXELIZATION
 	VoxelData v = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
@@ -48,7 +48,7 @@ void Tree4DBuilder::finalizeTree() {
 	writeNode4D(node_out, b_buffers[0][0], b_node_pos);
 
 	// write header
-	Tree4DInfo tree4D_info(1, base_filename, gridlength, b_node_pos, b_data_pos);
+	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, b_node_pos, b_data_pos);
 
 	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
 	writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);

@@ -33,8 +33,11 @@ int TripInfo4D::parseTrip4DHeader(const std::string& filename, TripInfo4D& t)
 		if (line.compare("END") == 0) {
 			done = true; // when we encounter data keyword, we're at the end of the ASCII header
 		}
-		else if (line.compare("gridsize") == 0) {
-			file >> t.gridsize;
+		else if (line.compare("gridsize_S") == 0) {
+			file >> t.gridsize_S;
+		}
+		else if (line.compare("gridsize_T") == 0) {
+			file >> t.gridsize_T;
 		}
 		else if (line.compare("n_triangles") == 0) {
 			file >> t.n_triangles;
@@ -81,7 +84,8 @@ void TripInfo4D::writeTrip4DHeader(const std::string& filename, const TripInfo4D
 	outfile.open(filename.c_str(), ios::out);
 	// write ASCII header
 	outfile << "#trip " << t.version << endl;
-	outfile << "gridsize " << t.gridsize << endl;
+	outfile << "gridsize_S " << t.gridsize_S << endl;
+	outfile << "gridsize_T " << t.gridsize_T << endl;
 	outfile << "n_triangles " << t.n_triangles << endl;
 	outfile << "bbox  "
 		<< t.mesh_bbox_transl.min[0] << " "

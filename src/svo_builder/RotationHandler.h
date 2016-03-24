@@ -14,7 +14,7 @@ public:
 	RotationAxis rotation_axis;
 
 	RotationHandler();
-	RotationHandler(const size_t gridsize, RotationAxis rotation_axis);
+	RotationHandler(const size_t gridsize_T, RotationAxis rotation_axis);
 	~RotationHandler() override;
 	void calculateTransformedBoundingBox(const TriInfo& triInfo, AABox<vec4>& mesh_bbox_transformed, float end_time) const;
 	
