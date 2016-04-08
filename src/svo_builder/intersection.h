@@ -5,7 +5,7 @@
 #include <cassert>
 #include "../libs/libtri/include/tri_util.h"
 #include "geometry_primitives.h"
-#include "../../msvc/vs2015/Triangle4D.h"
+#include "Triangle4D.h"
 
 // Intersection methods
 inline AABox<vec3> computeBoundingBox(const vec3 &v0, const vec3 &v1, const vec3 &v2){

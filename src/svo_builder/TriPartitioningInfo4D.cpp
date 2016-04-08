@@ -1,7 +1,7 @@
-#include "ExtendedTriPartitioningInfo.h"
+#include "TriPartitioningInfo4D.h"
 #include "TriInfo4D.h"
 
-TripInfo4D::TripInfo4D():
+TriPartitioningInfo4D::TriPartitioningInfo4D():
 	mesh_bbox_transl(AABox<vec4>()),
 	end_time(0), base_filename(""), version(1),
 	geometry_only(0), gridsize_S(0), gridsize_T(0), n_triangles(0),
@@ -9,7 +9,7 @@ TripInfo4D::TripInfo4D():
 {	
 }
 
-TripInfo4D::TripInfo4D(const TriInfo4D  &t):
+TriPartitioningInfo4D::TriPartitioningInfo4D(const TriInfo4D  &t):
 	mesh_bbox_transl(t.mesh_bbox_transformed),
 	end_time(t.end_time), base_filename(t.triInfo3D.base_filename),
 	version(t.triInfo3D.version),
@@ -18,11 +18,11 @@ TripInfo4D::TripInfo4D(const TriInfo4D  &t):
 {
 }
 
-TripInfo4D::~TripInfo4D()
+TriPartitioningInfo4D::~TriPartitioningInfo4D()
 {
 }
 
-void TripInfo4D::print() const
+void TriPartitioningInfo4D::print() const
 {
 	
 	
@@ -49,7 +49,7 @@ void TripInfo4D::print() const
 
 }
 
-bool TripInfo4D::filesExist() const
+bool TriPartitioningInfo4D::filesExist() const
 {
 	string header = base_filename + string(".trip");
 	for (size_t i = 0; i< n_partitions; i++) {

@@ -4,12 +4,12 @@
 #include "../libs/libtri/include/trip_tools.h"
 #include "TriInfo4D.h"
 #include "alternatePartitioner.h"
-#include "ExtendedTriPartitioningInfo.h"
+#include "TriPartitioningInfo4D.h"
 #include "PrintUtils.h"
-#include "../../msvc/vs2015/TriHeaderFileReader.h"
-#include "../../msvc/vs2015/TripFileHandler.h"
-#include "../../msvc/vs2015/InputParameterParser.h"
-#include "../../msvc/vs2015/VoxelizationHandler.h"
+#include "TriHeaderFileReader.h"
+#include "TripFileHandler.h"
+#include "InputParameterParser.h"
+#include "VoxelizationHandler.h"
 #include "TranslationHandler.h"
 #include "RotationHandler.h"
 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 	Store each triangle mesh partition temporarily on disk
 	*/
 	alternatePartitioner partitioner = alternatePartitioner(gridsize_S, gridsize_T, nbOfDimensions);
-	TripInfo4D trianglePartition_info = partitioner.partitionTriangleModel(triangleInfo4D, voxel_memory_limit, &transformation_handler);
+	TriPartitioningInfo4D trianglePartition_info = partitioner.partitionTriangleModel(triangleInfo4D, voxel_memory_limit, &transformation_handler);
 	
 
 	// Parse TRIP header
@@ -108,4 +108,5 @@ int main(int argc, char *argv[]) {
 #ifdef logVerboseToFile
 		std::fclose(stdout);
 #endif
+
 }

@@ -139,11 +139,14 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\BinvoxHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\BinvoxWriter.h" />
+    <ClInclude Include="..\..\src\svo_builder\InputParameterParser.h" />
     <ClInclude Include="..\..\src\svo_builder\Node4D.h" />
     <ClInclude Include="..\..\src\svo_builder\PartitionVoxelizer.h" />
     <ClInclude Include="..\..\src\svo_builder\ReadBinvox.h" />
@@ -154,8 +157,12 @@
     <ClInclude Include="..\..\src\svo_builder\Buffer.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer4D.h" />
     <ClInclude Include="..\..\src\svo_builder\tree4d_io.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tri4DReader.h" />
+    <ClInclude Include="..\..\src\svo_builder\tri4D_tools.h" />
+    <ClInclude Include="..\..\src\svo_builder\Triangle4D.h" />
+    <ClInclude Include="..\..\src\svo_builder\TriHeaderFileReader.h" />
     <ClInclude Include="..\..\src\svo_builder\TriInfo4D.h" />
-    <ClInclude Include="..\..\src\svo_builder\ExtendedTriPartitioningInfo.h" />
+    <ClInclude Include="..\..\src\svo_builder\TriPartitioningInfo4D.h" />
     <ClInclude Include="..\..\src\svo_builder\geometry_primitives.h" />
     <ClInclude Include="..\..\src\svo_builder\globals.h" />
     <ClInclude Include="..\..\src\svo_builder\intersection.h" />
@@ -166,37 +173,34 @@
     <ClInclude Include="..\..\src\svo_builder\partitioner.h" />
     <ClInclude Include="..\..\src\svo_builder\TranslationHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\PrintUtils.h" />
+    <ClInclude Include="..\..\src\svo_builder\TripFileHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\VoxelData.h" />
+    <ClInclude Include="..\..\src\svo_builder\VoxelizationHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\voxelizer.h" />
     <ClInclude Include="..\..\src\svo_builder\svo_builder_util.h" />
-    <ClInclude Include="InputParameterParser.h" />
-    <ClInclude Include="Tri4DReader.h" />
-    <ClInclude Include="tri4D_tools.h" />
-    <ClInclude Include="Triangle4D.h" />
-    <ClInclude Include="TriHeaderFileReader.h" />
-    <ClInclude Include="TripFileHandler.h" />
+    <ClInclude Include="Morton4DConverter.h" />
     <ClInclude Include="VoxelizationHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\svo_builder\BinvoxHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\BinvoxWriter.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\InputParameterParser.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PartitionVoxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\RotationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TransformationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TranslationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\alternatePartitioner.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TriHeaderFileReader.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriInfo4D.cpp" />
-    <ClCompile Include="..\..\src\svo_builder\ExtendedTriPartitioningInfo.cpp" />
     <ClCompile Include="..\..\src\svo_builder\OctreeBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\partitioner.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PrintUtils.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TriPartitioningInfo4D.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TripFileHandler.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\VoxelizationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\voxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\main.cpp" />
-    <ClCompile Include="InputParameterParser.cpp" />
-    <ClCompile Include="TriHeaderFileReader.cpp" />
-    <ClCompile Include="TripFileHandler.cpp" />
-    <ClCompile Include="VoxelizationHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

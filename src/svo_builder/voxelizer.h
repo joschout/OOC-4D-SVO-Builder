@@ -7,7 +7,7 @@
 #include "intersection.h"
 #include "../libs/libmorton/include/morton.h"
 #include "VoxelData.h"
-#include "../../msvc/vs2015/Tri4DReader.h"
+#include "Tri4DReader.h"
 
 // Voxelization-related stuff
 typedef Vec<3, unsigned int> uivec3;

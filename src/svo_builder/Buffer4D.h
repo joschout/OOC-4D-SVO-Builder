@@ -5,7 +5,7 @@
 #include <vector>
 #include "../libs/libtri/include/tri_util.h"
 #include "intersection.h"
-#include "../../msvc/vs2015/tri4D_tools.h"
+#include "tri4D_tools.h"
 
 using namespace std;
 using namespace trimesh;

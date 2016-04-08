@@ -1,8 +1,8 @@
 #include "InputParameterParser.h"
 #include <string>
 #include <iostream>
-#include "../../src/svo_builder/PrintUtils.h"
-#include "../../src/svo_builder/svo_builder_util.h"
+#include "PrintUtils.h"
+#include "svo_builder_util.h"
 using std::string;
 using std::cout;
 using std::endl;

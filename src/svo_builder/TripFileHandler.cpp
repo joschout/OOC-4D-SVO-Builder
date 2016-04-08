@@ -1,8 +1,8 @@
 #include "TripFileHandler.h"
 
 // Trip header handling and error checking
-void readTripHeader(string& filename, TripInfo4D& trip_info, bool verbose) {
-	if (TripInfo4D::parseTrip4DHeader(filename, trip_info) != 1) {
+void readTripHeader(string& filename, TriPartitioningInfo4D& trip_info, bool verbose) {
+	if (TriPartitioningInfo4D::parseTrip4DHeader(filename, trip_info) != 1) {
 		exit(0);
 	}
 	if (!trip_info.filesExist()) {
@@ -12,7 +12,7 @@ void readTripHeader(string& filename, TripInfo4D& trip_info, bool verbose) {
 	if (verbose) { trip_info.print(); }
 }
 
-int TripInfo4D::parseTrip4DHeader(const std::string& filename, TripInfo4D& t)
+int TriPartitioningInfo4D::parseTrip4DHeader(const std::string& filename, TriPartitioningInfo4D& t)
 {
 	ifstream file;
 	file.open(filename.c_str(), ios::in);
@@ -77,7 +77,7 @@ int TripInfo4D::parseTrip4DHeader(const std::string& filename, TripInfo4D& t)
 	return 1;
 }
 
-void TripInfo4D::writeTrip4DHeader(const std::string& filename, const TripInfo4D& t)
+void TriPartitioningInfo4D::writeTrip4DHeader(const std::string& filename, const TriPartitioningInfo4D& t)
 {
 	// open file for writing
 	ofstream outfile;

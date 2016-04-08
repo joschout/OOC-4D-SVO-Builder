@@ -1,11 +1,11 @@
-#ifndef EXTENDEDTRIPARTITIONINGINFO_H
-#define EXTENDEDTRIPARTITIONINGINFO_H
+#ifndef TRIPARTITIONINGINFO4D_H
+#define TRIPARTITIONINGINFO4D_H
 
 #include <trip_tools.h>
 
 class TriInfo4D;
 
-class TripInfo4D
+class TriPartitioningInfo4D
 {
 public:
 	//TripInfo tripInfo3D;
@@ -24,14 +24,14 @@ public:
 	vector<size_t> nbOfTrianglesPerPartition;
 
 
-	TripInfo4D();
-	TripInfo4D(const TriInfo4D &t);
-	~TripInfo4D();
+	TriPartitioningInfo4D();
+	TriPartitioningInfo4D(const TriInfo4D &t);
+	~TriPartitioningInfo4D();
 
 	void print() const;
 	bool filesExist() const;
-	static int parseTrip4DHeader(const std::string &filename, TripInfo4D &t);
-	static void writeTrip4DHeader(const std::string &filename, const TripInfo4D &t);
+	static int parseTrip4DHeader(const std::string &filename, TriPartitioningInfo4D &t);
+	static void writeTrip4DHeader(const std::string &filename, const TriPartitioningInfo4D &t);
 };
 
 #endif

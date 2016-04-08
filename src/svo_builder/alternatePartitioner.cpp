@@ -5,7 +5,7 @@
 #include "Buffer4D.h"
 #include "voxelizer.h"
 #include "morton4D.h"
-#include "ExtendedTriPartitioningInfo.h"
+#include "TriPartitioningInfo4D.h"
 
 
 alternatePartitioner::alternatePartitioner():
@@ -22,7 +22,7 @@ alternatePartitioner::~alternatePartitioner()
 {
 }
 
-TripInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_info, size_t voxel_memory_limit, TransformationHandler *transformation_handler)
+TriPartitioningInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_info, size_t voxel_memory_limit, TransformationHandler *transformation_handler)
 {
 	//estimate the amount of triangle partitions needed for voxelization
 	//NOTE: the estimation is hardcoded for 3D trees
@@ -30,7 +30,7 @@ TripInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& extended_tri_
 	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
 
 	//partition the  triangle mesh
-	TripInfo4D trianglePartition_info = partition(extended_tri_info, transformation_handler);
+	TriPartitioningInfo4D trianglePartition_info = partition(extended_tri_info, transformation_handler);
 	cout << "done." << endl;
 
 	return trianglePartition_info;
@@ -74,9 +74,9 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 	return estimatedNbOfPartitions;
 }
 
-TripInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const
+TriPartitioningInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const
 {
-	TripInfo4D trip_info = TripInfo4D(tri_info);
+	TriPartitioningInfo4D trip_info = TriPartitioningInfo4D(tri_info);
 
 	auto nbOfTriangles_incl_transf = gridsize_T * tri_info.triInfo3D.n_triangles;
 	trip_info.n_triangles = nbOfTriangles_incl_transf;
@@ -97,7 +97,7 @@ TripInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, 
 	trip_info.gridsize_S = gridsize_S;
 	trip_info.gridsize_T = gridsize_T;
 	trip_info.n_partitions = nbOfPartitions;
-	TripInfo4D::writeTrip4DHeader(header, trip_info);
+	TriPartitioningInfo4D::writeTrip4DHeader(header, trip_info);
 
 	return trip_info;
 }
@@ -111,7 +111,7 @@ void alternatePartitioner::deleteBuffers(vector<Buffer4D*> buffers) const
 
 // Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
 // and store information about the partitioning in trip_info
-TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info, TransformationHandler *transformation_handler) {
+TriPartitioningInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info, TransformationHandler *transformation_handler) {
 	// Special case: just one partition
 	//if (nbOfPartitions == 1) {
 	//	return partition_one(tri_info, gridsize);
@@ -135,7 +135,7 @@ TripInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info, Transforma
 		transformation_handler->transformAndStore(tri_info, tri, buffers, nbOfPartitions);
 	}
 
-	TripInfo4D trip_info = createTripInfoHeader(tri_info, buffers);
+	TriPartitioningInfo4D trip_info = createTripInfoHeader(tri_info, buffers);
 	deleteBuffers(buffers);
 
 	return trip_info;
@@ -187,7 +187,7 @@ void alternatePartitioner::createBuffers(const TriInfo4D& tri_info, vector<Buffe
 }
 
 // Remove the temporary .trip files we made
-void alternatePartitioner::removeTripFiles(const TripInfo4D& trip_info)
+void alternatePartitioner::removeTripFiles(const TriPartitioningInfo4D& trip_info)
 {
 	// remove header file
 	string filename = trip_info.base_filename + string(".trip");
@@ -257,7 +257,7 @@ Buffer4D* alternatePartitioner::createBufferForPartition(int i, AABox<vec4> &bbo
 }
 
 // Handle the special case of just needing one partition
-TripInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
+TriPartitioningInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
 {
 	// Just copy files
 	string src = tri_info.triInfo3D.base_filename + string(".tridata");
@@ -268,7 +268,7 @@ TripInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
 	copy_file(src, dst);
 
 	// Write header
-	TripInfo4D trip_info = TripInfo4D(tri_info);
+	TriPartitioningInfo4D trip_info = TriPartitioningInfo4D(tri_info);
 	trip_info.nbOfTrianglesPerPartition.resize(1);
 	trip_info.nbOfTrianglesPerPartition[0] = tri_info.triInfo3D.n_triangles;
 	trip_info.base_filename = tri_info.triInfo3D.base_filename + val_to_string(gridsize_S) + string("_") + val_to_string(1);
@@ -277,7 +277,7 @@ TripInfo4D alternatePartitioner::partition_one(const TriInfo4D& tri_info)
 	trip_info.gridsize_T = gridsize_T;
 	trip_info.n_partitions = 1;
 	
-	TripInfo4D::writeTrip4DHeader(header, trip_info);
+	TriPartitioningInfo4D::writeTrip4DHeader(header, trip_info);
 	
 	return trip_info;
 

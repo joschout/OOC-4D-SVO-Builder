@@ -1,5 +1,5 @@
-#ifndef EXTENDEDTRIINFO_H
-#define EXTENDEDTRIINFO_H
+#ifndef TRIINFO4D_H
+#define TRIINFO4D_H
 #include <tri_tools.h>
 
 class TriInfo4D
