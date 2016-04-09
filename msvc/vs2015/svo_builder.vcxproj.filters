@@ -75,6 +75,9 @@
     <ClCompile Include="..\..\src\svo_builder\TriHeaderFileReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\morton4D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\Buffer.h">
@@ -153,9 +156,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\ReadBinvox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Morton4DConverter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\TriPartitioningInfo4D.h">

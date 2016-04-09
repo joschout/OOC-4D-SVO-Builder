@@ -134,9 +134,9 @@ inline morton morton3D_Encode_for(
 		nbOfBitsLeft_z = 0;
 	}
 
-	std::cout << "Starting method with" << std::endl;
+	/*std::cout << "Starting method with" << std::endl;
 	std::cout << "x: " << x << ", y: " << y << ", z: " << z << std::endl;
-	std::cout << "gridsize X: " << gridsize_x << ", Y: " << gridsize_y << ", Z: " << gridsize_z << std::endl;
+	std::cout << "gridsize X: " << gridsize_x << ", Y: " << gridsize_y << ", Z: " << gridsize_z << std::endl;*/
 
 	/*	for (unsigned int index_in_coord = 0; index_in_coord <= checkbits; ++index_in_coord) {
 	if (nbOfBitsLeft_x != 0){
@@ -167,22 +167,22 @@ inline morton morton3D_Encode_for(
 
 	for (unsigned int index_in_coord = 0; index_in_coord <= checkbits; ++index_in_coord) {
 		morton bitmask_index_in_coord = ((morton)0x1 << index_in_coord);
-		std::cout << "current bit in coord: " << log2(bitmask_index_in_coord) << std::endl;
-		std::cout << "nb of bits left: X: " << nbOfBitsLeft_x << ", Y: " << nbOfBitsLeft_y << ", Z: " << nbOfBitsLeft_z << std::endl;
+	/*	std::cout << "current bit in coord: " << log2(bitmask_index_in_coord) << std::endl;
+		std::cout << "nb of bits left: X: " << nbOfBitsLeft_x << ", Y: " << nbOfBitsLeft_y << ", Z: " << nbOfBitsLeft_z << std::endl;*/
 
 		if (nbOfBitsLeft_x != 0)
 		{
 			//take the bit in X;
 			morton bitTakenFromX = x & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromX == 0 ? 0 : 1) << " from x-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromX == 0 ? 0 : 1) << " from x-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromX << (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
 
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_x--;
 		}
@@ -190,15 +190,15 @@ inline morton morton3D_Encode_for(
 		if (nbOfBitsLeft_y != 0) {
 			//take the bit in Y;
 			morton bitTakenFromY = y & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromY == 0 ? 0 : 1) << " from y-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromY == 0 ? 0 : 1) << " from y-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromY << (current_position_in_morton - index_in_coord);
 			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
 
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_y--;
 		}
@@ -206,7 +206,7 @@ inline morton morton3D_Encode_for(
 		if (nbOfBitsLeft_z != 0) {
 			//take the bit in Z;
 			morton bitTakenFromZ = z & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromZ == 0 ? 0 : 1) << " from z-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromZ == 0 ? 0 : 1) << " from z-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromZ << (current_position_in_morton - index_in_coord);
@@ -214,16 +214,16 @@ inline morton morton3D_Encode_for(
 
 			//put the bit in the morton code
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_z--;
 		}
 
-		std::cout << "----------" << std::endl;
+//		std::cout << "----------" << std::endl;
 	}
 
-	std::cout << "===== End of method =====" << std::endl;
+//	std::cout << "===== End of method =====" << std::endl;
 	return answer;
 }
 
@@ -256,31 +256,31 @@ inline void morton3D_Decode_for(
 		nbOfBitsLeft_z = 0;
 	}
 
-	std::cout << "Starting method with" << std::endl;
-	std::cout << "morton: " << m << std::endl;
-	std::cout << "gridsize X: " << gridsize_x << ", Y: " << gridsize_y << ", Z: " << gridsize_z << std::endl;
+//	std::cout << "Starting method with" << std::endl;
+//	std::cout << "morton: " << m << std::endl;
+//	std::cout << "gridsize X: " << gridsize_x << ", Y: " << gridsize_y << ", Z: " << gridsize_z << std::endl;
 
 
 	int current_position_in_morton = 0;
 
 	for (unsigned int index_in_coord = 0; index_in_coord <= checkbits; ++index_in_coord) {
 
-		std::cout << "nb of bits left: X: " << nbOfBitsLeft_x << ", Y: " << nbOfBitsLeft_y << ", Z: " << nbOfBitsLeft_z << std::endl;
+//		std::cout << "nb of bits left: X: " << nbOfBitsLeft_x << ", Y: " << nbOfBitsLeft_y << ", Z: " << nbOfBitsLeft_z << std::endl;
 
 		if (nbOfBitsLeft_x != 0)
 		{
 			//take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for X coordinate
 			morton bitOnPositionForXCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForXCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForXCoord) << std::endl;
 
 			x |= bitOnPositionForXCoord;
-			std::cout << "   current x-coord: " << x << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(x) << std::endl;
+//			std::cout << "   current x-coord: " << x << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(x) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_x--;
 		}
@@ -289,15 +289,15 @@ inline void morton3D_Decode_for(
 			// take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for Y coordinate
 			morton bitOnPositionForYCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForYCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForYCoord) << std::endl;
 
 			y |= bitOnPositionForYCoord;
-			std::cout << "   current y-coord: " << y << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(y) << std::endl;
+//			std::cout << "   current y-coord: " << y << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(y) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_y--;
 		}
@@ -306,23 +306,23 @@ inline void morton3D_Decode_for(
 			// take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for Z coordinate
 			morton bitOnPositionForZCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForZCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForZCoord) << std::endl;
 
 			z |= bitOnPositionForZCoord;
-			std::cout << "   current z-coord: " << z << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(z) << std::endl;
+//			std::cout << "   current z-coord: " << z << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(z) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_z--;
 		}
 
-		std::cout << "----------" << std::endl;
+//		std::cout << "----------" << std::endl;
 	}
 
-	std::cout << "===== End of method =====" << std::endl;
+//	std::cout << "===== End of method =====" << std::endl;
 }
 
 // ENCODE 4D 64-bit morton code code with possibly unequal gridsides: For loop
@@ -369,34 +369,34 @@ inline morton morton4D_Encode_for(
 		nbOfBitsLeft_t = 0;
 	}
 
-	std::cout << "Starting method with" << std::endl;
-	std::cout << "x: " << x << ", y: " << y << ", z: " << z << std::endl;
-	std::cout << "gridsize X: " << gridsize_x << ", Y: " << gridsize_y << ", Z: " << gridsize_t << ", T: " << gridsize_t << std::endl;
+//	std::cout << "Starting method with" << std::endl;
+//	std::cout << "x: " << x << ", y: " << y << ", z: " << z << std::endl;
+//	std::cout << "gridsize X: " << gridsize_x << ", Y: " << gridsize_y << ", Z: " << gridsize_t << ", T: " << gridsize_t << std::endl;
 
 	int current_position_in_morton = 0;
 
 	for (unsigned int index_in_coord = 0; index_in_coord <= checkbits; ++index_in_coord) {
 		morton bitmask_index_in_coord = ((morton)0x1 << index_in_coord);
-		std::cout << "current bit in coord: " << log2(bitmask_index_in_coord) << std::endl;
-		std::cout 
-			<< "nb of bits left: X: " << nbOfBitsLeft_x 
-			<< ", Y: " << nbOfBitsLeft_y 
-			<< ", Z: " << nbOfBitsLeft_z 
-			<< ", T: " << nbOfBitsLeft_t << std::endl;
+//		std::cout << "current bit in coord: " << log2(bitmask_index_in_coord) << std::endl;
+//		std::cout 
+//			<< "nb of bits left: X: " << nbOfBitsLeft_x 
+//			<< ", Y: " << nbOfBitsLeft_y 
+//			<< ", Z: " << nbOfBitsLeft_z 
+//			<< ", T: " << nbOfBitsLeft_t << std::endl;
 
 		if (nbOfBitsLeft_x != 0)
 		{
 			//take the bit in X;
 			morton bitTakenFromX = x & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromX == 0 ? 0 : 1) << " from x-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromX == 0 ? 0 : 1) << " from x-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromX << (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
 
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_x--;
 		}
@@ -404,15 +404,15 @@ inline morton morton4D_Encode_for(
 		if (nbOfBitsLeft_y != 0) {
 			//take the bit in Y;
 			morton bitTakenFromY = y & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromY == 0 ? 0 : 1) << " from y-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromY == 0 ? 0 : 1) << " from y-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromY << (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
 
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_y--;
 		}
@@ -420,40 +420,40 @@ inline morton morton4D_Encode_for(
 		if (nbOfBitsLeft_z != 0) {
 			//take the bit in Z;
 			morton bitTakenFromZ = z & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromZ == 0 ? 0 : 1) << " from z-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromZ == 0 ? 0 : 1) << " from z-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromZ << (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
 
 			//put the bit in the morton code
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_z--;
 		}
 		if (nbOfBitsLeft_t != 0) {
 			//take the bit in T;
 			morton bitTakenFromT = t & bitmask_index_in_coord;
-			cout << "   taken bit " << (bitTakenFromT == 0 ? 0 : 1) << " from t-coord" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromT == 0 ? 0 : 1) << " from t-coord" << std::endl;
 
 			//put the bit on the correct position for the morton code
 			morton bitOnCorrectPosition = bitTakenFromT << (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnCorrectPosition) << std::endl;
 
 			//put the bit in the morton code
 			answer |= bitOnCorrectPosition;
-			std::cout << "   current answer: " << answer << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
+//			std::cout << "   current answer: " << answer << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(answer) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_t--;
 		}
 
-		std::cout << "----------" << std::endl;
+//		std::cout << "----------" << std::endl;
 	}
 
-	std::cout << "===== End of method =====" << std::endl;
+//	std::cout << "===== End of method =====" << std::endl;
 	return answer;
 }
 
@@ -491,39 +491,39 @@ inline void morton4D_Decode_for(
 		nbOfBitsLeft_t = 0;
 	}
 
-	std::cout << "Starting method with" << std::endl;
-	std::cout << "morton: " << m << std::endl;
-	std::cout 
-		<< "gridsize X: " << gridsize_x 
-		<< ", Y: " << gridsize_y 
-		<< ", Z: " << gridsize_z 
-		<< ", T: "<< gridsize_t << std::endl;
+//	std::cout << "Starting method with" << std::endl;
+//	std::cout << "morton: " << m << std::endl;
+//	std::cout 
+//		<< "gridsize X: " << gridsize_x 
+//		<< ", Y: " << gridsize_y 
+//		<< ", Z: " << gridsize_z 
+//		<< ", T: "<< gridsize_t << std::endl;
 
 
 	int current_position_in_morton = 0;
 
 	for (unsigned int index_in_coord = 0; index_in_coord <= checkbits; ++index_in_coord) {
 
-		std::cout 
-			<< "nb of bits left: X: " << nbOfBitsLeft_x 
-			<< ", Y: " << nbOfBitsLeft_y 
-			<< ", Z: " << nbOfBitsLeft_z 
-			<< ", T: " << nbOfBitsLeft_t << std::endl;
+//		std::cout 
+//			<< "nb of bits left: X: " << nbOfBitsLeft_x 
+//			<< ", Y: " << nbOfBitsLeft_y 
+//			<< ", Z: " << nbOfBitsLeft_z 
+//			<< ", T: " << nbOfBitsLeft_t << std::endl;
 
 		if (nbOfBitsLeft_x != 0)
 		{
 			//take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for X coordinate
 			morton bitOnPositionForXCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForXCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForXCoord) << std::endl;
 
 			x |= bitOnPositionForXCoord;
-			std::cout << "   current x-coord: " << x << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(x) << std::endl;
+//			std::cout << "   current x-coord: " << x << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(x) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_x--;
 		}
@@ -532,15 +532,15 @@ inline void morton4D_Decode_for(
 			// take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for Y coordinate
 			morton bitOnPositionForYCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForYCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForYCoord) << std::endl;
 
 			y |= bitOnPositionForYCoord;
-			std::cout << "   current y-coord: " << y << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(y) << std::endl;
+//			std::cout << "   current y-coord: " << y << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(y) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_y--;
 		}
@@ -549,15 +549,15 @@ inline void morton4D_Decode_for(
 			// take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for Z coordinate
 			morton bitOnPositionForZCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForZCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForZCoord) << std::endl;
 
 			z |= bitOnPositionForZCoord;
-			std::cout << "   current z-coord: " << z << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(z) << std::endl;
+//			std::cout << "   current z-coord: " << z << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(z) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_z--;
 		}
@@ -566,23 +566,23 @@ inline void morton4D_Decode_for(
 			// take the bit from the morton code;
 			morton bitmaskToTakeBitOutOfMorton = 1ull << current_position_in_morton;
 			morton bitTakenFromMorton = m & bitmaskToTakeBitOutOfMorton;
-			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
+//			cout << "   taken bit " << (bitTakenFromMorton == 0 ? 0 : 1) << " from morton code" << std::endl;
 
 			//put the bit on the correct position for T coordinate
 			morton bitOnPositionForTCoord = bitTakenFromMorton >> (current_position_in_morton - index_in_coord);
-			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForTCoord) << std::endl;
+//			cout << "   now using bitmask " << std::bitset<21>(bitOnPositionForTCoord) << std::endl;
 
 			t |= bitOnPositionForTCoord;
-			std::cout << "   current t-coord: " << t << std::endl;
-			std::cout << "   current answer in binary: " << std::bitset<21>(t) << std::endl;
+//			std::cout << "   current t-coord: " << t << std::endl;
+//			std::cout << "   current answer in binary: " << std::bitset<21>(t) << std::endl;
 			current_position_in_morton++;
 			nbOfBitsLeft_t--;
 		}
 
-		std::cout << "----------" << std::endl;
+//		std::cout << "----------" << std::endl;
 	}
 
-	std::cout << "===== End of method =====" << std::endl;
+//	std::cout << "===== End of method =====" << std::endl;
 }
 
 #endif

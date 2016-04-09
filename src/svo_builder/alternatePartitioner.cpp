@@ -50,6 +50,15 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 	* 1/1024 (1MB/kB)
 	*/
 
+	/*
+	NOTE 
+		gridsize_S  = 2^x
+		gridsize_T = 2^y
+
+	=> nbOfVoxelsInGrid = 2^(3x) * 2^y = 2^(3x+y)
+	*/
+
+
 	size_t nbOfVoxelsInGrid = pow(gridsize_S, 3) * gridsize_T;
 	uint64_t requiredMemoryInMB = (nbOfVoxelsInGrid*sizeof(char)) / 1024 / 1024;
 	std::cout << "  to do this in-core I would need " << requiredMemoryInMB << " Mb of system memory" << std::endl;
@@ -102,9 +111,10 @@ TriPartitioningInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D
 	return trip_info;
 }
 
-void alternatePartitioner::deleteBuffers(vector<Buffer4D*> buffers) const
+void alternatePartitioner::flushAndDeleteBuffers(vector<Buffer4D*> buffers) const
 {
 	for (size_t j = 0; j < nbOfPartitions; j++) {
+		buffers[j]->flush();
 		delete buffers[j];
 	}
 }
@@ -135,8 +145,11 @@ TriPartitioningInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info,
 		transformation_handler->transformAndStore(tri_info, tri, buffers, nbOfPartitions);
 	}
 
+
+
+
 	TriPartitioningInfo4D trip_info = createTripInfoHeader(tri_info, buffers);
-	deleteBuffers(buffers);
+	flushAndDeleteBuffers(buffers);
 
 	return trip_info;
 }
@@ -210,8 +223,16 @@ AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, 
 	// compute world bounding box
 	/*		morton4D_Decode_for(morton_part*i, bbox_grid.min[3], bbox_grid.min[2], bbox_grid.min[1], bbox_grid.min[0]);
 	morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_grid.max[3],  bbox_grid.max[2], bbox_grid.max[1], bbox_grid.max[0]);*/
-	morton4D_Decode_for(morton_part*i, bbox_partition_i_gridCoords.min[0], bbox_partition_i_gridCoords.min[1], bbox_partition_i_gridCoords.min[2], bbox_partition_i_gridCoords.min[3]);
-	morton4D_Decode_for((morton_part*(i + 1)) - 1, bbox_partition_i_gridCoords.max[0], bbox_partition_i_gridCoords.max[1], bbox_partition_i_gridCoords.max[2], bbox_partition_i_gridCoords.max[3]);
+	morton4D_Decode_for(
+		morton_part*i,
+		bbox_partition_i_gridCoords.min[0], bbox_partition_i_gridCoords.min[1],
+		bbox_partition_i_gridCoords.min[2], bbox_partition_i_gridCoords.min[3],
+		gridsize_S, gridsize_S, gridsize_S, gridsize_T);
+	morton4D_Decode_for(
+		(morton_part*(i + 1)) - 1,
+		bbox_partition_i_gridCoords.max[0], bbox_partition_i_gridCoords.max[1],
+		bbox_partition_i_gridCoords.max[2], bbox_partition_i_gridCoords.max[3],
+		gridsize_S, gridsize_S, gridsize_S, gridsize_T);
 
 	// -1, because z-curve skips to first block of next partition
 
