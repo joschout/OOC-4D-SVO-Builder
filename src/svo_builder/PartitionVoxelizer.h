@@ -24,6 +24,8 @@ using namespace std;
 class PartitionVoxelizer
 {
 public:
+	size_t gridsize_S;
+	size_t gridsize_T;
 
 	const float unitlength;
 	char* voxels;
@@ -48,6 +50,7 @@ public:
 	BinvoxHandler *binvox_handler;
 
 	PartitionVoxelizer(const uint64_t morton_start, const uint64_t morton_end,
+		size_t gridsize_S, size_t gridsize_T,
 		const float unitlength, const float unitlength_time,
 		char* voxels, vector<uint64_t> *data, float sparseness_limit,
 		bool* use_data, size_t* nfilled);

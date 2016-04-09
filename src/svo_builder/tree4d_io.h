@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <fstream>
-#include "../libs/libtri/include/file_tools.h"
 #include "Node4D.h"
 
 using namespace std;

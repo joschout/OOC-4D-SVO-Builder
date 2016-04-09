@@ -10,7 +10,7 @@
 using namespace std;
 using namespace trimesh;
 
-// Octreebuilder class. You pass this class DataPoints, it builds an octree from them.
+// Tree4Dbuilder class. You pass this class DataPoints, it builds an octree from them.
 class Tree4DBuilder {
 public:
 	vector< vector< Node4D > > b_buffers;

@@ -155,7 +155,7 @@ void PartitionVoxelizer::voxelizeOneTriangle(const Triangle4D &tri)
 					
 
 
-					uint64_t index = morton4D_Encode_for<uint64_t>(x, y, z, t);
+					uint64_t index = morton4D_Encode_for<uint64_t>(x, y, z, t, gridsize_S, gridsize_S, gridsize_S, gridsize_T);
 					if (voxels[index - morton_start] == FULL_VOXEL) { continue; } // already marked, continue
 
 					 // TRIANGLE PLANE THROUGH BOX TEST
@@ -207,15 +207,17 @@ void PartitionVoxelizer::voxelizeOneTriangle(const Triangle4D &tri)
 
 PartitionVoxelizer::PartitionVoxelizer(
 	const uint64_t morton_start, const uint64_t morton_end,
+	size_t gridsize_S, size_t gridsize_T,
 	const float unitlength, const float unitlength_time,
 	char* voxels, vector<uint64_t> *data, float sparseness_limit,
 	bool* use_data, size_t* nfilled):
+	gridsize_S(gridsize_S), gridsize_T(gridsize_T),
 	unitlength(unitlength),
     voxels(voxels),
     data(data),
 	sparseness_limit(sparseness_limit),
 	use_data(use_data), nfilled(nfilled),
-	morton_start(morton_start)
+	morton_start(morton_start), binvox_handler(nullptr)
 {
 	memset(voxels, EMPTY_VOXEL, (morton_end - morton_start)*sizeof(char));
 	data->clear();

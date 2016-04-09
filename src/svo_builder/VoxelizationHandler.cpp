@@ -126,7 +126,12 @@ void VoxelizationHandler::voxelizePartition(
 	// voxelize partition
 	size_t nfilled_before = nfilled;
 
-	PartitionVoxelizer partition_voxelizer = PartitionVoxelizer(morton_startcode, morton_endcode, unitlength, unitlength_time, voxels, &data, sparseness_limit, &use_data, &nfilled);
+	PartitionVoxelizer partition_voxelizer 
+		= PartitionVoxelizer(
+			morton_startcode, morton_endcode,
+			trianglePartition_info.gridsize_S, trianglePartition_info.gridsize_T,
+			unitlength, unitlength_time,
+			voxels, &data, sparseness_limit, &use_data, &nfilled);
 	if(binvox)
 	{
 		partition_voxelizer.binvox_handler = &binvox_handler;
