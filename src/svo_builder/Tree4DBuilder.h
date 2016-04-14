@@ -13,23 +13,28 @@ using namespace trimesh;
 // Tree4Dbuilder class. You pass this class DataPoints, it builds an octree from them.
 class Tree4DBuilder {
 public:
-	vector< vector< Node4D > > b_buffers;
+	vector< vector< Node4D > > b_buffers;//QUEUES
 	size_t gridsize_S;
 	size_t gridsize_T;
-	int b_maxdepth; // maximum octree depth
+
+	//IMPORTANT NOTE: depth of the root = 0
+	int b_maxdepth; // maximum tree depth
 	uint64_t b_current_morton; // current morton position
 	uint64_t b_max_morton; // maximum morton position
 	size_t b_data_pos; // current output data position (array index)
 	size_t b_node_pos; // current output node position (array index)
 
-					   // configuration
+	// configuration
 	bool generate_levels; // switch to enable basic generation of higher octree levels
 
-	FILE* node_out; // pointer to the node file
-	FILE* data_out; // pointer to the payload data file
+
+
+	FILE* node_out_filepointer; // pointer to the node file
+	FILE* data_out_filepointer; // pointer to the payload data file
 	string base_filename;
 
 	Tree4DBuilder();
+	void openOutputFiles(std::string base_filename);
 	Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels);
 	void finalizeTree();
 	void addVoxel(const uint64_t morton_number);

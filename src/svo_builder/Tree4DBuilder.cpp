@@ -4,21 +4,32 @@
 #include "octree_io.h"
 #include "tree4d_io.h"
 
-Tree4DBuilder::Tree4DBuilder(): gridsize_S(1), gridsize_T(1), b_maxdepth(0), b_current_morton(0), b_max_morton(0), b_data_pos(0), b_node_pos(0), generate_levels(false), node_out(nullptr), data_out(nullptr)
+Tree4DBuilder::Tree4DBuilder(): 
+	gridsize_S(1), gridsize_T(1),
+	b_maxdepth(0),
+	b_current_morton(0),
+	b_max_morton(0), b_data_pos(0), b_node_pos(0), generate_levels(false),
+	node_out_filepointer(nullptr), data_out_filepointer(nullptr)
 {
 }
 
-// OctreeBuilder constructor: this initializes the builder and sets up the output files, ready to go
+void Tree4DBuilder::openOutputFiles(std::string base_filename)
+{
+	string nodes_name = base_filename + string(".tree4dnodes");
+	string data_name = base_filename + string(".tree4ddata");
+	node_out_filepointer = fopen(nodes_name.c_str(), "wb");
+	data_out_filepointer = fopen(data_name.c_str(), "wb");
+}
+
+// Tree4DBuilder constructor: this initializes the builder and sets up the output files, ready to go
 Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels) :
 	gridsize_S(gridsize_S), gridsize_T(gridsize_T), b_node_pos(0),
 	b_data_pos(0), b_current_morton(0),
-	generate_levels(generate_levels), base_filename(base_filename) {
+	generate_levels(generate_levels), base_filename(base_filename)
+{
 
 	// Open output files
-	string nodes_name = base_filename + string(".tree4dnodes");
-	string data_name = base_filename + string(".tree4ddata");
-	node_out = fopen(nodes_name.c_str(), "wb");
-	data_out = fopen(data_name.c_str(), "wb");
+	openOutputFiles(base_filename);
 
 	// Setup building variables
 	b_maxdepth = log2((unsigned int)max(gridsize_S, gridsize_T));
@@ -32,12 +43,13 @@ Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_
 		= morton4D_Encode_for<uint64_t, uint_fast32_t>(
 			(uint_fast32_t)gridsize_S - 1, (uint_fast32_t)gridsize_S - 1, (uint_fast32_t)gridsize_S - 1, (uint_fast32_t)gridsize_T - 1,
 			(uint_fast32_t)gridsize_S, (uint_fast32_t)gridsize_S, (uint_fast32_t)gridsize_S, (uint_fast32_t)gridsize_T);
-	writeVoxelData(data_out, VoxelData(), b_data_pos); // first data point is NULL
+
+	writeVoxelData(data_out_filepointer, VoxelData(), b_data_pos); // first data point is NULL
 #ifdef BINARY_VOXELIZATION
 	VoxelData v = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
-	writeVoxelData(data_out, v, b_data_pos); // all leafs will refer to this
+	writeVoxelData(data_out_filepointer, v, b_data_pos); // all leafs will refer to this
 #endif
-											 //svo_io_out_timer.stop(); svo_algo_timer.stop();
+
 }
 
 // Finalize the tree: add rest of empty nodes, make sure root node is on top
@@ -48,7 +60,7 @@ void Tree4DBuilder::finalizeTree() {
 	}
 
 	// write root node
-	writeNode4D(node_out, b_buffers[0][0], b_node_pos);
+	writeNode4D(node_out_filepointer, b_buffers[0][0], b_node_pos);
 
 	// write header
 	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, b_node_pos, b_data_pos);
@@ -58,8 +70,8 @@ void Tree4DBuilder::finalizeTree() {
 	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 
 	// close files
-	fclose(data_out);
-	fclose(node_out);
+	fclose(data_out_filepointer);
+	fclose(node_out_filepointer);
 }
 
 // Group 16 nodes, write non-empty nodes to disk and create parent node
@@ -70,14 +82,14 @@ Node4D Tree4DBuilder::groupNodes(const vector<Node4D> &buffer) {
 		if (!buffer[k].isNull()) {
 			if (first_stored_child) {
 				//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
-				parent.children_base = writeNode4D(node_out, buffer[k], b_node_pos);
+				parent.children_base = writeNode4D(node_out_filepointer, buffer[k], b_node_pos);
 				//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 				parent.children_offset[k] = 0;
 				first_stored_child = false;
 			}
 			else {
 				//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
-				parent.children_offset[k] = (char)(writeNode4D(node_out, buffer[k], b_node_pos) - parent.children_base);
+				parent.children_offset[k] = (char)(writeNode4D(node_out_filepointer, buffer[k], b_node_pos) - parent.children_base);
 				//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 			}
 		}
@@ -101,7 +113,7 @@ Node4D Tree4DBuilder::groupNodes(const vector<Node4D> &buffer) {
 		d.normal = normalize(tonormalize);
 		// set it in the parent node
 		//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
-		parent.data = writeVoxelData(data_out, d, b_data_pos);
+		parent.data = writeVoxelData(data_out_filepointer, d, b_data_pos);
 		//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 		parent.data_cache = d;
 	}
@@ -146,6 +158,7 @@ void Tree4DBuilder::addVoxel(const uint64_t morton_number) {
 	Node4D node = Node4D(); // create empty node
 	node.data = 1; // all nodes in binary voxelization refer to this
 				   // Add to buffer
+
 	b_buffers.at(b_maxdepth).push_back(node);
 	// Refine buffers
 	refineBuffers(b_maxdepth);
@@ -164,7 +177,7 @@ void Tree4DBuilder::addVoxel(const VoxelData& data) {
 	Node4D node = Node4D(); // create empty node
 						// Write data point
 						//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
-	node.data = writeVoxelData(data_out, data, b_data_pos); // store data
+	node.data = writeVoxelData(data_out_filepointer, data, b_data_pos); // store data
 															//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
 	node.data_cache = data; // store data as cache
 							// Add to buffers

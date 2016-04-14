@@ -27,14 +27,13 @@ private:
 	int output_buffersize = 8192;
 
 	size_t estimateNumberOfPartitions(const size_t memory_limit);
-	TriPartitioningInfo4D createTripInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const;
-	void flushAndDeleteBuffers(vector<Buffer4D*> buffers) const;
+	TriPartitioningInfo4D createTriPartitioningInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const;
+	void deleteBuffers(vector<Buffer4D*> buffers) const;
 	TriPartitioningInfo4D partition(const TriInfo4D& tri_info, TransformationHandler* transformation_handler);
 	TriPartitioningInfo4D partition_one(const TriInfo4D& tri_info);
 	AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, uint64_t morton_part, float unitlength, float unitlength_time, bool verbose) const;
 	Buffer4D* createBufferForPartition(int i, AABox<vec4> &bbox_partition_i_worldCoords, const string base_filename) const;
 	void createBuffers(const TriInfo4D& tri_info, vector<Buffer4D*> &buffers) const;
-	void flushBuffers(vector<Buffer4D*> buffers) const;
 
 };
 

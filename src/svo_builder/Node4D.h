@@ -17,8 +17,9 @@ class Node4D
 {
 public:
 	size_t data;
-	size_t children_base;
-	char children_offset[16];
+	size_t children_base; //position in the file where the first child node starts (measured in nb of nodes)
+	char children_offset[16]; //difference in position in the file (measured in nb of nodes
+	// if children_offset[i] == -1, then there is no child at that position
 
 	VoxelData data_cache; // only if you want to refine octree (clustering)
 
@@ -28,6 +29,7 @@ public:
 	bool isLeaf() const;
 	bool hasData() const;
 	bool isNull() const;
+	bool isBinaryNode();
 };
 
 // Default constructor
@@ -66,6 +68,30 @@ inline bool Node4D::isLeaf() const {
 // If the data pointer is NODATA, there is no data
 inline bool Node4D::hasData() const {
 	return !(data == NODATA);
+}
+
+
+inline bool Node4D::isBinaryNode()
+{
+	if(children_base == 0)
+	{
+		return false;
+	}
+	for (int i = 0; i < 7; i++)
+	{
+		if(children_offset[i] != children_offset[i+1])
+		{
+			return false;
+		}
+	}
+	for (int i = 8; i < 15; i++)
+	{
+		if (children_offset[i] != children_offset[i + 1])
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 #endif /* NODE_H_ */

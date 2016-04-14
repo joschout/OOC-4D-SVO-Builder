@@ -75,7 +75,13 @@
     <ClCompile Include="..\..\src\svo_builder\TriHeaderFileReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\svo_builder\morton4D.cpp">
+    <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\TreeDataWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -176,13 +182,19 @@
     <ClInclude Include="..\..\src\svo_builder\VoxelizationHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VoxelizationHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\TripFileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\TriHeaderFileReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\TreeDataWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

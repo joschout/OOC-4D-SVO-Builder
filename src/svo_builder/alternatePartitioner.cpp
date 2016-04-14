@@ -83,7 +83,7 @@ size_t alternatePartitioner::estimateNumberOfPartitions(const size_t memory_limi
 	return estimatedNbOfPartitions;
 }
 
-TriPartitioningInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const
+TriPartitioningInfo4D alternatePartitioner::createTriPartitioningInfoHeader(const TriInfo4D tri_info, vector<Buffer4D*> &buffers) const
 {
 	TriPartitioningInfo4D trip_info = TriPartitioningInfo4D(tri_info);
 
@@ -111,10 +111,9 @@ TriPartitioningInfo4D alternatePartitioner::createTripInfoHeader(const TriInfo4D
 	return trip_info;
 }
 
-void alternatePartitioner::flushAndDeleteBuffers(vector<Buffer4D*> buffers) const
+void alternatePartitioner::deleteBuffers(vector<Buffer4D*> buffers) const
 {
 	for (size_t j = 0; j < nbOfPartitions; j++) {
-		buffers[j]->flush();
 		delete buffers[j];
 	}
 }
@@ -145,11 +144,8 @@ TriPartitioningInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info,
 		transformation_handler->transformAndStore(tri_info, tri, buffers, nbOfPartitions);
 	}
 
-
-
-
-	TriPartitioningInfo4D trip_info = createTripInfoHeader(tri_info, buffers);
-	flushAndDeleteBuffers(buffers);
+	TriPartitioningInfo4D trip_info = createTriPartitioningInfoHeader(tri_info, buffers);
+	deleteBuffers(buffers);
 
 	return trip_info;
 }

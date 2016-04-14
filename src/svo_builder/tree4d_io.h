@@ -50,10 +50,10 @@ void writeTree4DHeader(const std::string &filename, const Tree4DInfo &i);
 int parseTree4DHeader(const std::string &filename, Tree4DInfo &i);
 
 // Write a tree4D node to file
-inline size_t writeNode4D(FILE* node_out, const Node4D &n, size_t &b_node_pos) {
+inline size_t writeNode4D(FILE* node_out_filepointer, const Node4D &n, size_t &b_node_pos) {
 	/* https://github.com/Forceflow/ooc_svo_builder
 	An .tree4dnodes file is a binary file
-	which describes the big flat array of octree nodes.
+	which describes the big flat array of tree4D nodes.
 	In the nodes, there are only child pointers,
 	which are constructed from a 64-bit base address
 	combined with a child offset,
@@ -71,8 +71,22 @@ inline size_t writeNode4D(FILE* node_out, const Node4D &n, size_t &b_node_pos) {
 	3) the data address = Index of data payload in data array described in the .octreedata file (see further)
 	=> size_t, 64 bits
 	==> 4 * 64 bits
+
+	Node4D has as member variables:
+			size_t data; (64 bits)
+			size_t children_base; (64 bits)
+			char children_offset[16]; (128 bits = 2 * 64 bits)
 	*/
-	fwrite(&n.data, sizeof(size_t), 4, node_out);
+	fwrite(&n.data, sizeof(size_t), 4, node_out_filepointer);
+	/*
+	size_t fwrite ( const void * ptr, size_t size, size_t count, FILE * stream );
+	Write block of data to stream.
+
+	Writes an array of count elements,
+	each one with a size of size bytes,
+	from the block of memory pointed by ptr to the current position in the stream.*/
+
+
 	b_node_pos++;
 	return b_node_pos - 1;
 }

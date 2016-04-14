@@ -159,7 +159,7 @@ void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64
 	}
 	else { // morton array overflowed : using slower way to build SVO
 		uint64_t morton_number;
-		for (size_t j = 0; j < morton_part; j++) {
+		for (size_t j = 0; j < morton_part; j++) {//for each voxel in this partition
 			if (!voxels[j] == EMPTY_VOXEL) {
 				morton_number = morton_startcode + j;
 				builder.addVoxel(morton_number);
@@ -219,9 +219,12 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 		uint64_t morton_endcode = (i + 1) * morton_part;
 		voxelizePartition(i, morton_startcode, morton_endcode);
 		
+
 		if(verbose){
 			cout << "---------------------" << endl;
 		}
+
+
 		// build SVO
 		buildSVO_partition(i, morton_part, morton_startcode);
 		if (verbose){

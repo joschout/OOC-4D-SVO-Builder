@@ -28,7 +28,7 @@ public:
 
 	bool processTriangle(Triangle4D &t, const AABox<vec4> &bbox);
 	string toString();
-//private:
+private:
 	void flush();
 };
 
