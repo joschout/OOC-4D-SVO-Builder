@@ -186,6 +186,7 @@
     <ClCompile Include="..\..\src\svo_builder\BinvoxHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\BinvoxWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\InputParameterParser.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\morton4D.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PartitionVoxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\RotationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TransformationHandler.cpp" />

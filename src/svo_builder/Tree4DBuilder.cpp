@@ -45,6 +45,7 @@ Tree4DBuilder::Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_
 			(uint_fast32_t)gridsize_S, (uint_fast32_t)gridsize_S, (uint_fast32_t)gridsize_S, (uint_fast32_t)gridsize_T);
 
 	writeVoxelData(data_out_filepointer, VoxelData(), b_data_pos); // first data point is NULL
+
 #ifdef BINARY_VOXELIZATION
 	VoxelData v = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
 	writeVoxelData(data_out_filepointer, v, b_data_pos); // all leafs will refer to this
