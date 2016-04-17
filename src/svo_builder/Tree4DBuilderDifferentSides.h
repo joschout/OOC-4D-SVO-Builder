@@ -44,11 +44,12 @@ public:
 
 	//========================
 	Tree4DBuilderDifferentSides();
-	Tree4DBuilderDifferentSides(std::string base_filename, size_t gridsize_S, size_t gridsize_T);
+	Tree4DBuilderDifferentSides(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels);
 
 	void addVoxel(const uint64_t morton_number);
-
 	void addVoxel(const VoxelData& point);
+
+	void finalizeTree();
 	
 private:
 	void initializeBuilder();
@@ -68,17 +69,24 @@ private:
 	void flushQueues(const int start_depth);
 	static bool doesQueueContainOnlyEmptyNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue);
 	
-	void finalizeTree();
 	Node4D getRootNode();
-
-	void fastAddEmpty(const size_t budget);
-	int computeBestFillQueue(const size_t budget);
+	
+	//void fastAddEmptyVoxels(const size_t budget);
+	//int computeBestFillQueue(const size_t budget);
+	void fastAddEmptyVoxels(const size_t budget);
+	int nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(int depth);
+	int computeDepthOfBestQueue(const size_t nbofEmptyVoxelsToAdd);
+	int calculateQueueSelectionCriteriumA(const size_t nbOfEmptyNodesToAdd);
 	int highestNonEmptyQueue();
+
+	void slowAddEmptyVoxels(const size_t nbOfNodesToAdd);
+	
 	void addEmptyVoxel(const int buffer);
 	
 	// Interface for putting a node in the right queue
 	void push_backNodeToQueueAtDepth(int depth, Node4D node);
 	bool isQueueFilled(int depth);
+	bool isQueueEmpty(int depth);
 	bool doesQueueContainOnlyEmptyNodes(int depth);
 };
 

@@ -33,7 +33,7 @@ public:
 #ifdef BINARY_VOXELIZATION
 	vector<uint64_t> *data;
 #else
-	vector<VoxelData> *data
+	vector<VoxelData> *data;
 #endif
 	const float sparseness_limit;
 	bool *use_data;

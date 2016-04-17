@@ -8,6 +8,10 @@ TreeNodeWriter::TreeNodeWriter(std::string base_filename): position_in_output_fi
 {
 	string nodes_name = base_filename + string(".tree4dnodes");
 	file_pointer = fopen(nodes_name.c_str(), "wb");
+	if(file_pointer == nullptr)
+	{
+		std::cout << ".tree4dnodes-file is not or incorrectly opened.";
+	}
 }
 
 TreeNodeWriter::~TreeNodeWriter()
@@ -51,6 +55,12 @@ size_t TreeNodeWriter::writeNode4D_(const Node4D &node)
 	size_t children_base; (64 bits)
 	char children_offset[16]; (128 bits = 2 * 64 bits)
 	*/
+
+	if (file_pointer == nullptr)
+	{
+		std::cout << ".tree4dnodes-file is not or incorrectly opened.";
+	}
+
 	fwrite(&node.data, sizeof(size_t), 4, file_pointer);
 	/*
 	size_t fwrite ( const void * ptr, size_t size, size_t count, FILE * stream );

@@ -8,6 +8,10 @@ TreeDataWriter::TreeDataWriter(std::string base_filename) : position_in_output_f
 {
 	string data_name = base_filename + string(".tree4ddata");
 	file_pointer = fopen(data_name.c_str(), "wb");
+	if(file_pointer == nullptr)
+	{
+		std::cout << ".tree4ddata-file is not or incorrectly opened.";
+	}
 }
 
 TreeDataWriter::~TreeDataWriter()

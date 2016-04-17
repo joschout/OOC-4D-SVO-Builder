@@ -34,13 +34,13 @@ public:
 	string base_filename;
 
 	Tree4DBuilder();
-	void openOutputFiles(std::string base_filename);
 	Tree4DBuilder(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels);
 	void finalizeTree();
 	void addVoxel(const uint64_t morton_number);
 	void addVoxel(const VoxelData& point);
 
 private:
+	void openOutputFiles(std::string base_filename);
 	// helper methods for octree building
 	void fastAddEmpty(const size_t budget);
 	void addEmptyVoxel(const int buffer);
