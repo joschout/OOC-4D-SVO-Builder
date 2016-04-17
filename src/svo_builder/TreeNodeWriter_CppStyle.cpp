@@ -1,34 +1,31 @@
-#include "TreeNodeWriter.h"
+/*
+#include "TreeNodeWriter_CppStyle.h"
 
-TreeNodeWriter::TreeNodeWriter(): file_pointer_nodes(nullptr), position_in_output_file(0), hasBeenClosed(false)
+TreeNodeWriterCppStyle::TreeNodeWriterCppStyle(std::string base_filename):
+	position_in_output_file(0)
 {
-}
-
-TreeNodeWriter::TreeNodeWriter(std::string base_filename): position_in_output_file(0), hasBeenClosed(false)
-{
-	string nodes_name = base_filename + string(".tree4dnodes");
-	file_pointer_nodes = fopen(nodes_name.c_str(), "wb");
-	if(file_pointer_nodes == nullptr)
+	string filename = base_filename + string(".tree4dnodes");
+	fstream_nodes.open(filename, ios::out | ios::in | ios::binary | ios::trunc);
+	if (!fstream_nodes.is_open())
 	{
-		std::cout << ".tree4dnodes-file is not or incorrectly opened.";
+		cout << "error: no file opened with name " << filename << endl;
 	}
-	std::cout << "file pointer " << file_pointer_nodes << std::endl;
 }
 
-TreeNodeWriter::~TreeNodeWriter()
+TreeNodeWriterCppStyle::~TreeNodeWriterCppStyle()
 {
 	closeFile();
 }
 
-void TreeNodeWriter::closeFile()
-{ 
-	if (!hasBeenClosed)
+void TreeNodeWriterCppStyle::closeFile()
+{
+	if (fstream_nodes.is_open())
 	{
-		fclose(file_pointer_nodes);
+		fstream_nodes.close();
 	}
 }
 
-size_t TreeNodeWriter::writeNode4D_(const Node4D &node)
+size_t TreeNodeWriterCppStyle::writeNode4D_(const Node4D& node)
 {
 	/* https://github.com/Forceflow/ooc_svo_builder
 	An .tree4dnodes file is a binary file
@@ -55,13 +52,14 @@ size_t TreeNodeWriter::writeNode4D_(const Node4D &node)
 	size_t data; (64 bits)
 	size_t children_base; (64 bits)
 	char children_offset[16]; (128 bits = 2 * 64 bits)
-	*/
+	#1#
 
-	if (file_pointer_nodes == nullptr)
+	if (!fstream_nodes.is_open())
 	{
 		std::cout << ".tree4dnodes-file is not or incorrectly opened.";
 	}
 
+	fstream_nodes.write(&node.data, 4*sizeof(size_t));
 	fwrite(&node.data, sizeof(size_t), 4, file_pointer_nodes);
 	/*
 	size_t fwrite ( const void * ptr, size_t size, size_t count, FILE * stream );
@@ -69,10 +67,12 @@ size_t TreeNodeWriter::writeNode4D_(const Node4D &node)
 
 	Writes an array of count elements,
 	each one with a size of size bytes,
-	from the block of memory pointed by ptr to the current position in the stream.*/
+	from the block of memory pointed by ptr to the current position in the stream.#1#
 
 	position_in_output_file++;
 	return position_in_output_file - 1;
+
+
+
 }
-
-
+*/

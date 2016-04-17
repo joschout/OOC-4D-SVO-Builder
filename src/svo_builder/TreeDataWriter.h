@@ -6,7 +6,7 @@
 class TreeDataWriter
 {
 public:
-	FILE* file_pointer;
+	FILE* file_pointer_data;
 	size_t position_in_output_file;
 
 	TreeDataWriter();

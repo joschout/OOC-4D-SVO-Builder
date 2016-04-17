@@ -5,7 +5,7 @@
 class TreeNodeWriter
 {
 public:	
-	FILE* file_pointer;
+	FILE* file_pointer_nodes;
 	size_t position_in_output_file; //NOTE: NOT in bytes, but in nodes
 	//i.e. this is the nb of the node we will write next
 

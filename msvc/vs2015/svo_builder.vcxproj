@@ -160,6 +160,7 @@
     <ClInclude Include="..\..\src\svo_builder\tree4d_io.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeDataWriter.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter.h" />
+    <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.h" />
     <ClInclude Include="..\..\src\svo_builder\Tri4DReader.h" />
     <ClInclude Include="..\..\src\svo_builder\tri4D_tools.h" />
     <ClInclude Include="..\..\src\svo_builder\Triangle4D.h" />
@@ -186,7 +187,6 @@
     <ClCompile Include="..\..\src\svo_builder\BinvoxHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\BinvoxWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\InputParameterParser.cpp" />
-    <ClCompile Include="..\..\src\svo_builder\morton4D.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PartitionVoxelizer.cpp" />
     <ClCompile Include="..\..\src\svo_builder\RotationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TransformationHandler.cpp" />
@@ -196,6 +196,7 @@
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeDataWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriHeaderFileReader.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriInfo4D.cpp" />
     <ClCompile Include="..\..\src\svo_builder\OctreeBuilder.cpp" />
