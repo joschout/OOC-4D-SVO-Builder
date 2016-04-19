@@ -279,6 +279,7 @@ VoxelizationHandler::VoxelizationHandler(TriPartitioningInfo4D& trianglePartitio
 			trianglePartition_info.gridsize_S,
 			trianglePartition_info.gridsize_T,
 			generate_levels);
+	builder.initializeBuilder();
 
 	use_data = true;
 }

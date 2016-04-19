@@ -13,6 +13,12 @@ typedef vector<Node4D> QueueOfNodes;
 class Tree4DBuilderDifferentSides
 {
 public:
+	FILE* file_pointer_nodes;
+	FILE* file_pointer_data;
+	size_t position_in_output_file_nodes;
+	size_t position_in_output_file_data;
+
+
 	vector<QueueOfNodes> queuesOfMax2;
 	vector<QueueOfNodes> queuesOfMax16;
 
@@ -38,8 +44,8 @@ public:
 	string base_filename;
 
 	//File IO
-	TreeNodeWriter nodeWriter;
-	TreeDataWriter dataWriter;
+//	TreeNodeWriter nodeWriter;
+//	TreeDataWriter dataWriter;
 
 
 	//========================
@@ -49,10 +55,11 @@ public:
 	void addVoxel(const uint64_t morton_number);
 	void addVoxel(const VoxelData& point);
 
+	void initializeBuilder();
 	void finalizeTree();
 	
 private:
-	void initializeBuilder();
+
 	void calculateMaxMortonCode();
 
 	// Grouping nodes
