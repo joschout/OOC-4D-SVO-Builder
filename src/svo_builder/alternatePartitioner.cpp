@@ -240,7 +240,7 @@ AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, 
 	bbox_partition_i_worldCoords.max[0] = (bbox_partition_i_gridCoords.max[0] + 1)*unitlength; // + 1, to include full last block
 	bbox_partition_i_worldCoords.max[1] = (bbox_partition_i_gridCoords.max[1] + 1)*unitlength;
 	bbox_partition_i_worldCoords.max[2] = (bbox_partition_i_gridCoords.max[2] + 1)*unitlength;
-	bbox_partition_i_worldCoords.max[3] = (bbox_partition_i_gridCoords.max[2] + 1)*unitlength_time;
+	bbox_partition_i_worldCoords.max[3] = (bbox_partition_i_gridCoords.max[3] + 1)*unitlength_time;
 
 
 	// output partition info

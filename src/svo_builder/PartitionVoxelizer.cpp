@@ -224,8 +224,14 @@ PartitionVoxelizer::PartitionVoxelizer(
 
 	// compute partition min and max in grid coords
 	partition_bbox_gridCoords = AABox<uivec4>();
-	morton4D_Decode_for(morton_start, partition_bbox_gridCoords.min[0], partition_bbox_gridCoords.min[1], partition_bbox_gridCoords.min[2], partition_bbox_gridCoords.min[3]);
-	morton4D_Decode_for(morton_end - 1, partition_bbox_gridCoords.max[0], partition_bbox_gridCoords.max[1], partition_bbox_gridCoords.max[2], partition_bbox_gridCoords.max[3]);
+	morton4D_Decode_for(
+		morton_start,
+		partition_bbox_gridCoords.min[0], partition_bbox_gridCoords.min[1], partition_bbox_gridCoords.min[2], partition_bbox_gridCoords.min[3],
+		gridsize_S, gridsize_S, gridsize_S, gridsize_T);
+	morton4D_Decode_for(
+		morton_end - 1,
+		partition_bbox_gridCoords.max[0], partition_bbox_gridCoords.max[1], partition_bbox_gridCoords.max[2], partition_bbox_gridCoords.max[3],
+		gridsize_S, gridsize_S, gridsize_S, gridsize_T);
 
 	if (verbose) {
 		cout << "  grid coordinates for bbox of this partition: " << endl
