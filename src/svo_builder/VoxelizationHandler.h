@@ -5,6 +5,7 @@
 #include "Tree4DBuilder.h"
 #include "BinvoxHandler.h"
 #include "Tree4DBuilderDifferentSides.h"
+#include "Tree4DBuilderDifferentSides_2.h"
 
 class VoxelizationHandler
 {
@@ -37,7 +38,7 @@ public:
 	size_t nfilled;
 
 	// create Octreebuilder which will output our SVO
-	Tree4DBuilderDifferentSides builder;
+	Tree4DBuilderDifferentSides_2 builder;
 	//Tree4DBuilder builder;
 
 	BinvoxHandler binvox_handler;

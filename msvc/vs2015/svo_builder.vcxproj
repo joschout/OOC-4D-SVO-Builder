@@ -157,6 +157,7 @@
     <ClInclude Include="..\..\src\svo_builder\Buffer.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer4D.h" />
     <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.h" />
     <ClInclude Include="..\..\src\svo_builder\tree4d_io.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeDataWriter.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\alternatePartitioner.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeDataWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp" />

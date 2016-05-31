@@ -87,6 +87,9 @@
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\Buffer.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

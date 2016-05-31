@@ -247,7 +247,7 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 
 }
 
-VoxelizationHandler::VoxelizationHandler(): nbOfDimensions(4), sparseness_limit(0.10f), generate_levels(false), input_buffersize(8192), use_data(false), unitlength(1), unitlength_time(1), morton_part(8), voxels(nullptr), nfilled(0), builder(Tree4DBuilderDifferentSides())
+VoxelizationHandler::VoxelizationHandler(): nbOfDimensions(4), sparseness_limit(0.10f), generate_levels(false), input_buffersize(8192), use_data(false), unitlength(1), unitlength_time(1), morton_part(8), voxels(nullptr), nfilled(0), builder(Tree4DBuilderDifferentSides_2())
 {
 }
 
@@ -274,7 +274,7 @@ VoxelizationHandler::VoxelizationHandler(TriPartitioningInfo4D& trianglePartitio
 
 	// create Octreebuilder which will output our SVO
 	builder
-		= Tree4DBuilderDifferentSides(
+		= Tree4DBuilderDifferentSides_2(
 			trianglePartition_info.base_filename,
 			trianglePartition_info.gridsize_S,
 			trianglePartition_info.gridsize_T,
