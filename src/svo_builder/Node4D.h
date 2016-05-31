@@ -30,10 +30,11 @@ public:
 	bool hasData() const;
 	bool isNull() const;
 	bool isBinaryNode();
+	bool isOctaryNode() const;
 };
 
 // Default constructor
-inline Node4D::Node4D() : data(0), children_base(0), data_cache(VoxelData()) {
+inline Node4D::Node4D() : data(NODATA), children_base(0), data_cache(VoxelData()) {
 	memset(children_offset, (char)NOCHILD, 16);
 }
 
@@ -87,6 +88,22 @@ inline bool Node4D::isBinaryNode()
 	for (int i = 8; i < 15; i++)
 	{
 		if (children_offset[i] != children_offset[i + 1])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+inline bool Node4D::isOctaryNode() const
+{
+	if (children_base == 0)
+	{
+		return false;
+	}
+	for (int i = 0; i < 7; i++)
+	{
+		if (children_offset[2 * i] != children_offset[2 * i + 1])
 		{
 			return false;
 		}
