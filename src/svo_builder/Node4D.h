@@ -8,6 +8,8 @@
 #define NOCHILD -1
 #define NODATA 0
 
+const int sizeOfNodeInMemory = 4 * sizeof(size_t);
+
 // This is how an array of a leaf node will look
 const char LEAF4D[16] = { NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD,
 NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD, NOCHILD };

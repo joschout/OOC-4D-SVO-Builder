@@ -163,7 +163,7 @@
     <ClInclude Include="..\..\src\svo_builder\Tree4DBuilder_Strategy.h" />
     <ClInclude Include="..\..\src\svo_builder\tree4d_io.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeDataWriter.h" />
-    <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter.h" />
+    <ClInclude Include="..\..\src\svo_builder\TreeDataWriter_CppStyle.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.h" />
     <ClInclude Include="..\..\src\svo_builder\Tri4DReader.h" />
     <ClInclude Include="..\..\src\svo_builder\tri4D_tools.h" />
@@ -202,7 +202,7 @@
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Generalized.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder_Strategy.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeDataWriter.cpp" />
-    <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TreeDataWriter_CppStyle.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriHeaderFileReader.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriInfo4D.cpp" />

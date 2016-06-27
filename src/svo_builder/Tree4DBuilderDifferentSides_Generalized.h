@@ -4,6 +4,9 @@
 #include "Node4D.h"
 #include "TreeNodeWriter.h"
 #include "TreeDataWriter.h"
+#include "TreeDataWriter_CppStyle.h"
+#include <memory>
+#include "TreeNodeWriter_CppStyle.h"
 
 using std::vector;
 
@@ -14,10 +17,8 @@ typedef vector<Node4D> QueueOfNodes;
 class Tree4DBuilderDifferentSides_Generalized
 {
 public:
-	FILE* file_pointer_nodes;
-	FILE* file_pointer_data;
-	size_t position_in_output_file_nodes;
-	size_t position_in_output_file_data;
+	unique_ptr<TreeNodeWriterCppStyle> nodeWriter;
+	unique_ptr<TreeDataWriterCppStyle> dataWriter;
 	
 	vector<QueueOfNodes> queuesOfSmallestAmountOfNodes;
 	vector<QueueOfNodes> queuesOfMax16;

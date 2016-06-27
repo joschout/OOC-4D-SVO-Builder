@@ -5,6 +5,9 @@
 #include "TreeNodeWriter.h"
 #include "TreeDataWriter.h"
 #include "Tree4DBuilderDifferentSides_Interface.h"
+#include "TreeNodeWriter_CppStyle.h"
+#include <memory>
+#include "TreeDataWriter_CppStyle.h"
 
 using std::vector;
 
@@ -14,10 +17,8 @@ typedef vector<Node4D> QueueOfNodes;
 class Tree4DBuilderDifferentSides_Time_longest: public Tree4DBuilderDifferentSides_Interface
 {
 public:
-	FILE* file_pointer_nodes;
-	FILE* file_pointer_data;
-	size_t position_in_output_file_nodes;
-	size_t position_in_output_file_data;
+	unique_ptr<TreeNodeWriterCppStyle> nodeWriter;
+	unique_ptr<TreeDataWriterCppStyle> dataWriter;
 
 
 	vector<QueueOfNodes> queuesOfMax2;

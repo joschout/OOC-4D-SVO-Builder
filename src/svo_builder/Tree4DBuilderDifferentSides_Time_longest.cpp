@@ -9,8 +9,6 @@
 //#define useFastAddEmpty
 
 Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longest(): 
-	file_pointer_nodes(nullptr), file_pointer_data(nullptr), 
-	position_in_output_file_nodes(0), position_in_output_file_data(0),
 	gridsize_S(0), gridsize_T(0),
 	current_morton_code(0), max_morton_code(0),
 	maxDepth(0), totalNbOfQueues(0), nbOfQueuesOf16Nodes(0), nbOfQueuesOf2Nodes(0),
@@ -20,8 +18,6 @@ Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longe
 
 Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longest(
 	std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels):
-	file_pointer_nodes(nullptr), file_pointer_data(nullptr),
-	position_in_output_file_nodes(0), position_in_output_file_data(0),
 	base_filename(base_filename), current_morton_code(0),
 	max_morton_code(0), maxDepth(0), totalNbOfQueues(0), nbOfQueuesOf16Nodes(0), nbOfQueuesOf2Nodes(0),
 	gridsize_S(gridsize_S), gridsize_T(gridsize_T),
@@ -39,13 +35,11 @@ void Tree4DBuilderDifferentSides_Time_longest::calculateMaxMortonCode()
 
 void Tree4DBuilderDifferentSides_Time_longest::initializeBuilder()
 {
-//	nodeWriter = TreeNodeWriter(base_filename);
-//	dataWriter = TreeDataWriter(base_filename);
+	std::unique_ptr<TreeNodeWriterCppStyle> nWriter(new TreeNodeWriterCppStyle(base_filename));
+	nodeWriter = std::move(nWriter);
 
-	string nodes_name = base_filename + string(".tree4dnodes");
-	string data_name = base_filename + string(".tree4ddata");
-	file_pointer_nodes = fopen(nodes_name.c_str(), "wb");
-	file_pointer_data = fopen(data_name.c_str(), "wb");
+	std::unique_ptr<TreeDataWriterCppStyle> dWriter(new TreeDataWriterCppStyle(base_filename));
+	dataWriter = std::move(dWriter);
 
 	/*
 	gridsize_t = 2^y
@@ -102,13 +96,11 @@ void Tree4DBuilderDifferentSides_Time_longest::initializeBuilder()
 	// Fill data arrays
 	calculateMaxMortonCode();
 
-	//dataWriter.writeVoxelData(nullData);// first data point is NULL
-	writeVoxelData(file_pointer_data, VoxelData(), position_in_output_file_data);
+	dataWriter->writeVoxelData(VoxelData());// first data point is NULL
 
 #ifdef BINARY_VOXELIZATION
 	VoxelData voxelData = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
-	//dataWriter.writeVoxelData(voxelData);  // all leafs will refer to this
-	writeVoxelData(file_pointer_data, voxelData, position_in_output_file_data);
+	dataWriter->writeVoxelData(voxelData);  // all leafs will refer to this
 #endif
 }
 
@@ -160,10 +152,9 @@ void Tree4DBuilderDifferentSides_Time_longest::addVoxel(const VoxelData& data) {
 	Node4D node = Node4D(); // create empty node
 		
 	// Write data point
-	//node.data = dataWriter.writeVoxelData(data); // store data
-	node.data = writeVoxelData(file_pointer_data, data, position_in_output_file_data);
+	node.data = dataWriter->writeVoxelData(data); // store data
 	node.data_cache = data; // store data as cache
-							// Add to buffers
+	// Add to buffers
 	queuesOfMax16.at(nbOfQueuesOf16Nodes - 1).push_back(node);;
 	// flush the queues
 	flushQueues(maxDepth);
@@ -246,6 +237,12 @@ bool Tree4DBuilderDifferentSides_Time_longest::isQueueEmpty(int depth)
 	}
 }
 
+/*
+IMPORTANT NOTE:
+This method expects the queue on the given depth to be completely full.
+It is UNSAFE to call this method when the queue is not full.
+It should be checked if the queue is full before calling this method.
+*/
 bool Tree4DBuilderDifferentSides_Time_longest::doesQueueContainOnlyEmptyNodes(int depth) {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -283,7 +280,14 @@ void Tree4DBuilderDifferentSides_Time_longest::flushQueues(const int start_depth
 	}
 }
 
-// Check if a buffer contains non-empty nodes
+/*
+Check if the given queue is completely filled with empty leaf nodes ( = null nodes).
+
+IMPORTANT NOTE:
+This method expects the given queue to be completely full.
+It is UNSAFE to call this method when the queue is not full.
+It should be checked if the queue is full before calling this method.
+*/
 bool Tree4DBuilderDifferentSides_Time_longest::doesQueueContainOnlyEmptyNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue) {
 	for (int k = 0; k < maxAmountOfElementsInQueue; k++) {
 		if (!queue[k].isNull()) {
@@ -293,6 +297,17 @@ bool Tree4DBuilderDifferentSides_Time_longest::doesQueueContainOnlyEmptyNodes(co
 	return true;
 }
 
+/*
+Groups the nodes in the given queue.
+
+PRECONDITION: The queue at the given depth is filled with nodes.
+When calling this method, we know that some of the nodes in this queue are NOT empty leaf nodes.
+
+RETURNS: the parent node of the nodes in this queue.
+
+Calling this method will write the non-empty child nodes to disk.
+It sets the child pointers to the non-empty child nodes in the returned parent node.
+*/
 Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesAtDepth(int depth)
 {
 	assert(depth >= 0);
@@ -312,6 +327,17 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesAtDepth(int depth)
 	}
 }
 
+/*
+Groups the nodes in the given queue.
+
+PRECONDITION: The queue at the given depth is filled with nodes.
+When calling this method, we know that some of the nodes in this queue are NOT empty leaf nodes.
+
+RETURNS: the parent node of the nodes in this queue.
+
+Calling this method will write the non-empty child nodes to disk.
+It sets the child pointers to the non-empty child nodes in the returned parent node.
+*/
 Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax2(const QueueOfNodes &queueOfMax2)
 {
 	Node4D parent = Node4D();
@@ -341,13 +367,23 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax2(const QueueOfN
 		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
 		voxelData.normal = normalize(tonormalize);
 		// set it in the parent node
-		parent.data = writeVoxelData(file_pointer_data, voxelData, position_in_output_file_data);
-		//parent.data = dataWriter.writeVoxelData(voxelData);
+		parent.data = dataWriter->writeVoxelData(voxelData);
 		parent.data_cache = voxelData;
 	}
 	return parent;
 }
 
+/*
+Groups the nodes in the given queue.
+
+PRECONDITION: The queue at the given depth is filled with nodes.
+When calling this method, we know that some of the nodes in this queue are NOT empty leaf nodes.
+
+RETURNS: the parent node of the nodes in this queue.
+
+Calling this method will write the non-empty child nodes to disk.
+It sets the child pointers to the non-empty child nodes in the returned parent node.
+*/
 Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax16(const QueueOfNodes &queueOfMax16)
 {
 	Node4D parent = Node4D();
@@ -377,8 +413,7 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax16(const QueueOf
 		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
 		voxelData.normal = normalize(tonormalize);
 		// set it in the parent node
-		parent.data = writeVoxelData(file_pointer_data, voxelData, position_in_output_file_data);
-		//parent.data = dataWriter.writeVoxelData(voxelData);
+		parent.data = dataWriter->writeVoxelData(voxelData);
 		parent.data_cache = voxelData;
 	}
 	return parent;
@@ -387,9 +422,8 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax16(const QueueOf
 void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfParent_Max2NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
-	//size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(currentChildNode);
-	size_t positionOfChildOnDisk = writeNode4D(file_pointer_nodes, currentChildNode, position_in_output_file_nodes);
-
+	size_t positionOfChildOnDisk = nodeWriter->writeNode4D_(currentChildNode);
+	
 	if (first_stored_child) {
 		parent.children_base = positionOfChildOnDisk;
 		setChildrenOffsetsForNodeWithMax2Children(parent, indexOfCurrentChildNode, 0);
@@ -404,9 +438,8 @@ void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfPare
 void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfParent_Max16NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
-	//size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(currentChildNode);
-	size_t positionOfChildOnDisk = writeNode4D(file_pointer_nodes, currentChildNode, position_in_output_file_nodes);
-	
+	size_t positionOfChildOnDisk = nodeWriter->writeNode4D_(currentChildNode);
+		
 	if (first_stored_child) {
 		parent.children_base = positionOfChildOnDisk;
 		parent.children_offset[indexOfCurrentChildNode] = 0;
@@ -549,17 +582,11 @@ void Tree4DBuilderDifferentSides_Time_longest::finalizeTree() {
 	}
 
 	// write root node
-	writeNode4D(file_pointer_nodes, getRootNode(), position_in_output_file_nodes);
-	//nodeWriter.writeNode4D_(getRootNode());
+	nodeWriter->writeNode4D_(getRootNode());
 	
 	// write header
-//	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, nodeWriter.position_in_output_file, dataWriter.position_in_output_file);
-	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, position_in_output_file_nodes, position_in_output_file_data);
+	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, nodeWriter->position_in_output_file, dataWriter->position_in_output_file);
 	writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);
-
-	// close files
-//	dataWriter.closeFile();
-//	nodeWriter.closeFile();
 }
 
 Node4D Tree4DBuilderDifferentSides_Time_longest::getRootNode()

@@ -9,8 +9,6 @@
 //#define useFastAddEmpty
 
 Tree4DBuilderDifferentSides_Generalized::Tree4DBuilderDifferentSides_Generalized() :
-	file_pointer_nodes(nullptr), file_pointer_data(nullptr),
-	position_in_output_file_nodes(0), position_in_output_file_data(0),
 	gridsize_S(0), gridsize_T(0),
 	current_morton_code(0), max_morton_code(0),
 	maxDepth(0), totalNbOfQueues(0), nbOfQueuesOf16Nodes(0), nbOfSmallerQueues(0),
@@ -20,8 +18,6 @@ Tree4DBuilderDifferentSides_Generalized::Tree4DBuilderDifferentSides_Generalized
 
 Tree4DBuilderDifferentSides_Generalized::Tree4DBuilderDifferentSides_Generalized(
 	std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels) :
-	file_pointer_nodes(nullptr), file_pointer_data(nullptr),
-	position_in_output_file_nodes(0), position_in_output_file_data(0),
 	base_filename(base_filename), current_morton_code(0),
 	max_morton_code(0), maxDepth(0), totalNbOfQueues(0), nbOfQueuesOf16Nodes(0), nbOfSmallerQueues(0),
 	gridsize_S(gridsize_S), gridsize_T(gridsize_T),
@@ -96,13 +92,11 @@ void Tree4DBuilderDifferentSides_Generalized::setupBuildingVariables()
 
 void Tree4DBuilderDifferentSides_Generalized::initializeBuilder()
 {
-	//	nodeWriter = TreeNodeWriter(base_filename);
-	//	dataWriter = TreeDataWriter(base_filename);
+	std::unique_ptr<TreeNodeWriterCppStyle> nWriter(new TreeNodeWriterCppStyle(base_filename));
+	nodeWriter = std::move(nWriter);
 
-	string nodes_name = base_filename + string(".tree4dnodes");
-	string data_name = base_filename + string(".tree4ddata");
-	file_pointer_nodes = fopen(nodes_name.c_str(), "wb");
-	file_pointer_data = fopen(data_name.c_str(), "wb");
+	std::unique_ptr<TreeDataWriterCppStyle> dWriter(new TreeDataWriterCppStyle(base_filename));
+	dataWriter = std::move(dWriter);
 
 	if(gridsize_S > gridsize_T)
 	{
@@ -115,13 +109,11 @@ void Tree4DBuilderDifferentSides_Generalized::initializeBuilder()
 	// Fill data arrays
 	calculateMaxMortonCode();
 
-	//dataWriter.writeVoxelData(nullData);// first data point is NULL
-	writeVoxelData(file_pointer_data, VoxelData(), position_in_output_file_data);
+	dataWriter->writeVoxelData(VoxelData());// first data point is NULL
 
 #ifdef BINARY_VOXELIZATION
 	VoxelData voxelData = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
-																	 //dataWriter.writeVoxelData(voxelData);  // all leafs will refer to this
-	writeVoxelData(file_pointer_data, voxelData, position_in_output_file_data);
+	dataWriter->writeVoxelData(voxelData);  // all leafs will refer to this
 #endif
 }
 
@@ -172,11 +164,10 @@ void Tree4DBuilderDifferentSides_Generalized::addVoxel(const VoxelData& data) {
 	// Create node
 	Node4D node = Node4D(); // create empty node
 
-							// Write data point
-							//node.data = dataWriter.writeVoxelData(data); // store data
-	node.data = writeVoxelData(file_pointer_data, data, position_in_output_file_data);
+	// Write data point
+	node.data = dataWriter->writeVoxelData(data); // store data
 	node.data_cache = data; // store data as cache
-							// Add to buffers
+	// Add to buffers
 	queuesOfMax16.at(nbOfQueuesOf16Nodes - 1).push_back(node);;
 	// flush the queues
 	flushQueues(maxDepth);
@@ -358,8 +349,7 @@ Node4D Tree4DBuilderDifferentSides_Generalized::groupNodesOfMax2(const QueueOfNo
 		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
 		voxelData.normal = normalize(tonormalize);
 		// set it in the parent node
-		parent.data = writeVoxelData(file_pointer_data, voxelData, position_in_output_file_data);
-		//parent.data = dataWriter.writeVoxelData(voxelData);
+		parent.data = dataWriter->writeVoxelData(voxelData);
 		parent.data_cache = voxelData;
 	}
 	return parent;
@@ -394,8 +384,7 @@ Node4D Tree4DBuilderDifferentSides_Generalized::groupNodesOfMax16(const QueueOfN
 		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
 		voxelData.normal = normalize(tonormalize);
 		// set it in the parent node
-		parent.data = writeVoxelData(file_pointer_data, voxelData, position_in_output_file_data);
-		//parent.data = dataWriter.writeVoxelData(voxelData);
+		parent.data = dataWriter->writeVoxelData(voxelData);
 		parent.data_cache = voxelData;
 	}
 	return parent;
@@ -404,9 +393,8 @@ Node4D Tree4DBuilderDifferentSides_Generalized::groupNodesOfMax16(const QueueOfN
 void Tree4DBuilderDifferentSides_Generalized::writeNodeToDiskAndSetOffsetOfParent_Max2NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
-	//size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(currentChildNode);
-	size_t positionOfChildOnDisk = writeNode4D(file_pointer_nodes, currentChildNode, position_in_output_file_nodes);
-
+	size_t positionOfChildOnDisk = nodeWriter->writeNode4D_(currentChildNode);
+	
 	if (first_stored_child) {
 		parent.children_base = positionOfChildOnDisk;
 		setChildrenOffsetsForNodeWithMax2Children(parent, indexOfCurrentChildNode, 0);
@@ -421,8 +409,7 @@ void Tree4DBuilderDifferentSides_Generalized::writeNodeToDiskAndSetOffsetOfParen
 void Tree4DBuilderDifferentSides_Generalized::writeNodeToDiskAndSetOffsetOfParent_Max16NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
-	//size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(currentChildNode);
-	size_t positionOfChildOnDisk = writeNode4D(file_pointer_nodes, currentChildNode, position_in_output_file_nodes);
+	size_t positionOfChildOnDisk = nodeWriter->writeNode4D_(currentChildNode);
 
 	if (first_stored_child) {
 		parent.children_base = positionOfChildOnDisk;
@@ -587,17 +574,11 @@ void Tree4DBuilderDifferentSides_Generalized::finalizeTree() {
 	}
 
 	// write root node
-	writeNode4D(file_pointer_nodes, getRootNode(), position_in_output_file_nodes);
-	//nodeWriter.writeNode4D_(getRootNode());
+	nodeWriter->writeNode4D_(getRootNode());
 
 	// write header
-	//	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, nodeWriter.position_in_output_file, dataWriter.position_in_output_file);
-	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, position_in_output_file_nodes, position_in_output_file_data);
-	writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);
-
-	// close files
-	//	dataWriter.closeFile();
-	//	nodeWriter.closeFile();
+	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, nodeWriter->position_in_output_file, dataWriter->position_in_output_file);
+		writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);
 }
 
 Node4D Tree4DBuilderDifferentSides_Generalized::getRootNode()

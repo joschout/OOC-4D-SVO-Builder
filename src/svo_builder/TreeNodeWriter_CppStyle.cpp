@@ -1,4 +1,3 @@
-/*
 #include "TreeNodeWriter_CppStyle.h"
 
 TreeNodeWriterCppStyle::TreeNodeWriterCppStyle(std::string base_filename):
@@ -52,22 +51,27 @@ size_t TreeNodeWriterCppStyle::writeNode4D_(const Node4D& node)
 	size_t data; (64 bits)
 	size_t children_base; (64 bits)
 	char children_offset[16]; (128 bits = 2 * 64 bits)
-	#1#
+	*/
 
+
+	
 	if (!fstream_nodes.is_open())
 	{
 		std::cout << ".tree4dnodes-file is not or incorrectly opened.";
 	}
 
-	fstream_nodes.write(&node.data, 4*sizeof(size_t));
-	fwrite(&node.data, sizeof(size_t), 4, file_pointer_nodes);
+	 char nodeAsCharArray [sizeOfNodeInMemory];
+	std::memcpy(nodeAsCharArray, &node.data, sizeOfNodeInMemory);
+
+	fstream_nodes.write(nodeAsCharArray, sizeOfNodeInMemory);
+	//fwrite(&node.data, sizeof(size_t), 4, file_pointer_nodes);
 	/*
 	size_t fwrite ( const void * ptr, size_t size, size_t count, FILE * stream );
 	Write block of data to stream.
 
 	Writes an array of count elements,
 	each one with a size of size bytes,
-	from the block of memory pointed by ptr to the current position in the stream.#1#
+	from the block of memory pointed by ptr to the current position in the stream.*/
 
 	position_in_output_file++;
 	return position_in_output_file - 1;
@@ -75,4 +79,5 @@ size_t TreeNodeWriterCppStyle::writeNode4D_(const Node4D& node)
 
 
 }
-*/
+
+
