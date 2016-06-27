@@ -13,12 +13,12 @@ class BinvoxHandler
 {
 public:
 	size_t gridsize_T;
-	std::vector<BinvoxWriter> binvox_writers;
+	std::vector<BinvoxWriter> binvox_writers;//as many as there are points in time
 	std::string base_filename;
 	
 	BinvoxHandler();
 	BinvoxHandler(std::string base_filename, size_t gridsize_T);
-	void initialize(vec3 translation_vec, float scale);
+	void initialize(vec3 translation_vec, float scale, size_t gridsize_S);
 	void createInitialBinvoxFiles();
 	void writeHeaders();
 	void writeVoxel(int timepoint, int x, int y, int z);

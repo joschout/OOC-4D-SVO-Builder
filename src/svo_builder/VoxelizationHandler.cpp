@@ -201,7 +201,7 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 	if(binvox)
 	{
 		binvox_handler = BinvoxHandler(trianglePartition_info.base_filename, trianglePartition_info.gridsize_T);
-		binvox_handler.initialize(vec3(0.0f, 0.0f, 0.0f), 1.0);
+		binvox_handler.initialize(vec3(0.0f, 0.0f, 0.0f), 1.0, trianglePartition_info.gridsize_S);
 		binvox_handler.createInitialBinvoxFiles();	
 	}
 	
@@ -247,7 +247,7 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 
 }
 
-VoxelizationHandler::VoxelizationHandler(): nbOfDimensions(4), sparseness_limit(0.10f), generate_levels(false), input_buffersize(8192), use_data(false), unitlength(1), unitlength_time(1), morton_part(8), voxels(nullptr), nfilled(0), builder(Tree4DBuilderDifferentSides_2())
+VoxelizationHandler::VoxelizationHandler(): nbOfDimensions(4), sparseness_limit(0.10f), generate_levels(false), input_buffersize(8192), use_data(false), unitlength(1), unitlength_time(1), morton_part(8), voxels(nullptr), nfilled(0), builder(Tree4DBuilder_Strategy())
 {
 }
 
@@ -273,12 +273,18 @@ VoxelizationHandler::VoxelizationHandler(TriPartitioningInfo4D& trianglePartitio
 	 nfilled = 0;
 
 	// create Octreebuilder which will output our SVO
-	builder
-		= Tree4DBuilderDifferentSides_2(
-			trianglePartition_info.base_filename,
-			trianglePartition_info.gridsize_S,
-			trianglePartition_info.gridsize_T,
-			generate_levels);
+//	builder
+//		= Tree4DBuilderDifferentSides_Time_longest(
+//			trianglePartition_info.base_filename,
+//			trianglePartition_info.gridsize_S,
+//			trianglePartition_info.gridsize_T,
+//			generate_levels);
+	 builder
+		 = Tree4DBuilder_Strategy(
+			 trianglePartition_info.base_filename,
+			 trianglePartition_info.gridsize_S,
+			 trianglePartition_info.gridsize_T,
+			 generate_levels);
 	builder.initializeBuilder();
 
 	use_data = true;

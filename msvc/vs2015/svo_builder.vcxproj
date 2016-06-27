@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\BinvoxHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\BinvoxWriter.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Interface.h" />
     <ClInclude Include="..\..\src\svo_builder\InputParameterParser.h" />
     <ClInclude Include="..\..\src\svo_builder\Node4D.h" />
     <ClInclude Include="..\..\src\svo_builder\PartitionVoxelizer.h" />
@@ -156,8 +157,10 @@
     <ClInclude Include="..\..\src\svo_builder\alternatePartitioner.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer.h" />
     <ClInclude Include="..\..\src\svo_builder\Buffer4D.h" />
-    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.h" />
-    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Time_longest.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Space_longest.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Generalized.h" />
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilder_Strategy.h" />
     <ClInclude Include="..\..\src\svo_builder\tree4d_io.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeDataWriter.h" />
     <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter.h" />
@@ -194,8 +197,10 @@
     <ClCompile Include="..\..\src\svo_builder\TranslationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\alternatePartitioner.cpp" />
-    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.cpp" />
-    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Time_longest.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Space_longest.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Generalized.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder_Strategy.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeDataWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp" />

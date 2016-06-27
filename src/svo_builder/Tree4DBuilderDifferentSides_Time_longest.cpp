@@ -1,4 +1,4 @@
-#include "Tree4DBuilderDifferentSides.h"
+#include "Tree4DBuilderDifferentSides_Time_longest.h"
 #include "morton4D.h"
 #include <cassert>
 #include "tree4d_io.h"
@@ -8,7 +8,7 @@
 
 //#define useFastAddEmpty
 
-Tree4DBuilderDifferentSides::Tree4DBuilderDifferentSides(): 
+Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longest(): 
 	file_pointer_nodes(nullptr), file_pointer_data(nullptr), 
 	position_in_output_file_nodes(0), position_in_output_file_data(0),
 	gridsize_S(0), gridsize_T(0),
@@ -18,17 +18,18 @@ Tree4DBuilderDifferentSides::Tree4DBuilderDifferentSides():
 {
 }
 
-Tree4DBuilderDifferentSides::Tree4DBuilderDifferentSides(
+Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longest(
 	std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels):
 	file_pointer_nodes(nullptr), file_pointer_data(nullptr),
 	position_in_output_file_nodes(0), position_in_output_file_data(0),
 	base_filename(base_filename), current_morton_code(0),
+	max_morton_code(0), maxDepth(0), totalNbOfQueues(0), nbOfQueuesOf16Nodes(0), nbOfQueuesOf2Nodes(0),
 	gridsize_S(gridsize_S), gridsize_T(gridsize_T),
 	generate_levels(generate_levels)
 {
 }
 
-void Tree4DBuilderDifferentSides::calculateMaxMortonCode()
+void Tree4DBuilderDifferentSides_Time_longest::calculateMaxMortonCode()
 {
 	max_morton_code
 		= morton4D_Encode_for<uint64_t, uint_fast32_t>(
@@ -36,7 +37,7 @@ void Tree4DBuilderDifferentSides::calculateMaxMortonCode()
 			static_cast<uint_fast32_t>(gridsize_S), static_cast<uint_fast32_t>(gridsize_S), static_cast<uint_fast32_t>(gridsize_S), static_cast<uint_fast32_t>(gridsize_T));
 }
 
-void Tree4DBuilderDifferentSides::initializeBuilder()
+void Tree4DBuilderDifferentSides_Time_longest::initializeBuilder()
 {
 //	nodeWriter = TreeNodeWriter(base_filename);
 //	dataWriter = TreeDataWriter(base_filename);
@@ -101,10 +102,6 @@ void Tree4DBuilderDifferentSides::initializeBuilder()
 	// Fill data arrays
 	calculateMaxMortonCode();
 
-
-	VoxelData nullData;
-
-
 	//dataWriter.writeVoxelData(nullData);// first data point is NULL
 	writeVoxelData(file_pointer_data, VoxelData(), position_in_output_file_data);
 
@@ -116,7 +113,7 @@ void Tree4DBuilderDifferentSides::initializeBuilder()
 }
 
 // Add a datapoint to the octree: this is the main method used to push datapoints
-void Tree4DBuilderDifferentSides::addVoxel(const uint64_t morton_number) {
+void Tree4DBuilderDifferentSides_Time_longest::addVoxel(const uint64_t morton_number) {
 	// Padding for missed morton numbers, i.e. the empty voxels with morton codes between [current_morton_code, morton number)
 /*	if (morton_number != current_morton_code) {
 		fastAddEmptyVoxels(morton_number - current_morton_code);
@@ -145,7 +142,7 @@ void Tree4DBuilderDifferentSides::addVoxel(const uint64_t morton_number) {
 }
 
 // Add a datapoint to the octree: this is the main method used to push datapoints
-void Tree4DBuilderDifferentSides::addVoxel(const VoxelData& data) {
+void Tree4DBuilderDifferentSides_Time_longest::addVoxel(const VoxelData& data) {
 	// Padding for missed morton numbers
 /*	if (data.morton != current_morton_code) {
 		fastAddEmptyVoxels(data.morton - current_morton_code);
@@ -174,7 +171,7 @@ void Tree4DBuilderDifferentSides::addVoxel(const VoxelData& data) {
 	current_morton_code++;
 }
 
-void Tree4DBuilderDifferentSides::push_backNodeToQueueAtDepth(int depth, Node4D node)
+void Tree4DBuilderDifferentSides_Time_longest::push_backNodeToQueueAtDepth(int depth, Node4D node)
 {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -192,7 +189,7 @@ void Tree4DBuilderDifferentSides::push_backNodeToQueueAtDepth(int depth, Node4D 
 	}
 }
 
-bool Tree4DBuilderDifferentSides::isQueueFilled(int depth)
+bool Tree4DBuilderDifferentSides_Time_longest::isQueueFilled(int depth)
 {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -219,7 +216,7 @@ bool Tree4DBuilderDifferentSides::isQueueFilled(int depth)
 	}
 }
 
-bool Tree4DBuilderDifferentSides::isQueueEmpty(int depth)
+bool Tree4DBuilderDifferentSides_Time_longest::isQueueEmpty(int depth)
 {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -249,7 +246,7 @@ bool Tree4DBuilderDifferentSides::isQueueEmpty(int depth)
 	}
 }
 
-bool Tree4DBuilderDifferentSides::doesQueueContainOnlyEmptyNodes(int depth) {
+bool Tree4DBuilderDifferentSides_Time_longest::doesQueueContainOnlyEmptyNodes(int depth) {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
 
@@ -268,7 +265,7 @@ bool Tree4DBuilderDifferentSides::doesQueueContainOnlyEmptyNodes(int depth) {
 }
 
 // REFINE QUEUES: check all levels from start_depth up and group 16 nodes on a higher level
-void Tree4DBuilderDifferentSides::flushQueues(const int start_depth) {
+void Tree4DBuilderDifferentSides_Time_longest::flushQueues(const int start_depth) {
 	for (int depth = start_depth; depth >= 0; depth--) {
 		if(isQueueFilled(depth)) { // we have the max amount of nodes in the queue at depth depth
 			assert(depth - 1 >= 0);
@@ -287,7 +284,7 @@ void Tree4DBuilderDifferentSides::flushQueues(const int start_depth) {
 }
 
 // Check if a buffer contains non-empty nodes
-bool Tree4DBuilderDifferentSides::doesQueueContainOnlyEmptyNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue) {
+bool Tree4DBuilderDifferentSides_Time_longest::doesQueueContainOnlyEmptyNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue) {
 	for (int k = 0; k < maxAmountOfElementsInQueue; k++) {
 		if (!queue[k].isNull()) {
 			return false;
@@ -296,7 +293,7 @@ bool Tree4DBuilderDifferentSides::doesQueueContainOnlyEmptyNodes(const QueueOfNo
 	return true;
 }
 
-Node4D Tree4DBuilderDifferentSides::groupNodesAtDepth(int depth)
+Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesAtDepth(int depth)
 {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -315,7 +312,7 @@ Node4D Tree4DBuilderDifferentSides::groupNodesAtDepth(int depth)
 	}
 }
 
-Node4D Tree4DBuilderDifferentSides::groupNodesOfMax2(const QueueOfNodes &queueOfMax2)
+Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax2(const QueueOfNodes &queueOfMax2)
 {
 	Node4D parent = Node4D();
 	bool first_stored_child = true;
@@ -351,7 +348,7 @@ Node4D Tree4DBuilderDifferentSides::groupNodesOfMax2(const QueueOfNodes &queueOf
 	return parent;
 }
 
-Node4D Tree4DBuilderDifferentSides::groupNodesOfMax16(const QueueOfNodes &queueOfMax16)
+Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax16(const QueueOfNodes &queueOfMax16)
 {
 	Node4D parent = Node4D();
 	bool first_stored_child = true;
@@ -387,7 +384,7 @@ Node4D Tree4DBuilderDifferentSides::groupNodesOfMax16(const QueueOfNodes &queueO
 	return parent;
 }
 
-void Tree4DBuilderDifferentSides::writeNodeToDiskAndSetOffsetOfParent_Max2NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
+void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfParent_Max2NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
 	//size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(currentChildNode);
@@ -404,7 +401,7 @@ void Tree4DBuilderDifferentSides::writeNodeToDiskAndSetOffsetOfParent_Max2NodesI
 	}
 }
 
-void Tree4DBuilderDifferentSides::writeNodeToDiskAndSetOffsetOfParent_Max16NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
+void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfParent_Max16NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
 	//size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(currentChildNode);
@@ -424,7 +421,7 @@ void Tree4DBuilderDifferentSides::writeNodeToDiskAndSetOffsetOfParent_Max16Nodes
 
 /*
 // Group 16 nodes, write non-empty nodes to disk and create parent node
-Node4D Tree4DBuilderDifferentSides::groupNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue) {
+Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue) {
 	Node4D parent = Node4D();
 	bool first_stored_child = true;
 
@@ -497,7 +494,12 @@ Node4D Tree4DBuilderDifferentSides::groupNodes(const QueueOfNodes &queue, int ma
 }
 */
 
-void Tree4DBuilderDifferentSides::setChildrenOffsetsForNodeWithMax2Children(Node4D &parent, int indexInQueue, char offset)
+/*
+Set in the node 'parent' the offset of its child node.
+The offset is 'offset'. 
+'indexInQueue' is the index of the child in the queue we are currently grouping.
+*/
+void Tree4DBuilderDifferentSides_Time_longest::setChildrenOffsetsForNodeWithMax2Children(Node4D &parent, int indexInQueue, char offset)
 {
 	if (indexInQueue == 0)
 	{
@@ -512,7 +514,7 @@ void Tree4DBuilderDifferentSides::setChildrenOffsetsForNodeWithMax2Children(Node
 	}
 }
 
-void Tree4DBuilderDifferentSides::clearQueueAtDepth(int depth)
+void Tree4DBuilderDifferentSides_Time_longest::clearQueueAtDepth(int depth)
 {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -532,7 +534,7 @@ void Tree4DBuilderDifferentSides::clearQueueAtDepth(int depth)
 }
 
 // Finalize the tree: add rest of empty nodes, make sure root node is on top
-void Tree4DBuilderDifferentSides::finalizeTree() {
+void Tree4DBuilderDifferentSides_Time_longest::finalizeTree() {
 	// fill octree
 /*	if (current_morton_code < max_morton_code) {
 		fastAddEmptyVoxels((max_morton_code - current_morton_code) + 1);
@@ -560,7 +562,7 @@ void Tree4DBuilderDifferentSides::finalizeTree() {
 //	nodeWriter.closeFile();
 }
 
-Node4D Tree4DBuilderDifferentSides::getRootNode()
+Node4D Tree4DBuilderDifferentSides_Time_longest::getRootNode()
 {
 	if ( nbOfQueuesOf2Nodes > 0)
 	{
@@ -598,7 +600,7 @@ Hoe over verschillende levels toepassen?
 		2) b = de diepte van de laagste niet-lege queue
 
 */
-void Tree4DBuilderDifferentSides::slowAddEmptyVoxels(const size_t nbOfNodesToAdd)
+void Tree4DBuilderDifferentSides_Time_longest::slowAddEmptyVoxels(const size_t nbOfNodesToAdd)
 {
 	int nbOfEmptyNodeYetToAdd = nbOfNodesToAdd;
 
@@ -613,7 +615,7 @@ void Tree4DBuilderDifferentSides::slowAddEmptyVoxels(const size_t nbOfNodesToAdd
 
 /*
 // A method to quickly add empty nodes
-inline void Tree4DBuilderDifferentSides::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
+inline void Tree4DBuilderDifferentSides_Time_longest::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
 	size_t r_budget = nbOfEmptyVoxelsToAdd;
 	while (r_budget > 0) {
 		unsigned int queueDepth = computeBestFillQueue(r_budget);
@@ -625,7 +627,7 @@ inline void Tree4DBuilderDifferentSides::fastAddEmptyVoxels(const size_t nbOfEmp
 */
 
 /*// Compute the best fill queue given the budget
-inline int Tree4DBuilderDifferentSides::computeBestFillQueue(const size_t budget) {
+inline int Tree4DBuilderDifferentSides_Time_longest::computeBestFillQueue(const size_t budget) {
 	// which power of 16 fits in budget?
 	int budget_queue_suggestion = maxDepth - findPowerOf16(budget);
 	// if our current guess is already b_maxdepth, return that, no need to test further
@@ -638,7 +640,7 @@ inline int Tree4DBuilderDifferentSides::computeBestFillQueue(const size_t budget
 }*/
 
 // A method to quickly add empty nodes
-inline void Tree4DBuilderDifferentSides::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
+inline void Tree4DBuilderDifferentSides_Time_longest::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
 	int nbOfEmptyVoxelsYetToAdd = nbOfEmptyVoxelsToAdd;
 
 	while (nbOfEmptyVoxelsYetToAdd > 0) {
@@ -649,7 +651,7 @@ inline void Tree4DBuilderDifferentSides::fastAddEmptyVoxels(const size_t nbOfEmp
 	}
 }
 
-int Tree4DBuilderDifferentSides::nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(int depth)
+int Tree4DBuilderDifferentSides_Time_longest::nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(int depth)
 {
 	if(depth >= nbOfQueuesOf2Nodes - 1) // depth >= y - x
 	{
@@ -663,7 +665,7 @@ int Tree4DBuilderDifferentSides::nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(int 
 	}
 }
 
-int Tree4DBuilderDifferentSides::calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(const size_t nbOfEmptyVoxelsToAdd)
+int Tree4DBuilderDifferentSides_Time_longest::calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(const size_t nbOfEmptyVoxelsToAdd)
 {
 	//STEL: we hebben enkel queues van 16 nodes
 	if(nbOfQueuesOf2Nodes == 0)
@@ -748,7 +750,7 @@ int Tree4DBuilderDifferentSides::calculateQueueShouldItBePossibleToAddAllVoxelsA
 }
 
 // Compute the best fill queue given the budget
-inline int Tree4DBuilderDifferentSides::computeDepthOfBestQueue(const size_t nbofEmptyVoxelsToAdd) {
+inline int Tree4DBuilderDifferentSides_Time_longest::computeDepthOfBestQueue(const size_t nbofEmptyVoxelsToAdd) {
 	// which power of 16 fits in budget?
 	int depthA = calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(nbofEmptyVoxelsToAdd);
 
@@ -768,7 +770,7 @@ inline int Tree4DBuilderDifferentSides::computeDepthOfBestQueue(const size_t nbo
 }
 
 // Find the highest non empty buffer, return its index
-inline int Tree4DBuilderDifferentSides::highestNonEmptyQueue() {
+inline int Tree4DBuilderDifferentSides_Time_longest::highestNonEmptyQueue() {
 	int highest_found = maxDepth; // highest means "lower in buffer id" here.
 	for (int currentDepth = maxDepth; currentDepth >= 0; currentDepth--) {
 		if (isQueueEmpty(currentDepth)) { // this buffer level is empty
@@ -782,7 +784,7 @@ inline int Tree4DBuilderDifferentSides::highestNonEmptyQueue() {
 }
 
 // Add an empty datapoint at a certain buffer level, and refine upwards from there
-void Tree4DBuilderDifferentSides::addEmptyVoxel(const int queueDepth) {
+void Tree4DBuilderDifferentSides_Time_longest::addEmptyVoxel(const int queueDepth) {
 	push_backNodeToQueueAtDepth(queueDepth, Node4D());
 	//nodeQueues[buffer].push_back(Node4D());
 	flushQueues(queueDepth);

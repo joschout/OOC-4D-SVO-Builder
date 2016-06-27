@@ -81,13 +81,19 @@
     <ClCompile Include="..\..\src\svo_builder\TreeDataWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.cpp">
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Generalized.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder_Strategy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Space_longest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Time_longest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -200,13 +206,22 @@
     <ClInclude Include="..\..\src\svo_builder\TreeDataWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_2.h">
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Generalized.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilder_Strategy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Space_longest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Time_longest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

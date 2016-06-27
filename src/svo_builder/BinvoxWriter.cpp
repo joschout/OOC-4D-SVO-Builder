@@ -10,7 +10,7 @@ BinvoxWriter::BinvoxWriter(std::string base_filename, vec3 translation_vec, floa
 	base_filename(base_filename),
 	timepoint(timepoint),
 	translation_vec(translation_vec),
-    gridsize(gridsize),
+    gridsize_S(gridsize),
     start_of_data_section(0),
     end_of_data_section(0)
 {
@@ -33,7 +33,7 @@ string BinvoxWriter::createHeaderString() const
 {
 	stringstream headerstream;
 	headerstream << "#binvox 1" << endl
-		<< "dim " << gridsize << " " << gridsize << " " << gridsize << endl
+		<< "dim " << gridsize_S << " " << gridsize_S << " " << gridsize_S << endl
 		<< "translate " << (float)translation_vec[0] << " " << (float)translation_vec[1] << " " << (float)translation_vec[2] << endl
 		<< "scale " << (float)scale << endl
 		<< "data";
@@ -70,7 +70,7 @@ void BinvoxWriter::initializeEmptyModel_dense()
 	if(outputfile_dense.is_open())
 	{
 		outputfile_dense.seekp(start_of_data_section);
-		auto nb_of_voxels = gridsize*gridsize*gridsize;
+		auto nb_of_voxels = gridsize_S*gridsize_S*gridsize_S;
 		for (auto index = 0; index < nb_of_voxels; index++)
 		{
 			writeEmptyVoxel();
@@ -94,8 +94,8 @@ void BinvoxWriter::writeVoxel_dense(int x, int y, int z)
 {
 	if(outputfile_dense.is_open())
 	{
-		int width_x = gridsize * gridsize;
-		int width_z = gridsize;
+		int width_x = gridsize_S * gridsize_S;
+		int width_z = gridsize_S;
 		int position_in_file = x * width_x + z * width_z + y;
 
 		if (static_cast<long>(start_of_data_section) + position_in_file >= end_of_data_section)
@@ -137,7 +137,7 @@ void BinvoxWriter::writeVoxel_dense(int x, int y, int z)
 	//position the input reader of the dense file at the beginning of the data section
 	outputfile_dense.seekp(start_of_data_section);
 
-	size_t maxAmountOfVoxels = gridsize * gridsize * gridsize;
+	size_t maxAmountOfVoxels = gridsize_S * gridsize_S * gridsize_S;
 	char previous_value;
 	char current_value;
 	unsigned char current_count;
@@ -203,7 +203,7 @@ void BinvoxWriter::sparsify2()
 
 
 	outputfile_sparse << "#binvox 1" << endl
-		<< "dim " << gridsize << " " << gridsize << " " << gridsize << endl
+		<< "dim " << gridsize_S << " " << gridsize_S << " " << gridsize_S << endl
 		<< "translate " << (float)translation_vec[0] << " " << (float)translation_vec[1] << " " << (float)translation_vec[2] << endl
 		<< "scale " << (float)scale << endl
 		<< "data" << "\n"; //<< char(10);
@@ -224,7 +224,7 @@ void BinvoxWriter::sparsify2()
 
 	size_t amountOfDenseData = dense_data_string.length();
 
-	size_t maxAmountOfVoxels = gridsize * gridsize * gridsize;
+	size_t maxAmountOfVoxels = gridsize_S * gridsize_S * gridsize_S;
 	
 	if (verbose) {
 		cout << "Checking the length of the dense data." << endl;
@@ -299,7 +299,7 @@ void BinvoxWriter::sparsify2()
 		}
 		cout << endl;
 	}
-/*	size_t maxAmountOfVoxels = gridsize * gridsize * gridsize;
+/*	size_t maxAmountOfVoxels = gridsize_S * gridsize_S * gridsize_S;
 	char previous_value;
 	char current_value;
 	unsigned char current_count;
@@ -365,7 +365,7 @@ void BinvoxWriter::sparsify3()
 
 
 	outputfile_sparse << "#binvox 1" << endl
-		<< "dim " << gridsize << " " << gridsize << " " << gridsize << endl
+		<< "dim " << gridsize_S << " " << gridsize_S << " " << gridsize_S << endl
 		//<< "translate " << (float)translation_vec[0] << " " << (float)translation_vec[1] << " " << (float)translation_vec[2] << endl
 		//<< "scale " << (float)scale << endl
 		<< "data" << "\n"; //<< char(10);
@@ -386,7 +386,7 @@ void BinvoxWriter::sparsify3()
 
 	size_t amountOfDenseData = dense_data_string.length();
 
-	size_t maxAmountOfVoxels = gridsize * gridsize * gridsize;
+	size_t maxAmountOfVoxels = gridsize_S * gridsize_S * gridsize_S;
 
 	if (verbose) {
 		cout << "Checking the length of the dense data." << endl;
@@ -410,14 +410,14 @@ void BinvoxWriter::sparsify3()
 	char current_seen = 1;
 
 	// Write BINARY Data
-	for (size_t x = 0; x < gridsize; x++) {
-		for (size_t z = 0; z < gridsize; z++) {
-			for (size_t y = 0; y < gridsize; y++) {
+	for (size_t x = 0; x < gridsize_S; x++) {
+		for (size_t z = 0; z < gridsize_S; z++) {
+			for (size_t y = 0; y < gridsize_S; y++) {
 				if (x == 0 && y == 0 && z == 0) {
 					continue;
 				}
-				int width_x = gridsize * gridsize;
-				int width_z = gridsize;
+				int width_x = gridsize_S * gridsize_S;
+				int width_z = gridsize_S;
 				int position_in_file = x * width_x + z * width_z + y;
 				char nextvalue = dense_data_string[position_in_file];
 				if (nextvalue != currentvalue || current_seen == (char)255) {

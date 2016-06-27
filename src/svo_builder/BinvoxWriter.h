@@ -11,7 +11,7 @@ public:
 	int timepoint;
 	vec3 translation_vec; 
 	float scale;
-	const size_t gridsize;
+	const size_t gridsize_S;
 	
 	std::fstream outputfile_dense;
 	std::streampos start_of_data_section;
