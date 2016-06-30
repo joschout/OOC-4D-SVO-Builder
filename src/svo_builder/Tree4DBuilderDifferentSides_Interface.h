@@ -32,8 +32,8 @@ public:
 	{
 	}
 
-	virtual void addVoxel(const uint64_t morton_number) = 0;
-	virtual void addVoxel(const VoxelData& point) = 0;
+	void addVoxel(const uint64_t morton_number);
+	void addVoxel(const VoxelData& point);
 
 	virtual void initializeBuilder() = 0;
 	void finalizeTree();
@@ -83,7 +83,8 @@ protected:
 
 
 	// Interface for putting a node in the right queue
-	virtual void push_backNodeToQueueAtDepth(int depth, Node4D node) = 0;
+	virtual void push_backNodeToLowestQueue(Node4D& node) = 0;
+	virtual void push_backNodeToQueueAtDepth(int depth, Node4D& node) = 0;
 	virtual bool isQueueFilled(int depth) = 0;
 	virtual bool isQueueEmpty(int depth) = 0;
 	virtual bool doesQueueContainOnlyEmptyNodes(int depth) = 0;

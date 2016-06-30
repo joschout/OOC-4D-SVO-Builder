@@ -90,65 +90,7 @@ void Tree4DBuilderDifferentSides_Time_longest::initializeBuilder()
 #endif
 }
 
-// Add a datapoint to the octree: this is the main method used to push datapoints
-void Tree4DBuilderDifferentSides_Time_longest::addVoxel(const uint64_t morton_number) {
-	// Padding for missed morton numbers, i.e. the empty voxels with morton codes between [current_morton_code, morton number)
-/*	if (morton_number != current_morton_code) {
-		fastAddEmptyVoxels(morton_number - current_morton_code);
-	}*/
-
-	if (morton_number != current_morton_code) {
-#ifndef useFastAddEmpty
-		slowAddEmptyVoxels(morton_number - current_morton_code);
-#else
-		fastAddEmptyVoxels(morton_number - current_morton_code);
-#endif
-	}
-
-	// Create a new leaf node
-	Node4D node = Node4D(); // create empty node
-	node.data = 1; // all nodes in binary voxelization refer to this
-				   
-
-	//add the new leaf node to the lowest queue
-	queuesOfMax16.at(nbOfQueuesOf16Nodes - 1).push_back(node);
-	//nodeQueues.at(maxDepth).push_back(node);
-	// flush the queues
-	flushQueues(maxDepth);
-
-	current_morton_code++;
-}
-
-// Add a datapoint to the octree: this is the main method used to push datapoints
-void Tree4DBuilderDifferentSides_Time_longest::addVoxel(const VoxelData& data) {
-	// Padding for missed morton numbers
-/*	if (data.morton != current_morton_code) {
-		fastAddEmptyVoxels(data.morton - current_morton_code);
-	}*/
-
-	if (data.morton != current_morton_code) {
-#ifndef useFastAddEmpty
-		slowAddEmptyVoxels(data.morton - current_morton_code);
-#else
-		fastAddEmptyVoxels(data.morton - current_morton_code);
-#endif
-	}
-
-	// Create node
-	Node4D node = Node4D(); // create empty node
-		
-	// Write data point
-	node.data = dataWriter->writeVoxelData(data); // store data
-	node.data_cache = data; // store data as cache
-	// Add to buffers
-	queuesOfMax16.at(nbOfQueuesOf16Nodes - 1).push_back(node);;
-	// flush the queues
-	flushQueues(maxDepth);
-
-	current_morton_code++;
-}
-
-void Tree4DBuilderDifferentSides_Time_longest::push_backNodeToQueueAtDepth(int depth, Node4D node)
+void Tree4DBuilderDifferentSides_Time_longest::push_backNodeToQueueAtDepth(int depth, Node4D& node)
 {
 	assert(depth >= 0);
 	assert(depth <= maxDepth);
@@ -561,4 +503,20 @@ int Tree4DBuilderDifferentSides_Time_longest::calculateQueueShouldItBePossibleTo
 			return suggestedDepth;
 		}	
 	}
+}
+
+/*
+Use this method to push back a node to the lowest queue
+instead of pushing it to the last queue in queuesOfMax16
+
+REASON: handling the special case where gridsize_t = 1
+==> nbOfQueuesOf16Nodes == 0
+==> queuesOfMax16.size() == 0
+==>
+	add the new leaf node to the lowest queue
+	queuesOfMax16.at(nbOfQueuesOf16Nodes - 1).push_back(node); --> crash
+*/
+void Tree4DBuilderDifferentSides_Time_longest::push_backNodeToLowestQueue(Node4D& node)
+{
+	queuesOfMax16.at(nbOfQueuesOf16Nodes - 1).push_back(node);
 }

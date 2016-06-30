@@ -3,6 +3,56 @@
 #include "morton4D.h"
 #include "tree4d_io.h"
 
+// Add a datapoint to the octree: this is the main method used to push datapoints
+void Tree4DBuilderDifferentSides_Interface::addVoxel(const uint64_t morton_number)
+{
+	// Padding for missed morton numbers, i.e. the empty voxels with morton codes between [current_morton_code, morton number)
+	if (morton_number != current_morton_code) {
+#ifndef useFastAddEmpty
+		slowAddEmptyVoxels(morton_number - current_morton_code);
+#else
+		fastAddEmptyVoxels(morton_number - current_morton_code);
+#endif
+	}
+
+	// Create a new leaf node
+	Node4D node = Node4D(); // create empty node
+	node.data = 1; // all nodes in binary voxelization refer to this
+
+	//add the new leaf node to the lowest queue
+	push_backNodeToLowestQueue(node);
+
+	// flush the queues
+	flushQueues(maxDepth);
+
+	current_morton_code++;
+}
+
+void Tree4DBuilderDifferentSides_Interface::addVoxel(const VoxelData& data)
+{
+	// Padding for missed morton numbers
+	if (data.morton != current_morton_code) {
+#ifndef useFastAddEmpty
+		slowAddEmptyVoxels(data.morton - current_morton_code);
+#else
+		fastAddEmptyVoxels(data.morton - current_morton_code);
+#endif
+	}
+
+	// Create a new leaf node
+	Node4D node = Node4D(); // create empty node
+
+	// Write data point
+	node.data = dataWriter->writeVoxelData(data); // store data
+	node.data_cache = data; // store data as cache
+	//add the new leaf node to the lowest queue
+	push_backNodeToLowestQueue(node);
+	// flush the queues
+	flushQueues(maxDepth);
+
+	current_morton_code++;
+}
+
 // Finalize the tree: add rest of empty nodes, make sure root node is on top
 void Tree4DBuilderDifferentSides_Interface::finalizeTree()
 {

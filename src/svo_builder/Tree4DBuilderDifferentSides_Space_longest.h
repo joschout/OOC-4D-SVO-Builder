@@ -24,9 +24,6 @@ public:
 	Tree4DBuilderDifferentSides_Space_longest();
 	Tree4DBuilderDifferentSides_Space_longest(std::string base_filename, size_t gridsize_S, size_t gridsize_T, bool generate_levels);
 
-	void addVoxel(const uint64_t morton_number);
-	void addVoxel(const VoxelData& point);
-
 	void initializeBuilder();
 
 private:
@@ -47,11 +44,14 @@ private:
 	int calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(const size_t nbOfEmptyNodesToAdd) override;
 	
 	// Interface for putting a node in the right queue
-	void push_backNodeToQueueAtDepth(int depth, Node4D node) override;
+	void push_backNodeToLowestQueue(Node4D& node) override;
+	void push_backNodeToQueueAtDepth(int depth, Node4D& node) override;
 	bool isQueueFilled(int depth) override;
 	bool isQueueEmpty(int depth) override;
 	bool doesQueueContainOnlyEmptyNodes(int depth) override;
 	using Tree4DBuilderDifferentSides_Interface::doesQueueContainOnlyEmptyNodes;
+
+
 };
 
 
