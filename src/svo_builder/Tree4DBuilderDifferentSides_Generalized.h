@@ -44,10 +44,6 @@ public:
 
 	LongestDimension longestDimension;
 	int maxSizeOfSmallestQueue;
-	//File IO
-	//	TreeNodeWriter nodeWriter;
-	//	TreeDataWriter dataWriter;
-
 
 	//========================
 	Tree4DBuilderDifferentSides_Generalized();

@@ -145,7 +145,9 @@ void VoxelizationHandler::voxelizePartition(
 	}
 
 }
-
+/*
+reminder: morton_part = #voxels/partition
+*/
 void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64_t morton_startcode)
 {
 	cout << "Building SVO for partition " << i << " ..." << endl;

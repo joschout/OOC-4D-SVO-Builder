@@ -197,6 +197,7 @@
     <ClCompile Include="..\..\src\svo_builder\TranslationHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\alternatePartitioner.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Interface.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Time_longest.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Space_longest.cpp" />
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Generalized.cpp" />
