@@ -308,7 +308,6 @@ void Tree4DBuilderDifferentSides_Space_longest::writeNodeToDiskAndSetOffsetOfPar
 	}
 	else { //NOTE: we can have only two nodes, we know this is the second node
 		char offset = (char)(positionOfChildOnDisk - parent.children_base);
-
 		setChildrenOffsetsForNodeWithMax8Children(parent, indexOfCurrentChildNode, offset);
 	}
 }
