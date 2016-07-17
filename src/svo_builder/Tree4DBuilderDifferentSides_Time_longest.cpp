@@ -4,7 +4,6 @@
 #include "octree_io.h"
 
 
-//#define useFastAddEmpty
 
 Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longest(): 
 	Tree4DBuilderDifferentSides_Interface(0, 0, 0, 0, 0, 0, false, string()),
@@ -407,20 +406,41 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::getRootNode()
 	}
 }
 
-int Tree4DBuilderDifferentSides_Time_longest::nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(int depth)
+int Tree4DBuilderDifferentSides_Time_longest::nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(int depth)
 {
-	if(depth >= nbOfQueuesOf2Nodes - 1) // depth >= y - x
+//	if(depth >= nbOfQueuesOf2Nodes - 1) // depth >= y - x
+//	{
+//		return pow(16.0, maxDepth - depth);
+//	}else{
+//		//  nbOFNodesToAdd = 2^(4x + D) = pow(gridsize_S, 4) * 2^D
+//		size_t leftFactor = pow(gridsize_S, 4.0);
+//		size_t D = maxDepth - nbOfQueuesOf16Nodes - depth; //= nbOfQueuesOf2 - 1 - depth
+//		size_t nbOfNodesAdded = leftFactor * (2 << D);
+//		return nbOfNodesAdded;
+//	}
+
+	//POGING 2
+	int factor_2 = 1;
+	int factor_16 = 1;
+	int nbOfNodesAdded = 1;
+	if(depth >= nbOfQueuesOf2Nodes - 1)
 	{
-		return pow(16.0, maxDepth - depth);
-	}else{
-		//  nbOFNodesToAdd = 2^(4x + D) = pow(gridsize_S, 4) * 2^D
-		size_t leftFactor = pow(gridsize_S, 4.0);
-		size_t D = maxDepth - nbOfQueuesOf16Nodes - depth; //= nbOfQueuesOf2 - 1 - depth
-		size_t nbOfNodesAdded = leftFactor * (2 << D);
-		return nbOfNodesAdded;
+		factor_16 = pow(16.0, maxDepth - depth);
+	}else
+	{
+		factor_16 = pow(16.0, nbOfQueuesOf16Nodes);
+		factor_2 = pow(2.0, nbOfQueuesOf2Nodes - 1 - depth);
 	}
+
+	nbOfNodesAdded = factor_2 * factor_16;
+	return nbOfNodesAdded;
 }
 
+/* SUPPOSES all queues are empty.
+ Calculates the highest queue in which we can add a node, 
+ so that the largest possible number of empty voxels is added,
+ with that amount smaller than the number of empty voxels we want to add?
+ */
 int Tree4DBuilderDifferentSides_Time_longest::calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(const size_t nbOfEmptyVoxelsToAdd)
 {
 	//STEL: we hebben enkel queues van 16 nodes
@@ -436,6 +456,16 @@ int Tree4DBuilderDifferentSides_Time_longest::calculateQueueShouldItBePossibleTo
 		// 16^2 *1  + 1 nodes toevoegen --> 1 node toevoegen op maxDepths-2 , 1 node op maxDepth
 		// ...
 		// 16^a nodes toevoegen --> 1 node toevoegen op maxDepth - a
+
+		// adding a node at maxDepth == adding 1 voxel				--> 16^0 voxels by adding at depth maxDepth - 0
+		// adding a node at maxDepth - 1 == adding 16 voxels		--> 16^1 voxels by adding at depth maxDepth - 1
+		//    (adding 2 nodes at maxDepth - 2 = adding 2 * 16 voxels)
+		// adding a node at mxDepth - 2 = adding 16^2 voxels		--> 16^2 voxels by adding at depth maxDepth - 2
+		// ...
+		// adding a node at depth 0 = adding 16^maxDepth voxels		--> 16^maxDepth voxels by adding at depth maxDepth - maxDepth
+
+
+		//  nbOfEmptyVoxelsToAdd = 16^a + remainder
 
 		size_t a = findPowerOf16(nbOfEmptyVoxelsToAdd);
 
@@ -488,7 +518,7 @@ int Tree4DBuilderDifferentSides_Time_longest::calculateQueueShouldItBePossibleTo
 			size_t a = findPowerOf16(nbOfEmptyVoxelsToAdd);
 
 			size_t suggestedDepth = maxDepth - a; //y - a
-			assert(suggestedDepth >= 0);
+			assert(suggestedDepth >= maxDepth - nbOfQueuesOf16Nodes);
 			assert(suggestedDepth <= maxDepth);
 
 			return suggestedDepth;
@@ -498,7 +528,7 @@ int Tree4DBuilderDifferentSides_Time_longest::calculateQueueShouldItBePossibleTo
 			int a = log2(factor); //a in {1, 2, ..., D}
 			int suggestedDepth = maxDepth - nbOfQueuesOf16Nodes - a; //y - x - a
 			assert(suggestedDepth >= 0);
-			assert(suggestedDepth <= maxDepth);
+			assert(suggestedDepth <= maxDepth - nbOfQueuesOf16Nodes - 1);
 
 			return suggestedDepth;
 		}	

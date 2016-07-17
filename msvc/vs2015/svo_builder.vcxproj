@@ -169,6 +169,8 @@
     <ClInclude Include="..\..\src\svo_builder\tri4D_tools.h" />
     <ClInclude Include="..\..\src\svo_builder\Triangle4D.h" />
     <ClInclude Include="..\..\src\svo_builder\TriHeaderFileReader.h" />
+    <ClInclude Include="..\..\src\svo_builder\TriHeaderHandler.h" />
+    <ClInclude Include="..\..\src\svo_builder\TriInfo4D_multiple_files.h" />
     <ClInclude Include="..\..\src\svo_builder\TriInfo4D.h" />
     <ClInclude Include="..\..\src\svo_builder\TriPartitioningInfo4D.h" />
     <ClInclude Include="..\..\src\svo_builder\geometry_primitives.h" />
@@ -206,10 +208,12 @@
     <ClCompile Include="..\..\src\svo_builder\TreeDataWriter_CppStyle.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TreeNodeWriter_CppStyle.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriHeaderFileReader.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TriHeaderHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriInfo4D.cpp" />
     <ClCompile Include="..\..\src\svo_builder\OctreeBuilder.cpp" />
     <ClCompile Include="..\..\src\svo_builder\partitioner.cpp" />
     <ClCompile Include="..\..\src\svo_builder\PrintUtils.cpp" />
+    <ClCompile Include="..\..\src\svo_builder\TriInfo4D_multiple_files.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TriPartitioningInfo4D.cpp" />
     <ClCompile Include="..\..\src\svo_builder\TripFileHandler.cpp" />
     <ClCompile Include="..\..\src\svo_builder\VoxelizationHandler.cpp" />

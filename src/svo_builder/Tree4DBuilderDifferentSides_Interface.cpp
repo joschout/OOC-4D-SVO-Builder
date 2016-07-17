@@ -3,6 +3,8 @@
 #include "morton4D.h"
 #include "tree4d_io.h"
 
+#define useFastAddEmpty
+
 // Add a datapoint to the octree: this is the main method used to push datapoints
 void Tree4DBuilderDifferentSides_Interface::addVoxel(const uint64_t morton_number)
 {
@@ -14,6 +16,12 @@ void Tree4DBuilderDifferentSides_Interface::addVoxel(const uint64_t morton_numbe
 		fastAddEmptyVoxels(morton_number - current_morton_code);
 #endif
 	}
+	if(morton_number != current_morton_code)
+	{
+		cout << "something went wrong" << endl;
+	}
+
+
 
 	// Create a new leaf node
 	Node4D node = Node4D(); // create empty node
@@ -100,7 +108,13 @@ void Tree4DBuilderDifferentSides_Interface::addEmptyVoxel(const int queueDepth)
 	push_backNodeToQueueAtDepth(queueDepth, Node4D());
 	//nodeQueues[buffer].push_back(Node4D());
 	flushQueues(queueDepth);
-	current_morton_code += static_cast<uint64_t>(nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(queueDepth));
+	int nbOfEmptyVoxelsAdded = nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(queueDepth);
+
+	current_morton_code += static_cast<uint64_t>(nbOfEmptyVoxelsAdded);
+	
+
+
+
 	//current_morton_code = (uint64_t)(current_morton_code + pow(16.0, maxDepth - queueDepth)); // because we're adding at a certain level
 }
 
@@ -142,22 +156,66 @@ void Tree4DBuilderDifferentSides_Interface::slowAddEmptyVoxels(const size_t nbOf
 	}
 }
 
+
+//// A method to quickly add empty nodes
+//inline void Tree4DBuilderDifferentSides_Space_longest::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
+//	size_t r_budget = nbOfEmptyVoxelsToAdd;
+//	while (r_budget > 0) {
+//		unsigned int queueDepth = computeBestFillQueue(r_budget);
+//		addEmptyVoxel(queueDepth);
+//		size_t budget_hit = (size_t)pow(16.0, maxDepth - queueDepth);
+//		r_budget = r_budget - budget_hit;
+//	}
+//}
+
 // A method to quickly add empty nodes
 void Tree4DBuilderDifferentSides_Interface::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd)
 {
+	//local variable: the number of empty voxels we have yet to add
 	int nbOfEmptyVoxelsYetToAdd = nbOfEmptyVoxelsToAdd;
+	if(nbOfEmptyVoxelsYetToAdd < 0)
+	{
+		cout << "nbOfVoxelsAdded < 0" << endl;
+	}
 
+
+	//while we still have empty voxels to add, do:
 	while (nbOfEmptyVoxelsYetToAdd > 0) {
+
+		//calculate the depth of the best queue to add a node
 		int queueDepth = computeDepthOfBestQueue(nbOfEmptyVoxelsYetToAdd);
+		//add an empty node to that queue
 		addEmptyVoxel(queueDepth);
-		int nbOfVoxelsAdded = nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(queueDepth);
-		nbOfEmptyVoxelsYetToAdd -= nbOfVoxelsAdded;
+		//NOTE: by adding a node to the queue at the calculated depth,
+		//      we added a certain number of empty voxels
+		//		This amount is SMALLER THAN OR EQUAL TO the number of empty voxels we had to add
+		//		How many empty voxels did we add by pushing a node in the queue at the calculated depth?
+		
+		int nbOfVoxelsAdded = nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(queueDepth);
+		if (nbOfVoxelsAdded < 0)
+		{
+			cout << "nbOfVoxelsAdded < 0" << endl;
+		}
+		//		update the amount of empty voxels we have still to add
+		nbOfEmptyVoxelsYetToAdd = nbOfEmptyVoxelsYetToAdd - nbOfVoxelsAdded;
 	}
 }
 
-// Compute the best fill queue given the budget
+/*
+We want to add 'nbofEmptyVoxelsToAdd' empty voxels to the lowest queue.
+Instead of adding these voxels one by one, we can speed this up by adding a lower number of nodes but in higher queues.
+Taking into account the current state of the queues, 
+this method calculates the highest queue in which a node can be added so that,
+by adding this node to that queue, the number of empty voxels we have still to add is the smallest we can get after adding a node.
+
+*/
 int Tree4DBuilderDifferentSides_Interface::computeDepthOfBestQueue(const size_t nbofEmptyVoxelsToAdd)
 {
+	
+	// SUPPOSE all queues are empty.
+	// What is the highest queue in which we can add a node, 
+	// so that the largest possible number of empty voxels is added,
+	// with that amount smaller than the number of empty voxels we want to add?
 	// which power of 16 fits in budget?
 	int depthA = calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(nbofEmptyVoxelsToAdd);
 
@@ -191,18 +249,6 @@ int Tree4DBuilderDifferentSides_Interface::highestNonEmptyQueue()
 	return highest_found;
 }
 
-/*
-// A method to quickly add empty nodes
-inline void Tree4DBuilderDifferentSides_Space_longest::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
-size_t r_budget = nbOfEmptyVoxelsToAdd;
-while (r_budget > 0) {
-unsigned int queueDepth = computeBestFillQueue(r_budget);
-addEmptyVoxel(queueDepth);
-size_t budget_hit = (size_t)pow(16.0, maxDepth - queueDepth);
-r_budget = r_budget - budget_hit;
-}
-}
-*/
 
 /*// Compute the best fill queue given the budget
 inline int Tree4DBuilderDifferentSides_Space_longest::computeBestFillQueue(const size_t budget) {

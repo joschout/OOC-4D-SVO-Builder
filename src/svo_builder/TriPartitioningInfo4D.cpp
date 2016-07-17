@@ -1,5 +1,6 @@
 #include "TriPartitioningInfo4D.h"
 #include "TriInfo4D.h"
+#include "TriInfo4D_multiple_files.h"
 
 TriPartitioningInfo4D::TriPartitioningInfo4D():
 	mesh_bbox_transl(AABox<vec4>()),
@@ -14,6 +15,16 @@ TriPartitioningInfo4D::TriPartitioningInfo4D(const TriInfo4D  &t):
 	end_time(t.end_time), base_filename(t.triInfo3D.base_filename),
 	version(t.triInfo3D.version),
 	geometry_only(t.triInfo3D.geometry_only), gridsize_S(0), gridsize_T(0), n_triangles(0),
+	n_partitions(0)
+{
+}
+
+TriPartitioningInfo4D::TriPartitioningInfo4D(const TriInfo4D_multiple_files& t):
+	mesh_bbox_transl(t.getTotalBoundingBox()),
+	end_time(t.getTotalBoundingBox().max[3]), base_filename(t.base_filename_without_number),
+	version(t.getTriInfoVector()[0].version),
+	geometry_only(t.getTriInfoVector()[0].geometry_only), gridsize_S(0), gridsize_T(0),
+	n_triangles(t.getNbfOfTriangles()),
 	n_partitions(0)
 {
 }

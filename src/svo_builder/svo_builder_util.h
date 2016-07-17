@@ -41,7 +41,7 @@ inline unsigned int findPowerOf8(size_t n){
 inline unsigned int findPowerOf16(size_t n) {
 	if (n == 0) { return 0; }
 	unsigned int highest_index = 0;
-	while (n >>= 1) {
+	while (n >>= 1) {// while ( (n = n>>1) > 0)
 		highest_index++;
 	}
 	return (highest_index / 4);

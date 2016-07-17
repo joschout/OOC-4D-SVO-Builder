@@ -51,11 +51,13 @@ public:
 	VoxelizationHandler(
 		TriPartitioningInfo4D& trianglePartition_info, size_t nb_of_dimensions,
 		float sparseness_limit, bool generate_levels,
-		size_t input_buffersize);;
+		size_t input_buffersize);
+	
 	void voxelizeAndBuildSVO4D();
 
 
 private:
+	//static void showProgressBar(uint64_t current_morton_code, uint64_t morton_part);
 	void voxelizePartition
 		(int i, uint64_t morton_startcode, uint64_t morton_endcode);
 	void buildSVO_partition

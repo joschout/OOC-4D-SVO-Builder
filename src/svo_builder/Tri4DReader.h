@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "Triangle4D.h"
 
+class PartitionVoxelizer;
 using namespace std;
 using namespace trimesh;
 
@@ -20,6 +21,7 @@ class Tri4DReader {
 
 	FILE* file;
 
+	friend PartitionVoxelizer;
 public:
 	Tri4DReader();
 	Tri4DReader(const Tri4DReader&);

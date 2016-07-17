@@ -7,6 +7,7 @@ TriInfo readTriHeader(std::string& filename, bool verbose) {
 
 	std::cout << "Parsing tri header " << filename << " ..." << std::endl;
 	if (parseTri3DHeader(filename, tri_info) != 1) {
+		cout << "Something went wrong when parsing the header" << endl;
 		exit(0); // something went wrong in parsing the header - exiting.
 	}
 	// disabled for benchmarking

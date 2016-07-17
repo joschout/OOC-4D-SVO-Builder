@@ -3,6 +3,7 @@
 
 #include <trip_tools.h>
 
+class TriInfo4D_multiple_files;
 class TriInfo4D;
 
 class TriPartitioningInfo4D
@@ -26,6 +27,7 @@ public:
 
 	TriPartitioningInfo4D();
 	TriPartitioningInfo4D(const TriInfo4D &t);
+	TriPartitioningInfo4D(const TriInfo4D_multiple_files &t);
 	~TriPartitioningInfo4D();
 
 	void print() const;

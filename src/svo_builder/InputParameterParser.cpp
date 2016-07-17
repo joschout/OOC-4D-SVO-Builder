@@ -11,7 +11,8 @@ using std::endl;
 void parseProgramParameters(int argc, char* argv[], std::string &filename,
 	size_t &gridsize_S, size_t &gridsize_T, size_t &voxel_memory_limit,
 	float &sparseness_limit, bool &verbose,
-	bool &generate_levels, bool &binvox) {
+	bool &generate_levels, bool &binvox,
+	bool &multiple_input_files) {
 	std::string color_s = "Color from model (fallback to fixed color if model has no color)";
 	std::cout << "Reading program parameters ..." << std::endl;
 	// Input argument validation
@@ -23,6 +24,7 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 		// parse filename
 		if (std::string(argv[i]) == "-f") {
 			filename = argv[i + 1];
+			multiple_input_files = false;
 			size_t check_tri = filename.find(".tri");
 			if (check_tri == std::string::npos) {
 				cout << "Data filename does not end in .tri - I only support that file format" << endl;
@@ -30,6 +32,18 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 				exit(0);
 			}
 			i++;
+		}
+		else if (std::string(argv[i]) == "-mf"){
+			filename = argv[i + 1];
+			multiple_input_files = true;
+			size_t check_tri = filename.find(".tri");
+			if (check_tri == std::string::npos) {
+				cout << "Data filename does not end in .tri - I only support that file format" << endl;
+				printInvalid();
+				exit(0);
+			}
+			i++;
+
 		}
 		else if (string(argv[i]) == "-ss") {
 			gridsize_S = atoi(argv[i + 1]);

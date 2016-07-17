@@ -145,25 +145,71 @@ void VoxelizationHandler::voxelizePartition(
 	}
 
 }
+
+void showProgressBar(uint64_t current_morton_code, uint64_t morton_part);
+
 /*
 reminder: morton_part = #voxels/partition
 */
 void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64_t morton_startcode)
 {
-	cout << "Building SVO for partition " << i << " ..." << endl;
+	cout << "Building Sparse Voxel Tree for partition " << i << " ..." << endl;
 
 #ifdef BINARY_VOXELIZATION
 	if (use_data) { // use array of morton codes to build the SVO
+		cout << "  using array of morton codes to build the svo" << endl
+			<< "  sorting the data..." << endl;
 		sort(data.begin(), data.end()); // sort morton codes
+		cout << "  adding voxels..." << endl;
 		for (vector<uint64_t>::const_iterator it = data.begin(); it != data.end(); ++it) {
+			if ((it - data.begin()) % ((data.size()-1) / 100) == 0)
+			{
+				float progress = (float)(it - data.begin()) / (float)(data.size() - 1);
+				int barWidth = 70;
+
+				std::cout << '\r' << "[";
+				int pos = barWidth * progress;
+				for (int i_bar = 0; i_bar < barWidth; ++i_bar) {
+					if (i_bar < pos) std::cout << "=";
+					else if (i_bar == pos) std::cout << ">";
+					else std::cout << " ";
+				}
+				std::cout << "] " << int(progress * 100.0) << " %\r";
+				std::cout.flush();
+			}
+
+
+
+
+
 			builder.addVoxel(*it);
 		}
 	}
 	else { // morton array overflowed : using slower way to build SVO
+		cout << "  morton array overflowed : using slower way to build SVO" << endl;
 		uint64_t morton_number;
 		for (size_t j = 0; j < morton_part; j++) {//for each voxel in this partition
 			if (!voxels[j] == EMPTY_VOXEL) {
 				morton_number = morton_startcode + j;
+//				showProgressBar(morton_number, morton_part);
+				if (j % (morton_part / 100) == 0)
+				{
+					float progress = (float)j / (float)(morton_part);
+					int barWidth = 70;
+
+					std::cout << '\r' << "[";
+					int pos = barWidth * progress;
+					for (int i_bar = 0; i_bar < barWidth; ++i_bar) {
+						if (i_bar < pos) std::cout << "=";
+						else if (i_bar == pos) std::cout << ">";
+						else std::cout << " ";
+					}
+					std::cout << "] " << int(progress * 100.0) << " %\r";
+					std::cout.flush();
+				}
+
+
+
 				builder.addVoxel(morton_number);
 			/*	if (binvox)
 				{
@@ -290,4 +336,24 @@ VoxelizationHandler::VoxelizationHandler(TriPartitioningInfo4D& trianglePartitio
 	builder.initializeBuilder();
 
 	use_data = true;
+}
+
+
+inline void showProgressBar(uint64_t current_morton_code, uint64_t morton_part)
+{
+	if ((current_morton_code != morton_part) && (current_morton_code % (morton_part / 10000 + 1) != 0)) return;
+
+	float progress = current_morton_code / morton_part;
+	int barWidth = 70;
+
+	std::cout << '\r' << "[";
+	int pos = barWidth * progress;
+	for (int i = 0; i < barWidth; ++i) {
+		if (i < pos) std::cout << "=";
+		else if (i == pos) std::cout << ">";
+		else std::cout << " ";
+	}
+//		std::cout << "] " << int(progress * 100.0) << " %\r";
+	std::cout << "] " << current_morton_code << "/" << morton_part ;
+	std::cout.flush();
 }

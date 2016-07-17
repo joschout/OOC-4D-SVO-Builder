@@ -99,6 +99,12 @@
     <ClCompile Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\TriHeaderHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\svo_builder\TriInfo4D_multiple_files.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\Buffer.h">
@@ -225,6 +231,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\svo_builder\TreeDataWriter_CppStyle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\TriHeaderHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\TriInfo4D_multiple_files.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

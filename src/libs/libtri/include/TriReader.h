@@ -80,6 +80,7 @@ inline void TriReader::fillBuffer(){
 }
 
 inline TriReader::~TriReader(){
+//	cout << "DESTRUCTOR of TriReader called" << endl;
 	delete buffer;
 	fclose(file);
 }

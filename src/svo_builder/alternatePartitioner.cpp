@@ -6,6 +6,7 @@
 #include "voxelizer.h"
 #include "morton4D.h"
 #include "TriPartitioningInfo4D.h"
+#include <memory>
 
 
 alternatePartitioner::alternatePartitioner():
@@ -31,6 +32,20 @@ TriPartitioningInfo4D alternatePartitioner::partitionTriangleModel(TriInfo4D& ex
 
 	//partition the  triangle mesh
 	TriPartitioningInfo4D trianglePartition_info = partition(extended_tri_info, transformation_handler);
+	cout << "done." << endl;
+
+	return trianglePartition_info;
+}
+
+TriPartitioningInfo4D alternatePartitioner::partitionTriangleModel_multiple_files(TriInfo4D_multiple_files& extended_tri_info, size_t voxel_memory_limit)
+{
+	//estimate the amount of triangle partitions needed for voxelization
+	//NOTE: the estimation is hardcoded for 3D trees
+	size_t nbOfTrianglePartitions = estimateNumberOfPartitions(voxel_memory_limit);
+	cout << "Partitioning data into " << nbOfTrianglePartitions << " partitions ... "; cout.flush();
+
+	//partition the  triangle mesh
+	TriPartitioningInfo4D trianglePartition_info = partition_multiple_files(extended_tri_info);
 	cout << "done." << endl;
 
 	return trianglePartition_info;
@@ -111,6 +126,32 @@ TriPartitioningInfo4D alternatePartitioner::createTriPartitioningInfoHeader(cons
 	return trip_info;
 }
 
+TriPartitioningInfo4D alternatePartitioner::createTriPartitioningInfoHeader_multiple_files(const TriInfo4D_multiple_files& tri_info, vector<Buffer4D*>& buffers) const
+{
+	TriPartitioningInfo4D trip_info = TriPartitioningInfo4D(tri_info);
+
+	// Collect nbOfTriangles of each partition
+	trip_info.nbOfTrianglesPerPartition.resize(nbOfPartitions);
+	for (size_t j = 0; j < nbOfPartitions; j++) {
+		trip_info.nbOfTrianglesPerPartition[j] = buffers[j]->n_triangles;
+	}
+
+	// Write trip header
+	trip_info.base_filename
+		= tri_info.base_filename_without_number
+		+ string("_S") + val_to_string(gridsize_S)
+		+ string("_T") + val_to_string(gridsize_T)
+		+ string("_P") + val_to_string(nbOfPartitions);
+	std::string header = trip_info.base_filename + string(".trip");
+	trip_info.gridsize_S = gridsize_S;
+	trip_info.gridsize_T = gridsize_T;
+	trip_info.n_partitions = nbOfPartitions;
+	TriPartitioningInfo4D::writeTrip4DHeader(header, trip_info);
+
+	return trip_info;
+
+}
+
 void alternatePartitioner::deleteBuffers(vector<Buffer4D*> buffers) const
 {
 	for (size_t j = 0; j < nbOfPartitions; j++) {
@@ -120,7 +161,7 @@ void alternatePartitioner::deleteBuffers(vector<Buffer4D*> buffers) const
 
 // Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
 // and store information about the partitioning in trip_info
-TriPartitioningInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info, TransformationHandler *transformation_handler) {
+TriPartitioningInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info, TransformationHandler* transformation_handler) {
 	// Special case: just one partition
 	//if (nbOfPartitions == 1) {
 	//	return partition_one(tri_info, gridsize);
@@ -145,6 +186,76 @@ TriPartitioningInfo4D alternatePartitioner::partition(const TriInfo4D& tri_info,
 	}
 
 	TriPartitioningInfo4D trip_info = createTriPartitioningInfoHeader(tri_info, buffers);
+	deleteBuffers(buffers);
+
+	return trip_info;
+}
+
+// Partition the mesh referenced by tri_info into n triangle partitions for gridsize,
+// and store information about the partitioning in trip_info
+TriPartitioningInfo4D alternatePartitioner::partition_multiple_files(const TriInfo4D_multiple_files& tri_info) {
+
+
+	// MAKE ONE TRIDATAREADER PER TRIDATA FILE --> one triReader per moment in time;
+
+	vector<unique_ptr<TriReader>> tridataReaders_;
+
+
+//	vector<TriReader> tridataReaders;
+//	tridataReaders.reserve(tri_info.getTriInfoVector().size());
+
+
+	for(const TriInfo& tri_info_3d: tri_info.getTriInfoVector())
+	{
+		cout << "tri_info_3d.base_filename: " << tri_info_3d.base_filename << endl;
+
+		// Open tri_data stream
+		// the reader knows how many triangles there are in the model,
+		// the reader is given input_buffersize as buffersize for buffering read triangles
+		const std::string tridata_filename = tri_info_3d.base_filename + string(".tridata");
+		
+		std::unique_ptr<TriReader>  tridataReader_prt(new TriReader(tridata_filename, tri_info_3d.n_triangles, input_buffersize));
+		tridataReaders_.push_back(std::move(tridataReader_prt));
+//		TriReader tridataReader = TriReader(tridata_filename, tri_info_3d.n_triangles, input_buffersize);
+//		tridataReaders.push_back(tridataReader);
+
+		cout << "size of tridataReaders vector" << tridataReaders_.size() << endl;
+	}
+
+	if(tridataReaders_.size() == tri_info.getTriInfoVector().size())
+	{
+		cout << "size of tridataReaders vector is correct " << endl;
+	}else
+	{
+		cout << "size of tridataReaders vecxtor is not correct " << endl;
+	}
+
+	// Create Mortonbuffers: we will have one buffer per partition
+	vector<Buffer4D*> buffers;
+	createBuffers_multiple_files(tri_info, buffers);
+
+	//for each moment in time = for each triReader
+	float& start_time = tri_info.getTotalBoundingBox().max[3];
+	float& end_time = tri_info.getTotalBoundingBox().min[3];
+	float unitlength_time = (start_time - end_time) / (float)gridsize_T;
+	float time = 0;
+	for (int reader_index = 0; reader_index < tridataReaders_.size(); reader_index++)
+	{
+		
+		//TriReader& tridataReader = tridataReaders_.at(reader_index);
+		//for each triangle
+		while (tridataReaders_.at(reader_index)->hasNext()) {
+			Triangle tri;
+			tridataReaders_.at(reader_index)->getTriangle(tri);
+			Triangle4D tri_4d = Triangle4D(tri, time);
+			storeTriangleInPartitionBuffers(tri_4d, buffers, nbOfPartitions);
+		}
+
+		time += unitlength_time;
+//		cout << "reader_index: " << reader_index << endl;
+	}
+
+	TriPartitioningInfo4D trip_info = createTriPartitioningInfoHeader_multiple_files(tri_info, buffers);
 	deleteBuffers(buffers);
 
 	return trip_info;
@@ -192,6 +303,56 @@ void alternatePartitioner::createBuffers(const TriInfo4D& tri_info, vector<Buffe
 			cout << "-----------------------------" << endl;
 		}
 
+	}
+}
+
+void alternatePartitioner::createBuffers_multiple_files(const TriInfo4D_multiple_files& tri_info, vector<Buffer4D*>& buffers) const
+{
+	buffers.reserve(nbOfPartitions);
+
+	// the unit length in the grid = the length of one side of the grid
+	// divided by the size of the grid (i.e. the number of voxels next to each other)
+	// NOTE: the bounding box in a .tri file is cubical
+	float unitlength = (tri_info.getTotalBoundingBox().max[0] - tri_info.getTotalBoundingBox().min[0]) / (float)(gridsize_S);
+	float unitlength_time = (tri_info.getTotalBoundingBox().max[3] - tri_info.getTotalBoundingBox().min[3]) / (float)(gridsize_T);
+
+	float nbOfVoxelsInGrid = pow(gridsize_S, 3) * gridsize_T;
+	uint64_t morton_part = nbOfVoxelsInGrid / nbOfPartitions; //amount of voxels per partition
+
+
+	if (verbose)
+	{
+		cout << endl << "Creating " << nbOfPartitions << " buffers, one for each partition" << endl;
+		cout << "-----------------------------" << endl;
+	}
+
+
+	// for each partition
+	for (size_t i = 0; i < nbOfPartitions; i++) {
+
+		//calculate the bounding box of the partition in world coordinates
+		AABox<vec4> bbox_partition_i_worldCoords = calculateBBoxInWorldCoordsForPartition(i, morton_part, unitlength, unitlength_time, verbose);
+
+		// create buffer for partition
+		Buffer4D* buffer_partition_i = createBufferForPartition(i, bbox_partition_i_worldCoords, tri_info.base_filename_without_number);
+		buffers.push_back(buffer_partition_i);
+
+		if (verbose)
+		{
+			cout << endl << "Creating buffer " << i + 1 << "/" << nbOfPartitions << endl;
+			cout << buffer_partition_i->toString() << endl;
+			cout << "-----------------------------" << endl;
+		}
+
+	}
+}
+
+void alternatePartitioner::storeTriangleInPartitionBuffers(Triangle4D transformed_tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const
+{
+	AABox<vec4> bbox4D_transformed_tri = computeBoundingBox(transformed_tri);
+
+	for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
+		bool isInPartition = buffers[j]->processTriangle(transformed_tri, bbox4D_transformed_tri);
 	}
 }
 

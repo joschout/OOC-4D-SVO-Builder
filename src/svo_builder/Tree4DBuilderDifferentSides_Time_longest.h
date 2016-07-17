@@ -39,7 +39,7 @@ private:
 	
 	Node4D getRootNode() override;
 	
-	int nbOfVoxelsAddedByAddingAnEmptyVoxelAtDepth(int depth) override;
+	int nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(int depth) override;
 
 	int calculateQueueShouldItBePossibleToAddAllVoxelsAtOnce(const size_t nbOfEmptyVoxelsToAdd) override;
 

@@ -16,12 +16,32 @@ Voxelize 1 partition using the Schwarz method.
 
 void PartitionVoxelizer::voxelize_schwarz_method4D(Tri4DReader &reader) {
 	// voxelize every triangle
+	cout << "  voxelizing triangles using Schwarz..." << endl;
 	while (reader.hasNext()) {
+		if(reader.n_served % (reader.n_triangles / 100) == 0)
+		{
+			float progress = (float)reader.n_served / (float)reader.n_triangles;
+			int barWidth = 70;
+
+			std::cout << '\r' << "[";
+			int pos = barWidth * progress;
+			for (int i = 0; i < barWidth; ++i) {
+				if (i < pos) std::cout << "=";
+				else if (i == pos) std::cout << ">";
+				else std::cout << " ";
+			}
+					std::cout << "] " << int(progress * 100.0) << " %\r";
+			std::cout.flush();
+		}
+
+
+
 		// read triangle
 		Triangle4D tri;
 		reader.getTriangle(tri);
 		voxelizeOneTriangle(tri);
 	}
+	cout << endl;
 }
 
 AABox<ivec4> PartitionVoxelizer::compute_Triangle_BoundingBox_gridCoord(const Triangle4D& tri)
