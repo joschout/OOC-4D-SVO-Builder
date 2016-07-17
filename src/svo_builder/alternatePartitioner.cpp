@@ -207,7 +207,7 @@ TriPartitioningInfo4D alternatePartitioner::partition_multiple_files(const TriIn
 
 	for(const TriInfo& tri_info_3d: tri_info.getTriInfoVector())
 	{
-		cout << "tri_info_3d.base_filename: " << tri_info_3d.base_filename << endl;
+//		cout << "tri_info_3d.base_filename: " << tri_info_3d.base_filename << endl;
 
 		// Open tri_data stream
 		// the reader knows how many triangles there are in the model,
@@ -219,16 +219,16 @@ TriPartitioningInfo4D alternatePartitioner::partition_multiple_files(const TriIn
 //		TriReader tridataReader = TriReader(tridata_filename, tri_info_3d.n_triangles, input_buffersize);
 //		tridataReaders.push_back(tridataReader);
 
-		cout << "size of tridataReaders vector" << tridataReaders_.size() << endl;
+//		cout << "size of tridataReaders vector" << tridataReaders_.size() << endl;
 	}
 
-	if(tridataReaders_.size() == tri_info.getTriInfoVector().size())
-	{
-		cout << "size of tridataReaders vector is correct " << endl;
-	}else
-	{
-		cout << "size of tridataReaders vecxtor is not correct " << endl;
-	}
+//	if(tridataReaders_.size() == tri_info.getTriInfoVector().size())
+//	{
+//		cout << "size of tridataReaders vector is correct " << endl;
+//	}else
+//	{
+//		cout << "size of tridataReaders vector is not correct " << endl;
+//	}
 
 	// Create Mortonbuffers: we will have one buffer per partition
 	vector<Buffer4D*> buffers;

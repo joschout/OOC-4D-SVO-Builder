@@ -29,6 +29,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			if (check_tri == std::string::npos) {
 				cout << "Data filename does not end in .tri - I only support that file format" << endl;
 				printInvalid();
+				std::cout << "Press ENTER to exit...";
+				cin.get();
 				exit(0);
 			}
 			i++;
@@ -40,6 +42,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			if (check_tri == std::string::npos) {
 				cout << "Data filename does not end in .tri - I only support that file format" << endl;
 				printInvalid();
+				std::cout << "Press ENTER to exit...";
+				cin.get();
 				exit(0);
 			}
 			i++;
@@ -50,6 +54,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			if (!isPowerOf2((unsigned int)gridsize_S)) {
 				cout << "Requested gridsize is not a power of 2" << endl;
 				printInvalid();
+				std::cout << "Press ENTER to exit...";
+				cin.get();
 				exit(0);
 			}
 			i++;
@@ -59,6 +65,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			if (!isPowerOf2((unsigned int)gridsize_T)) {
 				cout << "Requested gridsize is not a power of 2" << endl;
 				printInvalid();
+				std::cout << "Press ENTER to exit...";
+				cin.get();
 				exit(0);
 			}
 			i++;
@@ -68,6 +76,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			if (voxel_memory_limit <= 1) {
 				cout << "Requested memory limit is nonsensical. Use a value >= 1" << endl;
 				printInvalid();
+				std::cout << "Press ENTER to exit...";
+				cin.get();
 				exit(0);
 			}
 			i++;
@@ -78,6 +88,8 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			if (sparseness_limit < 0) {
 				cout << "Requested data memory limit is nonsensical. Use a value > 0" << endl;
 				printInvalid();
+				std::cout << "Press ENTER to exit...";
+				cin.get();
 				exit(0);
 			}
 			i++;
@@ -121,7 +133,10 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			binvox = true;
 		}
 		else {
-			printInvalid(); exit(0);
+			printInvalid();
+			std::cout << "Press ENTER to exit...";
+			cin.get();
+			exit(0);
 		}
 	}
 	if (verbose) {

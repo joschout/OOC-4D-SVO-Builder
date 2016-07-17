@@ -77,7 +77,10 @@ TriInfo TriHeaderHandler::readHeaders_one_input_file(string &filename)
 {
 	TriInfo tri_info = TriInfo();
 
-	std::cout << "Parsing tri header " << filename << " ..." << std::endl;
+	if(verbose)
+	{
+		std::cout << "Parsing tri header " << filename << " ..." << std::endl;
+	}
 	if (parseTri3DHeader(filename, tri_info) != 1) {
 		cout << "Something went wrong when parsing the header" << endl;
 		exit(0); // something went wrong in parsing the header - exiting.
@@ -109,7 +112,10 @@ int TriHeaderHandler::parseTri3DHeader(std::string filename, TriInfo& t) const
 	file.open(filename.c_str(), ios::in);
 
 	if (file.is_open()) {
-		cout << filename + " should be correctly opened" << std::endl;
+		if(verbose)
+		{
+		cout << filename + " should be correctly opened" << std::endl;			
+		}
 
 		string temp = filename.substr(0, filename.find_last_of("."));
 		t.base_filename = temp;
