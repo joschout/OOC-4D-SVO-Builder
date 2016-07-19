@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\svo_builder\BinvoxHandler.h" />
     <ClInclude Include="..\..\src\svo_builder\BinvoxWriter.h" />
+    <ClInclude Include="..\..\src\svo_builder\ColorType.h" />
     <ClInclude Include="..\..\src\svo_builder\Tree4DBuilderDifferentSides_Interface.h" />
     <ClInclude Include="..\..\src\svo_builder\InputParameterParser.h" />
     <ClInclude Include="..\..\src\svo_builder\Node4D.h" />

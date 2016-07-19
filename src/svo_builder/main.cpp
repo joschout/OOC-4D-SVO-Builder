@@ -13,12 +13,11 @@
 #include "TranslationHandler.h"
 #include "RotationHandler.h"
 #include "TriHeaderHandler.h"
+#include "ColorType.h"
 
 //#define logVerboseToFile
 
 using namespace std;
-
-enum ColorType { COLOR_FROM_MODEL, COLOR_FIXED, COLOR_LINEAR, COLOR_NORMAL };
 
 // Program version
 string version = "1.5";
@@ -36,8 +35,9 @@ size_t gridsize_T = 16;
 //the amount of system memory in MEGABYTES we maximally want to use during the voxelization proces
 size_t voxel_memory_limit = 2048;
 float sparseness_limit = 0.10f;
-ColorType color = COLOR_FROM_MODEL;
-vec3 fixed_color = vec3(1.0f, 1.0f, 1.0f); // fixed color is white
+
+ColorType color_type = COLOR_FROM_MODEL;
+
 bool generate_levels = false;
 bool verbose = false;
 bool binvox = false;
@@ -68,7 +68,11 @@ int main(int argc, char *argv[]) {
 
 	// Parse program parameters
 	printInfo(version);
-	parseProgramParameters(argc, argv, filename, gridsize_S, gridsize_T, voxel_memory_limit, sparseness_limit, verbose, generate_levels, binvox, multiple_input_files);
+	parseProgramParameters(
+		argc, argv, filename, 
+		gridsize_S, gridsize_T,
+		voxel_memory_limit, sparseness_limit, verbose, generate_levels, 
+		binvox, multiple_input_files, color_type);
 
 
 
@@ -106,9 +110,16 @@ int main(int argc, char *argv[]) {
 		string tripheader = trianglePartition_info.base_filename + string(".trip");
 		readTripHeader(tripheader, trianglePartition_info, verbose);
 
-
+#ifdef BINARY_VOXELIZATION
 		VoxelizationHandler voxelization_handler
-			= VoxelizationHandler(trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize);
+			= VoxelizationHandler(
+				trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize);		
+#else
+		VoxelizationHandler voxelization_handler
+			= VoxelizationHandler(
+				trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize,
+				color_type, gridsize_S);
+#endif
 		voxelization_handler.voxelizeAndBuildSVO4D();
 
 #ifdef logVerboseToFile
@@ -134,11 +145,17 @@ int main(int argc, char *argv[]) {
 		string tripheader = trianglePartition_info.base_filename + string(".trip");
 		readTripHeader(tripheader, trianglePartition_info, verbose);
 
-
+#ifdef BINARY_VOXELIZATION
 		VoxelizationHandler voxelization_handler
-			= VoxelizationHandler(trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize);
+			= VoxelizationHandler(
+				trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize);	
+#else
+		VoxelizationHandler voxelization_handler
+			= VoxelizationHandler(
+				trianglePartition_info, nbOfDimensions, sparseness_limit, generate_levels, input_buffersize,
+				color_type, gridsize_S);
+#endif
 		voxelization_handler.voxelizeAndBuildSVO4D();
-
 #ifdef logVerboseToFile
 		std::fclose(stdout);
 #endif

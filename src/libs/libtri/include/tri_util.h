@@ -6,6 +6,15 @@
 using namespace std;
 using namespace trimesh;
 
+/*
+vertex v0 = 3 x 32 bit float = 3 * 8 byte
+vertex v1
+vertex v2
+--------------------------
+	= 9 * 8 bytes 
+	==> BINARY_VOXELATION: TRIANGLE_SIZE == 9
+*/
+
 #ifdef BINARY_VOXELIZATION
 #define TRIANGLE_SIZE 9 // just the vertices
 #else

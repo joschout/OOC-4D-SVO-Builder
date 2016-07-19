@@ -329,8 +329,9 @@ Node4D Tree4DBuilderDifferentSides_Interface::groupNodesOfMax16(const QueueOfNod
 		VoxelData voxelData = VoxelData();
 		float notnull = 0.0f;
 		for (int i = 0; i < 16; i++) { // this node has no data: need to refine
-			if (!queueOfMax16[i].isNull())
+			if (!queueOfMax16[i].isNull()){
 				notnull++;
+			}
 			voxelData.color += queueOfMax16[i].data_cache.color;
 			voxelData.normal += queueOfMax16[i].data_cache.normal;
 		}

@@ -239,6 +239,9 @@
     <ClInclude Include="..\..\src\svo_builder\TriInfo4D_multiple_files.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\svo_builder\ColorType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

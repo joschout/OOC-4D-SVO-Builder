@@ -3,12 +3,12 @@
 #include <TriReader.h>
 #include "TriInfo4D.h"
 #include "Buffer4D.h"
-#include "voxelizer.h"
+#include "globals.h"
 #include "morton4D.h"
 #include "TriPartitioningInfo4D.h"
 #include <memory>
 
-
+using namespace trimesh;
 alternatePartitioner::alternatePartitioner():
 	gridsize_S(1), gridsize_T(1), nbOfDimensions(4), nbOfPartitions(1)
 {

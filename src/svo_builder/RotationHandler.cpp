@@ -119,8 +119,19 @@ void RotationHandler::transformAndStore(const TriInfo4D& tri_info, const Triangl
 
 	for (int i = 0; i < gridsize_T; i = i + 1)
 	{
+
+
+		/*
+		INCORRECT!!!!!!!!!!!!!!!!!!!!!!!! De normalen moeten mee roteren!
+		
+		*/
+
 		//	cout << endl << "time point:" << time << endl;
-		Triangle rotated_tri = (this->*rotationFunction)(tri, i *unit_angle_degrees);
+		Triangle rotated_tri_temp = (this->*rotationFunction)(tri, i *unit_angle_degrees);
+		Triangle rotated_tri(tri);
+		rotated_tri.v0 = rotated_tri_temp.v0;
+		rotated_tri.v1 = rotated_tri_temp.v1;
+		rotated_tri.v1 = rotated_tri_temp.v2;
 
 		//Triangle rotated_tri = rotateX(tri, unit_angle_degrees);
 		float time = i * unitlength_time;

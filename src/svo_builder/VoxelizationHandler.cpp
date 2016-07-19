@@ -177,11 +177,6 @@ void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64
 				std::cout << "] " << int(progress * 100.0) << " %\r";
 				std::cout.flush();
 			}
-
-
-
-
-
 			builder.addVoxel(*it);
 		}
 	}
@@ -191,7 +186,6 @@ void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64
 		for (size_t j = 0; j < morton_part; j++) {//for each voxel in this partition
 			if (!voxels[j] == EMPTY_VOXEL) {
 				morton_number = morton_startcode + j;
-//				showProgressBar(morton_number, morton_part);
 				if (j % (morton_part / 100) == 0)
 				{
 					float progress = (float)j / (float)(morton_part);
@@ -207,29 +201,38 @@ void VoxelizationHandler::buildSVO_partition(int i, uint64_t morton_part, uint64
 					std::cout << "] " << int(progress * 100.0) << " %\r";
 					std::cout.flush();
 				}
-
-
-
 				builder.addVoxel(morton_number);
-			/*	if (binvox)
-				{
-					int x, y, z, t;
-					morton4D_Decode_for(morton_number, x, y, z, t);
-					binvox_handler.writeVoxel(t, x, y, z);
-				}*/
 			}
 		}
 	}
 #else
+	cout << "  sorting the data..." << endl;
 	sort(data.begin(), data.end()); // sort
+	cout << "  adding voxels..." << endl;
 	for (std::vector<VoxelData>::iterator it = data.begin(); it != data.end(); ++it) {
-		if (color == COLOR_FIXED) {
+		if ((it - data.begin()) % ((data.size() - 1) / 100) == 0)
+		{
+			float progress = (float)(it - data.begin()) / (float)(data.size() - 1);
+			int barWidth = 70;
+
+			std::cout << '\r' << "[";
+			int pos = barWidth * progress;
+			for (int i_bar = 0; i_bar < barWidth; ++i_bar) {
+				if (i_bar < pos) std::cout << "=";
+				else if (i_bar == pos) std::cout << ">";
+				else std::cout << " ";
+			}
+			std::cout << "] " << int(progress * 100.0) << " %\r";
+			std::cout.flush();
+		}
+
+		if (color_type == COLOR_FIXED) {
 			it->color = fixed_color;
 		}
-		else if (color == COLOR_LINEAR) { // linear color scale
-			it->color = mortonToRGB(it->morton, gridsize);
+		else if (color_type == COLOR_LINEAR) { // linear color scale
+			it->color = mortonToRGB(it->morton, gridsize_S);
 		}
-		else if (color == COLOR_NORMAL) { // color models using their normals
+		else if (color_type == COLOR_NORMAL) { // color models using their normals
 			vec3 normal = normalize(it->normal);
 			it->color = vec3((normal[0] + 1.0f) / 2.0f, (normal[1] + 1.0f) / 2.0f, (normal[2] + 1.0f) / 2.0f);
 		}
@@ -295,16 +298,34 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 
 }
 
+#ifdef BINARY_VOXELIZATION
 VoxelizationHandler::VoxelizationHandler(): nbOfDimensions(4), sparseness_limit(0.10f), generate_levels(false), input_buffersize(8192), use_data(false), unitlength(1), unitlength_time(1), morton_part(8), voxels(nullptr), nfilled(0), builder(Tree4DBuilder_Strategy())
+#else
+VoxelizationHandler::VoxelizationHandler() : nbOfDimensions(4), sparseness_limit(0.10f), generate_levels(false), input_buffersize(8192), use_data(false), unitlength(1), unitlength_time(1), morton_part(8), voxels(nullptr), color_type(COLOR_FROM_MODEL), gridsize_S(0), nfilled(0), builder(Tree4DBuilder_Strategy())
+#endif
 {
 }
 
+#ifdef BINARY_VOXELIZATION
 VoxelizationHandler::VoxelizationHandler(TriPartitioningInfo4D& trianglePartition_info, size_t nb_of_dimensions, float sparseness_limit, bool generate_levels, size_t input_buffersize)
 	: nbOfDimensions(nb_of_dimensions),
     sparseness_limit(sparseness_limit),
     generate_levels(generate_levels),
     input_buffersize(input_buffersize), trianglePartition_info(trianglePartition_info)
 {
+#else
+VoxelizationHandler::VoxelizationHandler(
+	TriPartitioningInfo4D& trianglePartition_info, size_t nb_of_dimensions,
+	float sparseness_limit, bool generate_levels,
+	size_t input_buffersize,
+	ColorType color_type, size_t gridsize_S):
+	nbOfDimensions(nb_of_dimensions),
+	sparseness_limit(sparseness_limit),
+	generate_levels(generate_levels),
+	input_buffersize(input_buffersize), trianglePartition_info(trianglePartition_info),
+	color_type(color_type), gridsize_S(gridsize_S)
+{
+#endif
 	unitlength
 		= (trianglePartition_info.mesh_bbox_transl.max[0] - trianglePartition_info.mesh_bbox_transl.min[0]) / (float)trianglePartition_info.gridsize_S;
 
@@ -339,11 +360,11 @@ VoxelizationHandler::VoxelizationHandler(TriPartitioningInfo4D& trianglePartitio
 }
 
 
-inline void showProgressBar(uint64_t current_morton_code, uint64_t morton_part)
+inline void showProgressBar(uint64_t current_amount, uint64_t total_amount)
 {
-	if ((current_morton_code != morton_part) && (current_morton_code % (morton_part / 10000 + 1) != 0)) return;
+	if (current_amount % (total_amount / 100) != 0) return;
 
-	float progress = current_morton_code / morton_part;
+	float progress = current_amount / total_amount;
 	int barWidth = 70;
 
 	std::cout << '\r' << "[";
@@ -353,7 +374,23 @@ inline void showProgressBar(uint64_t current_morton_code, uint64_t morton_part)
 		else if (i == pos) std::cout << ">";
 		else std::cout << " ";
 	}
-//		std::cout << "] " << int(progress * 100.0) << " %\r";
-	std::cout << "] " << current_morton_code << "/" << morton_part ;
+	std::cout << "] " << int(progress * 100.0) << " %\r";
 	std::cout.flush();
 }
+/*
+if ((it - data.begin()) % ((data.size() - 1) / 100) == 0)
+{
+	float progress = (float)(it - data.begin()) / (float)(data.size() - 1);
+	int barWidth = 70;
+
+	std::cout << '\r' << "[";
+	int pos = barWidth * progress;
+	for (int i_bar = 0; i_bar < barWidth; ++i_bar) {
+	if (i_bar < pos) std::cout << "=";
+	else if (i_bar == pos) std::cout << ">";
+	else std::cout << " ";
+	}
+	std::cout << "] " << int(progress * 100.0) << " %\r";
+	std::cout.flush();
+}
+*/

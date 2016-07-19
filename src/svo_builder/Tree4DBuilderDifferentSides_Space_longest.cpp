@@ -280,8 +280,9 @@ Node4D Tree4DBuilderDifferentSides_Space_longest::groupNodesOfMax8(const QueueOf
 		VoxelData voxelData = VoxelData();
 		float notnull = 0.0f;
 		for (int i = 0; i < 8; i++) { // this node has no data: need to refine
-			if (!queueOfMax8[i].isNull())
+			if (!queueOfMax8[i].isNull()){
 				notnull++;
+			}
 			voxelData.color += queueOfMax8[i].data_cache.color;
 			voxelData.normal += queueOfMax8[i].data_cache.normal;
 		}

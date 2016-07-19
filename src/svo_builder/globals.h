@@ -32,4 +32,8 @@ extern Timer svo_total_timer;
 extern Timer svo_io_out_timer;
 extern Timer svo_algo_timer;
 
+// Voxelization-related stuff
+typedef Vec<3, unsigned int> uivec3;
+typedef Vec<4, unsigned int> uivec4;
+
 #endif // GLOBALS_H_

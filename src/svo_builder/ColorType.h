@@ -1,0 +1,5 @@
+#ifndef COLORTYPE_H
+#define COLORTYPE_H
+
+enum ColorType { COLOR_FROM_MODEL, COLOR_FIXED, COLOR_LINEAR, COLOR_NORMAL };
+#endif

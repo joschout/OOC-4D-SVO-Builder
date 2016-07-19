@@ -71,6 +71,8 @@ AABox<ivec4> PartitionVoxelizer::compute_Triangle_BoundingBox_gridCoord(const Tr
 	return triangle_bbox_gridCoord;
 }
 
+
+#ifdef BINARY_VOXELIZATION
 void PartitionVoxelizer::doSlowVoxelizationIfDataArrayHasOverflowed() const
 {
 	if (*use_data) {
@@ -83,6 +85,7 @@ void PartitionVoxelizer::doSlowVoxelizationIfDataArrayHasOverflowed() const
 		}
 	}
 }
+#endif
 
 void PartitionVoxelizer::calculateTriangleProperties(const Triangle4D &tri, vec3 &e0, vec3 &e1, vec3 &e2, vec3 &n)
 {
@@ -213,7 +216,7 @@ void PartitionVoxelizer::voxelizeOneTriangle(const Triangle4D &tri)
 
 #else
 					voxels[index - morton_start] = FULL_VOXEL;
-					data->push_back(VoxelData(index, t.normal, average3Vec(t.v0_color, t.v1_color, t.v2_color))); // we ignore data limits for colored voxelization
+					data->push_back(VoxelData(index, tri.tri.normal, average3Vec(tri.tri.v0_color, tri.tri.v1_color, tri.tri.v2_color))); // we ignore data limits for colored voxelization
 #endif
 					(*nfilled)++;
 					continue;
@@ -224,13 +227,21 @@ void PartitionVoxelizer::voxelizeOneTriangle(const Triangle4D &tri)
 
 }
 
-
+#ifdef BINARY_VOXELIZATION
 PartitionVoxelizer::PartitionVoxelizer(
 	const uint64_t morton_start, const uint64_t morton_end,
 	size_t gridsize_S, size_t gridsize_T,
 	const float unitlength, const float unitlength_time,
 	char* voxels, vector<uint64_t> *data, float sparseness_limit,
 	bool* use_data, size_t* nfilled):
+#else
+PartitionVoxelizer::PartitionVoxelizer(
+	const uint64_t morton_start, const uint64_t morton_end,
+	size_t gridsize_S, size_t gridsize_T,
+	const float unitlength, const float unitlength_time,
+	char* voxels, vector<VoxelData> *data, float sparseness_limit,
+	bool* use_data, size_t* nfilled) :
+#endif
 	gridsize_S(gridsize_S), gridsize_T(gridsize_T),
 	unitlength(unitlength),
     voxels(voxels),
@@ -259,7 +270,6 @@ PartitionVoxelizer::PartitionVoxelizer(
 			<< partition_bbox_gridCoords.min[0] << ", " << partition_bbox_gridCoords.min[1] << ", " << partition_bbox_gridCoords.min[2] << ", " << partition_bbox_gridCoords.min[3]
 			<< ") to ("
 			<< partition_bbox_gridCoords.max[0] << ", " << partition_bbox_gridCoords.max[1] << ", " << partition_bbox_gridCoords.max[2] << ", " << partition_bbox_gridCoords.max[3] << ")" << endl;
-
 	}
 
 

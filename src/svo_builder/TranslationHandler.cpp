@@ -53,7 +53,7 @@ trimesh::vec3 TranslationHandler::translate(const trimesh::vec3 &point, const tr
 
 Triangle TranslationHandler::translate(const Triangle &triangle, const trimesh::vec3 &direction, const float amount) const
 {
-	Triangle temp;
+	Triangle temp(triangle);
 	temp.v0 = translate(triangle.v0, direction, amount);
 	temp.v1 = translate(triangle.v1, direction, amount);
 	temp.v2 = translate(triangle.v2, direction, amount);

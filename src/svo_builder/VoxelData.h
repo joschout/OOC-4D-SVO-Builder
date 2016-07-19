@@ -27,6 +27,8 @@ struct VoxelData{
 	bool operator < (const VoxelData &a) const{
 		return morton < a.morton;
 	}
+
+
 };
 
 #endif // VOXELDATA_H_

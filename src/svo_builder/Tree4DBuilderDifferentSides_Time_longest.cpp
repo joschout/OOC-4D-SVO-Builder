@@ -249,8 +249,9 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax2(const QueueOfN
 		VoxelData voxelData = VoxelData();
 		float notnull = 0.0f;
 		for (int i = 0; i < 2; i++) { // this node has no data: need to refine
-			if (!queueOfMax2[i].isNull())
+			if (!queueOfMax2[i].isNull()){
 				notnull++;
+			}
 			voxelData.color += queueOfMax2[i].data_cache.color;
 			voxelData.normal += queueOfMax2[i].data_cache.normal;
 		}

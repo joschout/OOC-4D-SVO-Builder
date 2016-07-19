@@ -7,6 +7,7 @@
 #include "Tree4DBuilderDifferentSides_Time_longest.h"
 #include "Tree4DBuilderDifferentSides_Space_longest.h"
 #include "Tree4DBuilder_Strategy.h"
+#include "ColorType.h"
 
 class VoxelizationHandler
 {
@@ -34,6 +35,9 @@ public:
 	vector<uint64_t> data; // Dynamic storage for morton codes
 #else
 	vector<VoxelData> data; // Dynamic storage for voxel data
+	ColorType color_type;
+	vec3 fixed_color = vec3(1.0f, 1.0f, 1.0f); // fixed color is white
+	size_t gridsize_S;
 #endif 
 
 	size_t nfilled;
@@ -48,11 +52,18 @@ public:
 	BinvoxHandler binvox_handler;
 
 	VoxelizationHandler();
+#ifdef BINARY_VOXELIZATION
 	VoxelizationHandler(
 		TriPartitioningInfo4D& trianglePartition_info, size_t nb_of_dimensions,
 		float sparseness_limit, bool generate_levels,
 		size_t input_buffersize);
-	
+#else
+	VoxelizationHandler(
+		TriPartitioningInfo4D& trianglePartition_info, size_t nb_of_dimensions,
+		float sparseness_limit, bool generate_levels,
+		size_t input_buffersize,
+		ColorType color_type, size_t gridsize_S);
+#endif	
 	void voxelizeAndBuildSVO4D();
 
 

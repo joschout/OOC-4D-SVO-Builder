@@ -12,7 +12,7 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 	size_t &gridsize_S, size_t &gridsize_T, size_t &voxel_memory_limit,
 	float &sparseness_limit, bool &verbose,
 	bool &generate_levels, bool &binvox,
-	bool &multiple_input_files) {
+	bool &multiple_input_files, ColorType& color_type) {
 	std::string color_s = "Color from model (fallback to fixed color if model has no color)";
 	std::cout << "Reading program parameters ..." << std::endl;
 	// Input argument validation
@@ -106,18 +106,18 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			cout << "You asked to generate colors, but we're only doing binary voxelisation." << endl;
 #else
 			if (color_input == "model") {
-				color = COLOR_FROM_MODEL;
+				color_type = COLOR_FROM_MODEL;
 			}
 			else if (color_input == "linear") {
-				color = COLOR_LINEAR;
+				color_type = COLOR_LINEAR;
 				color_s = "Linear";
 			}
 			else if (color_input == "normal") {
-				color = COLOR_NORMAL;
+				color_type = COLOR_NORMAL;
 				color_s = "Normal";
 			}
 			else if (color_input == "fixed") {
-				color = COLOR_FIXED;
+				color_type = COLOR_FIXED;
 				color_s = "Fixed";
 			}
 			else {

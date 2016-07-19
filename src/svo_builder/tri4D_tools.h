@@ -55,6 +55,7 @@ inline void writeTriangles4D(FILE* f, Triangle4D &t, size_t howmany) {
 	fwrite(&t, TRIANGLE4D_SIZE*sizeof(float), howmany, f);
 }
 
+
 /*// FSTREAM IO for Triangles (deprecated - this slow)
 inline void readTriangle4D(ifstream &file, Triangle &t) {
 	file.read(reinterpret_cast<char*> (&t.v0[0]), TRIANGLE_SIZE*sizeof(float));

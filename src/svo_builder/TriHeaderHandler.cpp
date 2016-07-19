@@ -83,11 +83,15 @@ TriInfo TriHeaderHandler::readHeaders_one_input_file(string &filename)
 	}
 	if (parseTri3DHeader(filename, tri_info) != 1) {
 		cout << "Something went wrong when parsing the header" << endl;
+		std::cout << "Press ENTER to exit...";
+		cin.get();
 		exit(0); // something went wrong in parsing the header - exiting.
 	}
 	// disabled for benchmarking
 	if (!tri_info.filesExist()) {
 		cout << "Not all required .tri or .tridata files exist. Please regenerate using tri_convert." << endl;
+		std::cout << "Press ENTER to exit...";
+		cin.get();
 		exit(0); // not all required files exist - exiting.
 	}
 	if (verbose) { tri_info.print(); }
@@ -95,11 +99,15 @@ TriInfo TriHeaderHandler::readHeaders_one_input_file(string &filename)
 #ifdef BINARY_VOXELIZATION
 	if (!tri_info.geometry_only) {
 		cout << "You're using a .tri file which contains more than just geometry with a geometry-only SVO Builder! Regenerate that .tri file using tri_convert_binary." << endl;
+		std::cout << "Press ENTER to exit...";
+		cin.get();
 		exit(0);
 	}
 #else
 	if (tri_info.geometry_only) {
 		cout << "You're using a .tri file which contains only geometry with the regular SVO Builder! Regenerate that .tri file using tri_convert." << endl;
+		std::cout << "Press ENTER to exit...";
+		cin.get();
 		exit(0);
 	}
 #endif
