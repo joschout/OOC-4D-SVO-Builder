@@ -25,6 +25,7 @@ public:
 	TriReader(const std::string &filename, size_t n_triangles, size_t buffersize);
 	void getTriangle(Triangle& t);
 	Triangle getTriangle();
+	size_t getTotalNbOfTriangles() const;
 	bool hasNext();
 	~TriReader();
 private:
@@ -57,6 +58,11 @@ inline Triangle TriReader::getTriangle(){
 	current_tri++; // set index for next triangle
 	n_served++;
 	return t;
+}
+
+inline size_t TriReader::getTotalNbOfTriangles() const
+{
+	return n_triangles;
 }
 
 inline void TriReader::getTriangle(Triangle& t){

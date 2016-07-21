@@ -18,7 +18,7 @@ public:
 	{
 	}
 
-	virtual void calculateTransformedBoundingBox(const TriInfo& triInfo, AABox<vec4>& mesh_bbox_transformed, float end_time) const = 0;
+	virtual void calculateTransformedBoundingBox(TriInfo4D& triInfo, float end_time) const = 0;
 
 	virtual void transformAndStore(
 		const TriInfo4D& tri_info,

@@ -7,6 +7,7 @@
 #include "morton4D.h"
 #include "TriPartitioningInfo4D.h"
 #include <memory>
+#include "PrintUtils.h"
 
 using namespace trimesh;
 alternatePartitioner::alternatePartitioner():
@@ -239,9 +240,17 @@ TriPartitioningInfo4D alternatePartitioner::partition_multiple_files(const TriIn
 	float& end_time = tri_info.getTotalBoundingBox().min[3];
 	float unitlength_time = (start_time - end_time) / (float)gridsize_T;
 	float time = 0;
+	size_t max_amount = tri_info.getNbfOfTriangles();
+	size_t current_amount_of_triangles_partitioned = 0;
+
+	cout << "Partitioning triangles: " << endl;
 	for (int reader_index = 0; reader_index < tridataReaders_.size(); reader_index++)
 	{
 		
+
+
+		
+
 		//TriReader& tridataReader = tridataReaders_.at(reader_index);
 		//for each triangle
 		while (tridataReaders_.at(reader_index)->hasNext()) {
@@ -249,9 +258,13 @@ TriPartitioningInfo4D alternatePartitioner::partition_multiple_files(const TriIn
 			tridataReaders_.at(reader_index)->getTriangle(tri);
 			Triangle4D tri_4d = Triangle4D(tri, time);
 			storeTriangleInPartitionBuffers(tri_4d, buffers, nbOfPartitions);
+			current_amount_of_triangles_partitioned++;
+			printBuffer(current_amount_of_triangles_partitioned, max_amount);
 		}
 
 		time += unitlength_time;
+		
+
 //		cout << "reader_index: " << reader_index << endl;
 	}
 

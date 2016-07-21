@@ -87,7 +87,8 @@ int main(int argc, char *argv[]) {
 		TriInfo4D triangleInfo4D = TriInfo4D(triangleInfo3D, end_time);
 	//	RotationHandler transformation_handler = RotationHandler(gridsize, X_AXIS);
 		TranslationHandler transformation_handler = TranslationHandler(gridsize_T, translation_direction);
-		transformation_handler.calculateTransformedBoundingBox(triangleInfo3D, triangleInfo4D.mesh_bbox_transformed, end_time);
+		transformation_handler.speed_factor = 1.0f;
+		transformation_handler.calculateTransformedBoundingBox(triangleInfo4D, end_time);
 		//tri info now contains the info from the tri header file
 		//NOTE: THIS DOES NOT INCLUDE THE INFO OF EACH INDIVIDUAL TRIANGLE
 

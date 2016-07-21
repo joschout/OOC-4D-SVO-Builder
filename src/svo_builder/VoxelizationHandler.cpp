@@ -281,6 +281,8 @@ void VoxelizationHandler::voxelizeAndBuildSVO4D()
 		if (verbose){
 			cout << "=====================" << endl;
 		}
+
+		data.clear();
 	}
 
 	if(binvox)

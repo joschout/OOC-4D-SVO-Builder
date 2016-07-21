@@ -12,7 +12,7 @@ public:
 	//TripInfo tripInfo3D;
 	AABox<vec4> mesh_bbox_transl;
 	//vec3 translation_direction;
-	float end_time;
+	//float end_time;
 
 	string base_filename;
 	int version;
