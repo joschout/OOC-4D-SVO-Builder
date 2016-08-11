@@ -6,6 +6,7 @@
 #include "TreeDataWriter_CppStyle.h"
 #include "TreeNodeWriter_CppStyle.h"
 #include <memory>
+#include "globals.h"
 
 typedef vector<Node4D> QueueOfNodes;
 
@@ -71,7 +72,7 @@ protected:
 	
 	void addEmptyVoxel(const int queueDepth);
 	void slowAddEmptyVoxels(const size_t nbOfNodesToAdd);
-	virtual int nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(int depth) = 0;
+	virtual size_t nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(int depth) = 0;
 	
 	// --- fast adding empty voxels --- //
 	void fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd);

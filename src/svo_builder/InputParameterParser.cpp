@@ -3,6 +3,8 @@
 #include <iostream>
 #include "PrintUtils.h"
 #include "svo_builder_util.h"
+#include "globals.h"
+
 using std::string;
 using std::cout;
 using std::endl;
@@ -10,7 +12,7 @@ using std::endl;
 // Parse command-line params and so some basic error checking on them
 void parseProgramParameters(int argc, char* argv[], std::string &filename,
 	size_t &gridsize_S, size_t &gridsize_T, size_t &voxel_memory_limit,
-	float &sparseness_limit, bool &verbose,
+	float &sparseness_limit, bool &verbose, bool &data_out,
 	bool &generate_levels, bool &binvox,
 	bool &multiple_input_files, ColorType& color_type) {
 	std::string color_s = "Color from model (fallback to fixed color if model has no color)";
@@ -97,6 +99,9 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 		else if (string(argv[i]) == "-v") {
 			verbose = true;
 		}
+		else if (string(argv[i]) == "-data_out") {
+			data_out = true;
+		}
 		else if (string(argv[i]) == "-levels") {
 			generate_levels = true;
 		}
@@ -139,11 +144,13 @@ void parseProgramParameters(int argc, char* argv[], std::string &filename,
 			exit(0);
 		}
 	}
-	if (verbose) {
+
+	if (verbose)
+	{	
 		cout << "  filename: " << filename << endl;
 		cout << "  gridsize space: " << gridsize_S << endl;
 		cout << "  gridsize time: " << gridsize_T << endl;
-		cout << "  memory limit: " << voxel_memory_limit << endl;
+		cout << "  memory limit (MB): " << voxel_memory_limit << endl;
 		cout << "  sparseness optimization limit: " << sparseness_limit << " resulting in " << (sparseness_limit*voxel_memory_limit) << " memory limit." << endl;
 		cout << "  color type: " << color_s << endl;
 		cout << "  generate levels: " << generate_levels << endl;

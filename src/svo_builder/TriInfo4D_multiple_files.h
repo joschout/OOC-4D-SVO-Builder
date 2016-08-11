@@ -15,6 +15,7 @@ public:
 	void addTriInfo(const TriInfo& tri_info);
 	std::vector<TriInfo> getTriInfoVector() const; 
 	AABox<vec4> getTotalBoundingBox() const;
+	void setBoundingBox(const AABox<vec4>& bounding_box);
 	size_t getNbfOfTriangles() const;
 	
 private:
@@ -27,6 +28,7 @@ private:
 
 	void expandBoundingBox(const AABox<vec3>& bounding_box_to_add);
 	void incrementNbOfTriangles(size_t n_triangles);
+	
 };
 
 

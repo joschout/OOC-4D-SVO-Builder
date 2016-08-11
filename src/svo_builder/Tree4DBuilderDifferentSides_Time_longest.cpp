@@ -20,11 +20,14 @@ Tree4DBuilderDifferentSides_Time_longest::Tree4DBuilderDifferentSides_Time_longe
 
 void Tree4DBuilderDifferentSides_Time_longest::initializeBuilder()
 {
+	svo_io_output_timer.start();	// TIMING
 	std::unique_ptr<TreeNodeWriterCppStyle> nWriter(new TreeNodeWriterCppStyle(base_filename));
 	nodeWriter = std::move(nWriter);
 
 	std::unique_ptr<TreeDataWriterCppStyle> dWriter(new TreeDataWriterCppStyle(base_filename));
 	dataWriter = std::move(dWriter);
+	svo_io_output_timer.stop();		// TIMING
+	svo_algorithm_timer.start();	// TIMING
 
 	/*
 	gridsize_t = 2^y
@@ -78,15 +81,34 @@ void Tree4DBuilderDifferentSides_Time_longest::initializeBuilder()
 		queuesOfMax16[i].reserve(16);
 	}
 
+
+	svo_algorithm_timer.stop();		// TIMING
+	svo_total_timer.stop();			// TIMING
+	if (data_out)
+	{
+		stringstream out;
+		out
+			<< "tree building - number of 2-element queues: " << nbOfQueuesOf2Nodes << endl
+			<< "tree building - number of 16-element queues: " << nbOfQueuesOf16Nodes << endl
+			<< "tree building - total number of queues: " << totalNbOfQueues << endl;
+		data_writer_ptr->writeToFile(out.str());
+	}
+	svo_total_timer.start();		// TIMING
+	svo_algorithm_timer.start();	// TIMING
+
 	// Fill data arrays
 	calculateMaxMortonCode();
 
+	svo_algorithm_timer.stop();		// TIMING
+	svo_io_output_timer.start();	// TIMING
 	dataWriter->writeVoxelData(VoxelData());// first data point is NULL
 
 #ifdef BINARY_VOXELIZATION
 	VoxelData voxelData = VoxelData(0, vec3(), vec3(1.0, 1.0, 1.0)); // We store a simple white voxel in case of Binary voxelization
 	dataWriter->writeVoxelData(voxelData);  // all leafs will refer to this
 #endif
+	svo_io_output_timer.stop();		// TIMING
+	svo_algorithm_timer.stop();		// TIMING
 }
 
 void Tree4DBuilderDifferentSides_Time_longest::push_backNodeToQueueAtDepth(int depth, Node4D& node)
@@ -259,7 +281,11 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax2(const QueueOfN
 		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
 		voxelData.normal = normalize(tonormalize);
 		// set it in the parent node
+		svo_algorithm_timer.stop();		// TIMING
+		svo_io_output_timer.start();	// TIMING
 		parent.data = dataWriter->writeVoxelData(voxelData);
+		svo_io_output_timer.stop();		// TIMING
+		svo_algorithm_timer.start();	// TIMING
 		parent.data_cache = voxelData;
 	}
 	return parent;
@@ -268,7 +294,11 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodesOfMax2(const QueueOfN
 void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfParent_Max2NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
+	svo_algorithm_timer.stop();		// TIMING
+	svo_io_output_timer.start();	// TIMING
 	size_t positionOfChildOnDisk = nodeWriter->writeNode4D_(currentChildNode);
+	svo_io_output_timer.stop();		// TIMING
+	svo_algorithm_timer.start();	// TIMING
 	
 	if (first_stored_child) {
 		parent.children_base = positionOfChildOnDisk;
@@ -281,80 +311,6 @@ void Tree4DBuilderDifferentSides_Time_longest::writeNodeToDiskAndSetOffsetOfPare
 	}
 }
 
-/*
-// Group 16 nodes, write non-empty nodes to disk and create parent node
-Node4D Tree4DBuilderDifferentSides_Time_longest::groupNodes(const QueueOfNodes &queue, int maxAmountOfElementsInQueue) {
-	Node4D parent = Node4D();
-	bool first_stored_child = true;
-
-	for (int k = 0; k < maxAmountOfElementsInQueue; k++) {
-		if (!queue[k].isNull()) {
-			if (first_stored_child) {
-
-				//store the first child on disk
-				size_t positionOfFirstStoredChildInFile = nodeWriter.writeNode4D_(queue[k]);
-
-				parent.children_base = positionOfFirstStoredChildInFile;
-				
-				first_stored_child = false;
-
-				//TODO remove ugly hardcoding
-				if(maxAmountOfElementsInQueue == 2)
-				{
-					setChildrenOffsetsForNodeWithMax2Children(parent, k, 0);
-				}else// 16 elements in the queue
-				{
-					parent.children_offset[k] = 0;
-				}
-			}
-			else { //NOTE: when we can have only two nodes, we know this is the second node
-				//store the current child node
-				size_t positionOfChildOnDisk = nodeWriter.writeNode4D_(queue[k]);
-
-				char offset = (char)(positionOfChildOnDisk - parent.children_base);
-			
-				if (maxAmountOfElementsInQueue == 2)
-				{
-					setChildrenOffsetsForNodeWithMax2Children(parent, k, offset);
-				}else // 16 elements in the queue
-				{
-					parent.children_offset[k] = offset;
-				}
-			}
-		}
-		else {
-			if (maxAmountOfElementsInQueue == 2)
-			{
-				setChildrenOffsetsForNodeWithMax2Children(parent, k, NOCHILD);
-			}
-			else // 16 elements in the queue
-			{
-				parent.children_offset[k] = NOCHILD;
-			}
-		}
-	}
-
-	// SIMPLE LEVEL CONSTRUCTION
-	if (generate_levels) {
-		VoxelData voxelData = VoxelData();
-		float notnull = 0.0f;
-		for (int i = 0; i < maxAmountOfElementsInQueue; i++) { // this node has no data: need to refine
-			if (!queue[i].isNull())
-				notnull++;
-			voxelData.color += queue[i].data_cache.color;
-			voxelData.normal += queue[i].data_cache.normal;
-		}
-		voxelData.color = voxelData.color / notnull;
-		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
-		voxelData.normal = normalize(tonormalize);
-		// set it in the parent node
-		parent.data = dataWriter.writeVoxelData(voxelData);
-		parent.data_cache = voxelData;
-	}
-
-	return parent;
-}
-*/
 
 /*
 Set in the node 'parent' the offset of its child node.
@@ -407,7 +363,7 @@ Node4D Tree4DBuilderDifferentSides_Time_longest::getRootNode()
 	}
 }
 
-int Tree4DBuilderDifferentSides_Time_longest::nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(int depth)
+size_t Tree4DBuilderDifferentSides_Time_longest::nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(int depth)
 {
 //	if(depth >= nbOfQueuesOf2Nodes - 1) // depth >= y - x
 //	{
@@ -421,16 +377,16 @@ int Tree4DBuilderDifferentSides_Time_longest::nbOfEmptyVoxelsAddedByAddingAnEmpt
 //	}
 
 	//POGING 2
-	int factor_2 = 1;
-	int factor_16 = 1;
-	int nbOfNodesAdded = 1;
+	size_t factor_2 = 1;
+	size_t factor_16 = 1;
+	size_t nbOfNodesAdded = 1;
 	if(depth >= nbOfQueuesOf2Nodes - 1)
 	{
-		factor_16 = pow(16.0, maxDepth - depth);
+		factor_16 = static_cast<size_t>(pow(16.0, maxDepth - depth));
 	}else
 	{
-		factor_16 = pow(16.0, nbOfQueuesOf16Nodes);
-		factor_2 = pow(2.0, nbOfQueuesOf2Nodes - 1 - depth);
+		factor_16 = static_cast<size_t>(pow(16.0, nbOfQueuesOf16Nodes));
+		factor_2 = static_cast<size_t>(pow(2.0, nbOfQueuesOf2Nodes - 1 - depth));
 	}
 
 	nbOfNodesAdded = factor_2 * factor_16;

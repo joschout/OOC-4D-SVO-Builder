@@ -44,10 +44,6 @@ public:
 
 	// create Octreebuilder which will output our SVO
 	Tree4DBuilder_Strategy builder;
-	//Tree4DBuilderDifferentSides_Interface builder;
-//	Tree4DBuilderDifferentSides_Time_longest builder;
-//	Tree4DBuilderDifferentSides_Space_longest builder;
-	//Tree4DBuilder builder;
 
 	BinvoxHandler binvox_handler;
 
@@ -68,16 +64,10 @@ public:
 
 
 private:
-	//static void showProgressBar(uint64_t current_morton_code, uint64_t morton_part);
-	void voxelizePartition
+	size_t voxelizePartition
 		(int i, uint64_t morton_startcode, uint64_t morton_endcode);
 	void buildSVO_partition
 		(int i, uint64_t morton_part, uint64_t morton_startcode);
 };
-
-
-/*void voxelizeAndBuildSVO(
-	TripInfo& trianglePartition_info, float sparseness_limit,
-	bool generate_levels, size_t input_buffersize);*/
 
 #endif

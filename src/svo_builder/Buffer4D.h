@@ -6,6 +6,7 @@
 #include "../libs/libtri/include/tri_util.h"
 #include "intersection.h"
 #include "tri4D_tools.h"
+#include "globals.h"
 
 using namespace std;
 using namespace trimesh;
@@ -61,9 +62,9 @@ inline void Buffer4D::flush() {
 	if (file == NULL) { // if the file is not open yet, we open it.
 		file = fopen(filename.c_str(), "wb");
 	}
-	//part_algo_timer.stop(); part_io_out_timer.start(); // TIMING
+	partitioning_algorithm_timer.stop(); partitioning_io_output_timer.start(); // TIMING
 	writeTriangles4D(file, triangle_buffer[0], triangle_buffer.size());
-	//part_io_out_timer.stop(); part_algo_timer.start();  // TIMING
+	partitioning_io_output_timer.stop(); partitioning_algorithm_timer.start();  // TIMING
 	triangle_buffer.clear();
 }
 
@@ -72,9 +73,9 @@ inline void Buffer4D::flush() {
 inline bool Buffer4D::processTriangle(Triangle4D &t, const AABox<vec4> &bbox) {
 	if (intersect_4DBoxTriangle_4DBoxWorld(bbox, bbox_world)) { // triangle in this partition
 		if (buffer_max == 0) { // no buffering, just write triangle
-			
+			partitioning_algorithm_timer.stop(); partitioning_io_output_timer.start();	// TIMING
 			writeTriangle4D(file, t);
-			
+			partitioning_io_output_timer.stop(); partitioning_algorithm_timer.start();  // TIMING
 		}
 		else { // add to buffer
 			triangle_buffer.push_back(t);

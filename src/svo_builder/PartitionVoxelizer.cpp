@@ -1,5 +1,6 @@
 #include "PartitionVoxelizer.h"
 #include "morton4D.h"
+#include "PrintStatusBar.h"
 
 using namespace std;
 using namespace trimesh;
@@ -17,30 +18,27 @@ Voxelize 1 partition using the Schwarz method.
 void PartitionVoxelizer::voxelize_schwarz_method4D(Tri4DReader &reader) {
 	// voxelize every triangle
 	cout << "  voxelizing triangles using Schwarz..." << endl;
+
+	voxelization_algorithm_timer.start();		// TIMING
+
 	while (reader.hasNext()) {
-		if(reader.n_served % (reader.n_triangles / 100) == 0)
-		{
-			float progress = (float)reader.n_served / (float)reader.n_triangles;
-			int barWidth = 70;
-
-			std::cout << '\r' << "[";
-			int pos = barWidth * progress;
-			for (int i = 0; i < barWidth; ++i) {
-				if (i < pos) std::cout << "=";
-				else if (i == pos) std::cout << ">";
-				else std::cout << " ";
-			}
-					std::cout << "] " << int(progress * 100.0) << " %\r";
-			std::cout.flush();
+		if(verbose){
+			showProgressBar(reader.n_served, reader.n_triangles);
 		}
-
-
 
 		// read triangle
 		Triangle4D tri;
+		voxelization_algorithm_timer.stop();	// TIMING
+		voxelization_io_input_timer.start();	// TIMING
 		reader.getTriangle(tri);
+		voxelization_io_input_timer.stop();		// TIMING
+		voxelization_algorithm_timer.start();	// TIMING
+
 		voxelizeOneTriangle(tri);
 	}
+
+	voxelization_algorithm_timer.stop();		// TIMING
+
 	cout << endl;
 }
 
@@ -208,18 +206,20 @@ void PartitionVoxelizer::voxelizeOneTriangle(const Triangle4D &tri)
 #ifdef BINARY_VOXELIZATION
 					voxels[index - morton_start] = FULL_VOXEL;
 					if (*use_data) { data->push_back(index); }
-
-					if(binvox)
-					{
-						binvox_handler->writeVoxel(t, x, y, z);
-					}
-
 #else
 					voxels[index - morton_start] = FULL_VOXEL;
 					data->push_back(VoxelData(index, tri.tri.normal, average3Vec(tri.tri.v0_color, tri.tri.v1_color, tri.tri.v2_color))); // we ignore data limits for colored voxelization
 #endif
+					voxelization_algorithm_timer.stop();	// TIMING
+					voxelization_total_timer.stop();		// TIMING
+					if (binvox)
+					{
+						binvox_handler->writeVoxel(t, x, y, z);
+					}
+					voxelization_total_timer.start();		// TIMING
+					voxelization_algorithm_timer.start();	// TIMING
+
 					(*nfilled)++;
-					continue;
 				}
 			}
 		}

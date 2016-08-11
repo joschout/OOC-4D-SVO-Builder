@@ -6,7 +6,9 @@
 #define TIMER_H_
 
 #if _MSC_VER
+#define NOMINMAX
 #include <Windows.h>
+#undef NOMINMAX
 #elif __GNUC__
 #include <ctime>
 #include <chrono>
@@ -25,7 +27,7 @@ struct Timer { // High performance Win64 timer using QPC events
 	inline Timer() {
 		LARGE_INTEGER li;
 		QueryPerformanceFrequency(&li);
-		pc_frequency = double(li.QuadPart) / 1000.0;
+		pc_frequency = static_cast<double>(li.QuadPart) / 1000.0;
 	}
 
 	inline void reset() {
@@ -38,7 +40,7 @@ struct Timer { // High performance Win64 timer using QPC events
 
 	inline void stop() {
 		QueryPerformanceCounter(&end_time);
-		elapsed_time_milliseconds += double((end_time.QuadPart - start_time.QuadPart) / pc_frequency);
+		elapsed_time_milliseconds += static_cast<double>((end_time.QuadPart - start_time.QuadPart) / pc_frequency);
 	}
 };
 #elif

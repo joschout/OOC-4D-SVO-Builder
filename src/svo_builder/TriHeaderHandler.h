@@ -18,6 +18,7 @@ public:
 
 	TriInfo4D_multiple_files readHeaders();
 
+	static int TriHeaderHandler::getBaseFileNameWithoutNumbersAtTheEnd(string original_filename, string& filename_without_numbers_and_extension);
 
 private:
 	TriInfo4D_multiple_files readHeaders_multiple_input_files();

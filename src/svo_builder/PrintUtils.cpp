@@ -53,7 +53,7 @@ void printInfo(std::string &version) {
 }
 
 void printHelp() {
-	std::cout << "Example: svo_builder -f /home/jeroen/bunny.tri" << std::endl;
+	std::cout << "Example: svo_builder -f /home/bunny.tri" << std::endl;
 	std::cout << "" << std::endl;
 	std::cout << "All available program options:" << std::endl;
 	std::cout << "" << std::endl;

@@ -8,6 +8,7 @@
 #include "TriPartitioningInfo4D.h"
 #include <memory>
 #include "PrintUtils.h"
+#include "PrintStatusBar.h"
 
 using namespace trimesh;
 alternatePartitioner::alternatePartitioner():
@@ -259,7 +260,10 @@ TriPartitioningInfo4D alternatePartitioner::partition_multiple_files(const TriIn
 			Triangle4D tri_4d = Triangle4D(tri, time);
 			storeTriangleInPartitionBuffers(tri_4d, buffers, nbOfPartitions);
 			current_amount_of_triangles_partitioned++;
-			printBuffer(current_amount_of_triangles_partitioned, max_amount);
+			if(verbose)
+			{
+				showProgressBar(current_amount_of_triangles_partitioned, max_amount);
+			}
 		}
 
 		time += unitlength_time;
@@ -364,8 +368,19 @@ void alternatePartitioner::storeTriangleInPartitionBuffers(Triangle4D transforme
 {
 	AABox<vec4> bbox4D_transformed_tri = computeBoundingBox(transformed_tri);
 
+	bool triangleIsInAPartition = false;
+
 	for (auto j = 0; j < nbOfPartitions; j++) { // Test against all partitions
-		bool isInPartition = buffers[j]->processTriangle(transformed_tri, bbox4D_transformed_tri);
+		bool triangleIsInThisPartition = buffers[j]->processTriangle(transformed_tri, bbox4D_transformed_tri);
+		triangleIsInAPartition =
+			triangleIsInAPartition || triangleIsInThisPartition;
+	}
+
+	if (!triangleIsInAPartition)
+	{
+		cout << "ERROR: a transformed triangle is not a part of any partition!" << endl;
+		std::cout << "Press ENTER to continue...";
+		cin.get();
 	}
 }
 

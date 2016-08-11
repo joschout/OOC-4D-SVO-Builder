@@ -51,7 +51,9 @@ void Tree4DBuilderDifferentSides_Interface::addVoxel(const VoxelData& data)
 	Node4D node = Node4D(); // create empty node
 
 	// Write data point
+	svo_algorithm_timer.stop(); svo_io_output_timer.start();	// TIMING
 	node.data = dataWriter->writeVoxelData(data); // store data
+	svo_io_output_timer.stop(); svo_algorithm_timer.start();	 // TIMING
 	node.data_cache = data; // store data as cache
 	//add the new leaf node to the lowest queue
 	push_backNodeToLowestQueue(node);
@@ -78,11 +80,25 @@ void Tree4DBuilderDifferentSides_Interface::finalizeTree()
 	}
 
 	// write root node
+	svo_algorithm_timer.stop();		// TIMING
+	svo_io_output_timer.start();	// TIMING
 	nodeWriter->writeNode4D_(getRootNode());
+	
 
 	// write header
 	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, nodeWriter->position_in_output_file, dataWriter->position_in_output_file);
 	writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);
+	svo_io_output_timer.stop();		// TIMING
+	svo_total_timer.stop();			// TIMING
+
+	if(data_out)
+	{
+		data_writer_ptr->writeToFile_endl("4D SVO - number of nodes: " + to_string(tree4D_info.n_nodes));
+		data_writer_ptr->writeToFile_endl("4D SVO - number of data: " + to_string(tree4D_info.n_data));
+	}
+	svo_total_timer.start();		// TIMING
+	svo_algorithm_timer.start();	// TIMING
+
 }
 
 Tree4DBuilderDifferentSides_Interface::Tree4DBuilderDifferentSides_Interface
@@ -108,13 +124,10 @@ void Tree4DBuilderDifferentSides_Interface::addEmptyVoxel(const int queueDepth)
 	push_backNodeToQueueAtDepth(queueDepth, Node4D());
 	//nodeQueues[buffer].push_back(Node4D());
 	flushQueues(queueDepth);
-	int nbOfEmptyVoxelsAdded = nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(queueDepth);
+	size_t nbOfEmptyVoxelsAdded = nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(queueDepth);
 
 	current_morton_code += static_cast<uint64_t>(nbOfEmptyVoxelsAdded);
 	
-
-
-
 	//current_morton_code = (uint64_t)(current_morton_code + pow(16.0, maxDepth - queueDepth)); // because we're adding at a certain level
 }
 
@@ -156,28 +169,11 @@ void Tree4DBuilderDifferentSides_Interface::slowAddEmptyVoxels(const size_t nbOf
 	}
 }
 
-
-//// A method to quickly add empty nodes
-//inline void Tree4DBuilderDifferentSides_Space_longest::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd) {
-//	size_t r_budget = nbOfEmptyVoxelsToAdd;
-//	while (r_budget > 0) {
-//		unsigned int queueDepth = computeBestFillQueue(r_budget);
-//		addEmptyVoxel(queueDepth);
-//		size_t budget_hit = (size_t)pow(16.0, maxDepth - queueDepth);
-//		r_budget = r_budget - budget_hit;
-//	}
-//}
-
 // A method to quickly add empty nodes
 void Tree4DBuilderDifferentSides_Interface::fastAddEmptyVoxels(const size_t nbOfEmptyVoxelsToAdd)
 {
 	//local variable: the number of empty voxels we have yet to add
-	int nbOfEmptyVoxelsYetToAdd = nbOfEmptyVoxelsToAdd;
-	if(nbOfEmptyVoxelsYetToAdd < 0)
-	{
-		cout << "nbOfVoxelsAdded < 0" << endl;
-	}
-
+	size_t nbOfEmptyVoxelsYetToAdd = nbOfEmptyVoxelsToAdd;
 
 	//while we still have empty voxels to add, do:
 	while (nbOfEmptyVoxelsYetToAdd > 0) {
@@ -191,10 +187,13 @@ void Tree4DBuilderDifferentSides_Interface::fastAddEmptyVoxels(const size_t nbOf
 		//		This amount is SMALLER THAN OR EQUAL TO the number of empty voxels we had to add
 		//		How many empty voxels did we add by pushing a node in the queue at the calculated depth?
 		
-		int nbOfVoxelsAdded = nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(queueDepth);
-		if (nbOfVoxelsAdded < 0)
+		size_t nbOfVoxelsAdded = nbOfEmptyVoxelsAddedByAddingAnEmptyNodeAtDepth(queueDepth);
+
+		if(nbOfEmptyVoxelsYetToAdd < nbOfVoxelsAdded)
 		{
-			cout << "nbOfVoxelsAdded < 0" << endl;
+			cout << "ERROR: nbOfEmptyVoxelsYetToAdd < nbOfVoxelsAdded, this should never be the case" << endl;
+			cout << "nbOfEmptyVoxelsYetToAdd: " << nbOfEmptyVoxelsYetToAdd << endl;
+			cout << "nbOfVoxelsAdded: " << nbOfVoxelsAdded << endl;
 		}
 		//		update the amount of empty voxels we have still to add
 		nbOfEmptyVoxelsYetToAdd = nbOfEmptyVoxelsYetToAdd - nbOfVoxelsAdded;
@@ -250,19 +249,6 @@ int Tree4DBuilderDifferentSides_Interface::highestNonEmptyQueue()
 }
 
 
-/*// Compute the best fill queue given the budget
-inline int Tree4DBuilderDifferentSides_Space_longest::computeBestFillQueue(const size_t budget) {
-// which power of 16 fits in budget?
-int budget_queue_suggestion = maxDepth - findPowerOf16(budget);
-// if our current guess is already b_maxdepth, return that, no need to test further
-if (budget_queue_suggestion == maxDepth)
-{
-return maxDepth;
-}
-// best fill buffer is maximum of suggestion and highest non_empty buffer
-return max(budget_queue_suggestion, highestNonEmptyQueue());
-}*/
-
 /*
 Check if the given queue is completely filled with empty leaf nodes ( = null nodes).
 
@@ -284,7 +270,13 @@ bool Tree4DBuilderDifferentSides_Interface::doesQueueContainOnlyEmptyNodes(const
 void Tree4DBuilderDifferentSides_Interface::writeNodeToDiskAndSetOffsetOfParent_Max16NodesInQueue(Node4D& parent, bool& first_stored_child, int indexOfCurrentChildNode, Node4D currentChildNode)
 {
 	//store the node on disk
+	svo_algorithm_timer.stop();		// TIMING
+	svo_io_output_timer.start();	// TIMING
 	size_t positionOfChildOnDisk = nodeWriter->writeNode4D_(currentChildNode);
+	svo_io_output_timer.stop();		// TIMING
+	svo_algorithm_timer.start();	// TIMING
+
+
 
 	if (first_stored_child) {
 		parent.children_base = positionOfChildOnDisk;
@@ -339,7 +331,11 @@ Node4D Tree4DBuilderDifferentSides_Interface::groupNodesOfMax16(const QueueOfNod
 		vec3 tonormalize = (vec3)(voxelData.normal / notnull);
 		voxelData.normal = normalize(tonormalize);
 		// set it in the parent node
+		svo_algorithm_timer.stop();		// TIMING
+		svo_io_output_timer.start();	// TIMING
 		parent.data = dataWriter->writeVoxelData(voxelData);
+		svo_io_output_timer.stop();		// TIMING
+		svo_algorithm_timer.start();	// TIMING
 		parent.data_cache = voxelData;
 	}
 	return parent;

@@ -8,7 +8,6 @@ There are 2 types of binaries of the builder project:
 1. svo_builder_binary.exe
 	It is used to build a 4d-tree for a source file containing only geometry. No normal data is going to be used.
 2. svo_builder.exe		
-	NOT YET FULLY TESTED/SUPPORTED
 
 **Syntax**: svo_builder(\_binary) -options
 
@@ -17,6 +16,7 @@ There are 2 types of binaries of the builder project:
 * -st : temporal gridsize
 * -l : (memory limit) : The memory limit for the SVO builder, in Mb. This is where the out-of-core part kicks in, of course. The tool will automatically select the most optimal partition size depending on the given memory limit. (Default: 2048)
 * -v : Be very verbose, for debugging purposes. Switch this on if you're running into problems.
+* -data_out : write a log file with statistics. The file has the .data extension
 * -levels: Generate intermediare SVO levels' voxel payloads by averaging data from lower levels (which is a quick and dirty way to do low-cost Level-Of-Detail hierarchies). If this option is not specified, only the leaf nodes have an actual payload. (Default: off)
 * -c (color_mode) :  NOT IN BINARY VOXELIZATION  
 Generate colors for the voxels. Keep in mind that when you're using the geometry-only version of the tool (svo_builder_binary), all the color options will be ignored and the voxels will just get a fixed white color. Options for color mode: (Default: model)  

@@ -75,9 +75,6 @@ size_t TreeNodeWriterCppStyle::writeNode4D_(const Node4D& node)
 
 	position_in_output_file++;
 	return position_in_output_file - 1;
-
-
-
 }
 
 

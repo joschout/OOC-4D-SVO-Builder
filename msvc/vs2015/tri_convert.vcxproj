@@ -152,6 +152,7 @@
     <ClCompile Include="..\..\src\tri_convert\tri_convert.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\tri_convert\FileNameHandler.h" />
     <ClInclude Include="..\..\src\tri_convert\tri_convert_util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

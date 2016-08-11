@@ -66,9 +66,9 @@ void Tree4DBuilder::finalizeTree() {
 	// write header
 	Tree4DInfo tree4D_info(1, base_filename, gridsize_S, gridsize_T, b_node_pos, b_data_pos);
 
-	//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+	//svo_algorithm_timer.stop(); svo_io_output_timer.start(); // TIMING
 	writeOctreeHeader(base_filename + string(".tree4d"), tree4D_info);
-	//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+	//svo_io_output_timer.stop(); svo_algorithm_timer.start(); // TIMING
 
 	// close files
 	fclose(data_out_filepointer);
@@ -82,16 +82,16 @@ Node4D Tree4DBuilder::groupNodes(const vector<Node4D> &buffer) {
 	for (int k = 0; k < 16; k++) {
 		if (!buffer[k].isNull()) {
 			if (first_stored_child) {
-				//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+				//svo_algorithm_timer.stop(); svo_io_output_timer.start(); // TIMING
 				parent.children_base = writeNode4D(node_out_filepointer, buffer[k], b_node_pos);
-				//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+				//svo_io_output_timer.stop(); svo_algorithm_timer.start(); // TIMING
 				parent.children_offset[k] = 0;
 				first_stored_child = false;
 			}
 			else {
-				//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+				//svo_algorithm_timer.stop(); svo_io_output_timer.start(); // TIMING
 				parent.children_offset[k] = (char)(writeNode4D(node_out_filepointer, buffer[k], b_node_pos) - parent.children_base);
-				//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+				//svo_io_output_timer.stop(); svo_algorithm_timer.start(); // TIMING
 			}
 		}
 		else {
@@ -113,9 +113,9 @@ Node4D Tree4DBuilder::groupNodes(const vector<Node4D> &buffer) {
 		vec3 tonormalize = (vec3)(d.normal / notnull);
 		d.normal = normalize(tonormalize);
 		// set it in the parent node
-		//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+		//svo_algorithm_timer.stop(); svo_io_output_timer.start(); // TIMING
 		parent.data = writeVoxelData(data_out_filepointer, d, b_data_pos);
-		//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+		//svo_io_output_timer.stop(); svo_algorithm_timer.start(); // TIMING
 		parent.data_cache = d;
 	}
 
@@ -177,9 +177,9 @@ void Tree4DBuilder::addVoxel(const VoxelData& data) {
 	// Create node
 	Node4D node = Node4D(); // create empty node
 						// Write data point
-						//svo_algo_timer.stop(); svo_io_out_timer.start(); // TIMING
+						//svo_algorithm_timer.stop(); svo_io_output_timer.start(); // TIMING
 	node.data = writeVoxelData(data_out_filepointer, data, b_data_pos); // store data
-															//svo_io_out_timer.stop(); svo_algo_timer.start(); // TIMING
+															//svo_io_output_timer.stop(); svo_algorithm_timer.start(); // TIMING
 	node.data_cache = data; // store data as cache
 							// Add to buffers
 	b_buffers.at(b_maxdepth).push_back(node);

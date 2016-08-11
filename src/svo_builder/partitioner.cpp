@@ -111,9 +111,9 @@
 //	std::string header = trip_info.base_filename + string(".trip");
 //	trip_info.gridsize = gridsize;
 //	trip_info.n_partitions = 1;
-//	//part_io_out_timer.start(); // TIMING
+//	//partitioning_io_output_timer.start(); // TIMING
 //	writeTripHeader(header, trip_info);
-//	//part_io_out_timer.stop(); // TIMING
+//	//partitioning_io_output_timer.stop(); // TIMING
 //	return trip_info;
 //}
 //
@@ -126,13 +126,13 @@
 //	}
 //
 //	// Open tri_data stream
-//	//part_io_in_timer.start(); // TIMING
+//	//partitioning_io_input_timer.start(); // TIMING
 //	//the reader knows how many triangles there are in the model,
 //	// is given input_buffersize as buffersize
 //	TriReader reader = TriReader(tri_info.base_filename + string(".tridata"), tri_info.n_triangles, input_buffersize);
-//	//part_io_in_timer.stop(); // TIMING
+//	//partitioning_io_input_timer.stop(); // TIMING
 //
-//	//part_algo_timer.start(); // TIMING
+//	//partitioning_algorithm_timer.start(); // TIMING
 //
 //	// Create Mortonbuffers: we will have one buffer per partition
 //	vector<Buffer*> buffers;
@@ -140,16 +140,16 @@
 //
 //	while (reader.hasNext()) {
 //		Triangle t;
-//		//part_algo_timer.stop(); part_io_in_timer.start(); // TIMING
+//		//partitioning_algorithm_timer.stop(); partitioning_io_input_timer.start(); // TIMING
 //		reader.getTriangle(t);
-//		//part_io_in_timer.stop(); part_algo_timer.start(); // TIMING
+//		//partitioning_io_input_timer.stop(); partitioning_algorithm_timer.start(); // TIMING
 //		AABox<vec3> bbox = computeBoundingBox(t.v0, t.v1, t.v2); // compute bounding box
 //		for (int j = 0; j < n_partitions; j++) { // Test against all partitions
 //			buffers[j]->processTriangle(t, bbox);
 //		}
 //	}
-//	//part_algo_timer.stop(); // TIMING
-//	//part_io_out_timer.start(); // TIMING
+//	//partitioning_algorithm_timer.stop(); // TIMING
+//	//partitioning_io_output_timer.start(); // TIMING
 //
 //	// create TripInfo object to hold header info
 //	TripInfo trip_info = TripInfo(tri_info);
@@ -168,6 +168,6 @@
 //	trip_info.n_partitions = n_partitions;
 //	writeTripHeader(header, trip_info);
 //
-//	//part_io_out_timer.stop(); // TIMING
+//	//partitioning_io_output_timer.stop(); // TIMING
 //	return trip_info;
 //}

@@ -23,5 +23,8 @@
     <ClInclude Include="..\..\src\tri_convert\tri_convert_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\tri_convert\FileNameHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

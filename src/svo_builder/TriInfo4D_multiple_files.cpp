@@ -63,3 +63,8 @@ void TriInfo4D_multiple_files::incrementNbOfTriangles(size_t n_triangles)
 {
 	total_n_triangles += n_triangles;
 }
+
+void TriInfo4D_multiple_files::setBoundingBox(const AABox<vec4>& bounding_box)
+{
+	total_bounding_box = bounding_box;
+}

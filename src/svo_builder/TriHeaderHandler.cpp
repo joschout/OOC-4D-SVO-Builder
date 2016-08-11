@@ -1,6 +1,7 @@
  #include "TriHeaderHandler.h"
 #include <ctype.h>
 #include <iomanip>
+#include "globals.h"
 
 TriHeaderHandler::TriHeaderHandler(std::string base_filename, float start_time, float end_time, bool multiple_input_files, size_t gridsize_T, bool verbose):
 	verbose(verbose), multiple_input_files(multiple_input_files), base_filename(base_filename), gridsize_T(gridsize_T), start_time(start_time), end_time(end_time)
@@ -16,30 +17,32 @@ TriInfo4D_multiple_files TriHeaderHandler::readHeaders()
 	}else //only one input file
 	{
 		TriInfo tri_info = readHeaders_one_input_file(base_filename);
+
+		if (data_out) {
+			partitioning_io_input_timer.stop();		// TIMING
+			partitioning_total_timer.stop();		// TIMING
+			data_writer_ptr->writeToFile_endl("total number of triangles: " + to_string(tri_info.n_triangles));
+			partitioning_total_timer.start();		// TIMING
+			partitioning_io_input_timer.start();	// TIMING	
+		}
+
 		TriInfo4D_multiple_files tri_info4_d_multiple_files = TriInfo4D_multiple_files();
 		tri_info4_d_multiple_files.addTriInfo(tri_info);
 		return tri_info4_d_multiple_files;
 	}	
 }
 
-TriInfo4D_multiple_files TriHeaderHandler::readHeaders_multiple_input_files()
+int TriHeaderHandler::getBaseFileNameWithoutNumbersAtTheEnd(string original_filename, string& filename_without_numbers_and_extension)
 {
-	/*
-	for each tri file
-	1. create a TriInfo object;
-	2. parse the tri header file
-	*/
-
-
 	// e.g. translating_box_000001.tri ==> translating_box_000001
-	string base_filename_with_number = base_filename.substr(0, base_filename.find_last_of("."));
+	string base_filename_with_number = original_filename.substr(0, original_filename.find_last_of("."));
 
 	//count the number of digits at the end of the string
 	int numberOfDigitsAtTheEnd = 0;
 	while (numberOfDigitsAtTheEnd < base_filename_with_number.length())
 	{
 		char s_char = base_filename_with_number[base_filename_with_number.length() - 1 - numberOfDigitsAtTheEnd];
-		if(!isdigit(s_char)) //if the char is not a number, break
+		if (!isdigit(s_char)) //if the char is not a number, break
 		{
 			break;
 		}
@@ -51,8 +54,48 @@ TriInfo4D_multiple_files TriHeaderHandler::readHeaders_multiple_input_files()
 	int startingPositionOfNumber = base_filename_with_number.length() - numberOfDigitsAtTheEnd;
 	base_filename_without_number.erase(startingPositionOfNumber, numberOfDigitsAtTheEnd);
 
+	filename_without_numbers_and_extension = base_filename_without_number;
+
 	string numberAtTheEnd = base_filename_with_number.substr(startingPositionOfNumber, numberOfDigitsAtTheEnd);
 	int nbOfCharsInNumberAtTheEnd = numberAtTheEnd.length();
+
+	return nbOfCharsInNumberAtTheEnd;
+}
+
+TriInfo4D_multiple_files TriHeaderHandler::readHeaders_multiple_input_files()
+{
+	/*
+	for each tri file
+	1. create a TriInfo object;
+	2. parse the tri header file
+	*/
+
+	string base_filename_without_number;
+	int nbOfCharsInNumberAtTheEnd = getBaseFileNameWithoutNumbersAtTheEnd(base_filename, base_filename_without_number);
+
+
+//	// e.g. translating_box_000001.tri ==> translating_box_000001
+//	string base_filename_with_number = base_filename.substr(0, base_filename.find_last_of("."));
+//
+//	//count the number of digits at the end of the string
+//	int numberOfDigitsAtTheEnd = 0;
+//	while (numberOfDigitsAtTheEnd < base_filename_with_number.length())
+//	{
+//		char s_char = base_filename_with_number[base_filename_with_number.length() - 1 - numberOfDigitsAtTheEnd];
+//		if(!isdigit(s_char)) //if the char is not a number, break
+//		{
+//			break;
+//		}
+//		numberOfDigitsAtTheEnd++;
+//	}
+//
+//
+//	string base_filename_without_number = string(base_filename_with_number);
+//	int startingPositionOfNumber = base_filename_with_number.length() - numberOfDigitsAtTheEnd;
+//	base_filename_without_number.erase(startingPositionOfNumber, numberOfDigitsAtTheEnd);
+//
+//	string numberAtTheEnd = base_filename_with_number.substr(startingPositionOfNumber, numberOfDigitsAtTheEnd);
+//	int nbOfCharsInNumberAtTheEnd = numberAtTheEnd.length();
 
 	int nbOfTriFiles = gridsize_T;
 	
@@ -67,8 +110,27 @@ TriInfo4D_multiple_files TriHeaderHandler::readHeaders_multiple_input_files()
 		string file_name_current_tri_file = base_filename_without_number + current_ending_number + ".tri" ;
 
 		TriInfo tri_info = readHeaders_one_input_file(file_name_current_tri_file);
+		if(data_out)
+		{
+			partitioning_io_input_timer.stop();		// TIMING
+			partitioning_total_timer.stop();		// TIMING
+			string output = "tri file " + to_string(i + 1) + " - number of triangles: " + to_string(tri_info.n_triangles);
+			data_writer_ptr->writeToFile_endl(output);
+			partitioning_total_timer.start();		// TIMING
+			partitioning_io_input_timer.start();	// TIMING			
+		}
+
 		tri_info4_d_multiple_files.addTriInfo(tri_info);
 	}
+
+	if(data_out){
+		partitioning_io_input_timer.stop();		// TIMING
+		partitioning_total_timer.stop();		// TIMING
+		data_writer_ptr->writeToFile_endl("total number of triangles: " + to_string(tri_info4_d_multiple_files.getNbfOfTriangles()));
+		partitioning_total_timer.start();		// TIMING
+		partitioning_io_input_timer.start();	// TIMING	
+	}
+
 	return tri_info4_d_multiple_files;
 
 }

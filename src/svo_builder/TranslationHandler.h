@@ -21,7 +21,7 @@ public:
 	void calculateTransformedBoundingBox(TriInfo4D& triInfo4D,  float end_time) const;
 	void transformAndStore(const TriInfo4D& tri_info, const Triangle& tri, vector<Buffer4D*>& buffers, const size_t nbOfPartitions) const override;
 	static trimesh::vec3 translate(const trimesh::vec3 & point, const trimesh::vec3 & direction, const float amount);
-	Triangle translate(const Triangle & triangle, const trimesh::vec3 & direction, const float amount) const;
+	static Triangle translate(const Triangle & triangle, const trimesh::vec3 & direction, const float amount);
 
 };
 

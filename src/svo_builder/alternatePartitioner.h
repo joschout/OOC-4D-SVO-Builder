@@ -39,7 +39,7 @@ private:
 	TriPartitioningInfo4D partition_multiple_files(const TriInfo4D_multiple_files& tri_info);
 	TriPartitioningInfo4D partition_one(const TriInfo4D& tri_info);
 
-	AABox<vec4> alternatePartitioner::calculateBBoxInWorldCoordsForPartition(int i, uint64_t morton_part, float unitlength, float unitlength_time, bool verbose) const;
+	AABox<vec4> calculateBBoxInWorldCoordsForPartition(int i, uint64_t morton_part, float unitlength, float unitlength_time, bool verbose) const;
 	
 	void createBuffers(const TriInfo4D& tri_info, vector<Buffer4D*> &buffers) const;
 	void createBuffers_multiple_files(const TriInfo4D_multiple_files& tri_info, vector<Buffer4D*> &buffers) const;
