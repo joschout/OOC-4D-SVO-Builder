@@ -104,19 +104,19 @@ void printTimerInfo() {
 	output << "  algorithm time	: " << partitioning_algorithm_timer.elapsed_time_milliseconds << " ms." << endl;
 	output << "  IO OUT time		: " << partitioning_io_output_timer.elapsed_time_milliseconds << " ms." << endl;
 	double part_diff = partitioning_total_timer.elapsed_time_milliseconds - partitioning_io_input_timer.elapsed_time_milliseconds - partitioning_algorithm_timer.elapsed_time_milliseconds - partitioning_io_output_timer.elapsed_time_milliseconds;
-	output << "  misc time		: " << part_diff << " s." << endl;
+	output << "  misc time		: " << part_diff << " ms." << endl;
 	output << "VOXELIZING" << endl;
 	output << "  Total time		: " << voxelization_total_timer.elapsed_time_milliseconds << " ms." << endl;
 	output << "  IO IN time		: " << voxelization_io_input_timer.elapsed_time_milliseconds << " ms." << endl;
 	output << "  algorithm time	: " << voxelization_algorithm_timer.elapsed_time_milliseconds << " ms." << endl;
 	double vox_diff = voxelization_total_timer.elapsed_time_milliseconds - voxelization_io_input_timer.elapsed_time_milliseconds - voxelization_algorithm_timer.elapsed_time_milliseconds;
-	output << "  misc time		: " << vox_diff << " s." << endl;
+	output << "  misc time		: " << vox_diff << " ms." << endl;
 	output << "SVO BUILDING" << endl;
 	output << "  Total time		: " << svo_total_timer.elapsed_time_milliseconds << " ms." << endl;
 	output << "  IO OUT time		: " << svo_io_output_timer.elapsed_time_milliseconds << " ms." << endl;
 	output << "  algorithm time	: " << svo_algorithm_timer.elapsed_time_milliseconds << " ms." << endl;
 	double svo_misc = svo_total_timer.elapsed_time_milliseconds - svo_io_output_timer.elapsed_time_milliseconds - svo_algorithm_timer.elapsed_time_milliseconds;
-	output << "  misc time		: " << svo_misc << " s." << endl;
+	output << "  misc time		: " << svo_misc << " ms." << endl;
 
 	string output_string = output.str();
 	cout << output_string;
