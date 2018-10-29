@@ -2,8 +2,7 @@
 
 This repository contains a proof-of concept implementation for creating 4 dimensional sparse voxel octrees. It was created during for my Computer Science master's thesis: [ Abstraction of Sparse Voxel Octrees to Four Dimensions for Storing and Rendering Animated Models ](https://limo.libis.be/primo-explore/fulldisplay?docid=32LIBIS_ALMA_DS71188553570001471&context=L&vid=KULeuven&search_scope=ALL_CONTENT&tab=all_content_tab&lang=en_US). It is an extension of previous work in the HPG 2013 paper, Out Of Core Construction of Sparse Voxel Octrees, as explained below. It generates a file structure representing a 3D object moving in time, represented using a fourdimensional hyperoctree. [An accompanying rendering program was also created, of which the source code can be found in another repository.](https://github.com/joschout/4D-Sparse-Voxel-Octree-Renderer/)
 
-![Example animations of falling marbles](./Images/marbles_S512_T128_P16_model_LEVELSLODNormal_distance_stack_100001-0129.gif)
-![Example animations of falling marbles](./Images/marbles_S512_T128_P16_model_LEVELSLODWork_distance_stack_10.gif)
+![Example animations of falling marbles](./Images/marbles_S512_T128_P16_model_LEVELSLODNormal_distance_stack_100001-0129.gif)![Example animations of falling marbles](./Images/marbles_S512_T128_P16_model_LEVELSLODWork_distance_stack_10.gif)
 
 ## Original README of 'Out-Of-Core SVO Builder v1.5'
 
